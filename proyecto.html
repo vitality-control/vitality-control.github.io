@@ -4,261 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Vitality Kitchen Control — Tu proyecto</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--kale:#146B4F;--juice:#8BB839;--cw:#DFF6A6;--lemon:#E0ED30;--sp:#005056;--bb:#97B9FF;--co:#FEFEFC;--cu:#C9956B;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:#f5f5f0;color:#1a1a1a;min-height:100vh}
+:root{--kale:#146B4F;--juice:#8BB839;--cw:#DFF6A6;--lemon:#E0ED30;--sp:#005056;--bb:#97B9FF;--co:#FEFEFC;--cu:#C9956B;--danger:#E24B4A;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font);background:#f5f5f0;color:#1a1a1a;min-height:100vh}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes grow{from{width:0}to{width:var(--w)}}
 .fade{animation:fadeUp .6s ease backwards}
-
-/* HEADER */
-.hdr{background:var(--sp);padding:20px 24px 24px}
-.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.hdr-logo{display:flex;align-items:center;gap:10px}
-.hdr-logo span{font-size:15px;font-weight:500;color:var(--co)}
-.hdr-logo small{display:block;font-size:9px;color:var(--juice);letter-spacing:1.5px;margin-top:1px}
-.hdr-badge{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--co);opacity:.5}
-.hdr-badge .dot{width:6px;height:6px;border-radius:3px;background:var(--juice)}
-.hdr-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.hdr-card{background:rgba(254,254,252,.06);border-radius:10px;padding:10px 12px}
-.hdr-card label{font-size:9px;color:var(--cw);opacity:.5;display:block;margin-bottom:2px}
-.hdr-card .val{font-size:18px;font-weight:500;color:var(--lemon)}
-.hdr-card .val.white{color:var(--co)}
-
-/* CONTENT */
-.content{padding:20px 20px 32px}
-
-/* WELCOME */
-.welcome{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:1px solid rgba(0,80,86,.06)}
-.welcome h2{font-size:18px;font-weight:500;color:var(--sp);margin-bottom:4px}
-.welcome p{font-size:13px;color:#666;line-height:1.5}
-
-/* TIMELINE */
-.timeline{position:relative;padding-left:28px}
-.timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:rgba(0,80,86,.06);border-radius:1px}
-.t-phase{position:relative;margin-bottom:20px}
-.t-dot{position:absolute;left:-28px;top:2px;width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;z-index:1}
-.t-dot.done{background:var(--juice)}
-.t-dot.active{background:var(--lemon);animation:pulse 2s infinite}
-.t-dot.locked{background:rgba(0,80,86,.08)}
-.t-dot svg{width:10px;height:10px}
-
-.t-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid rgba(0,80,86,.06);transition:all .2s}
-.t-card.active-card{border-color:rgba(224,237,48,.3);background:rgba(224,237,48,.02)}
-.t-card.done-card{border-color:rgba(139,184,57,.15);background:rgba(139,184,57,.02)}
-
-.t-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
-.t-phase-label{font-size:9px;font-weight:500;letter-spacing:2px;font-family:var(--mono);margin-bottom:3px}
-.t-title{font-size:15px;font-weight:500;color:var(--sp)}
-.t-dates{font-size:10px;color:#999;font-family:var(--mono)}
-.t-status{font-size:9px;padding:3px 9px;border-radius:12px;font-weight:500;white-space:nowrap}
-
-.t-desc{font-size:12px;color:#777;line-height:1.5;margin-bottom:12px}
-
-.t-items{display:flex;flex-direction:column;gap:4px}
-.t-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:6px;background:rgba(0,80,86,.015)}
-.t-item .check{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.t-item .check.on{background:rgba(139,184,57,.1)}
-.t-item .check.off{background:rgba(0,80,86,.04)}
-.t-item .check.prog{background:rgba(224,237,48,.15)}
-.t-item span{color:#555}
-.t-item .tag{font-size:9px;padding:1px 6px;border-radius:8px;margin-left:auto;font-weight:500;white-space:nowrap}
-
-/* PROGRESS BAR */
-.t-progress{margin-top:10px;display:flex;align-items:center;gap:8px}
-.t-bar{flex:1;height:4px;border-radius:2px;background:rgba(0,80,86,.06)}
-.t-bar-fill{height:4px;border-radius:2px;transition:width .8s ease}
-.t-pct{font-size:11px;font-weight:500;font-family:var(--mono);min-width:30px}
-
-/* INVESTMENT SUMMARY */
-.inv{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:16px;border:1px solid rgba(0,80,86,.06)}
-.inv h3{font-size:14px;font-weight:500;color:var(--sp);margin-bottom:10px}
-.inv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,80,86,.04);font-size:12px}
-.inv-row:last-child{border:none}
-.inv-row .label{color:#888}
-.inv-row .val{font-weight:500;color:var(--sp)}
-.inv-row .val.paid{color:var(--juice)}
-
-/* CONTACT */
-.contact{background:var(--sp);border-radius:14px;padding:20px;text-align:center}
-.contact h3{font-size:14px;font-weight:500;color:var(--co);margin-bottom:4px}
-.contact p{font-size:12px;color:rgba(254,254,252,.4);margin-bottom:14px}
-.contact-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(139,184,57,.12);color:var(--cw);font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:var(--font);transition:all .2s}
-.contact-btn:hover{background:rgba(139,184,57,.2)}
-
-/* FOOTER */
+.hdr{background:var(--sp);padding:20px 24px 24px}.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.hdr-logo{display:flex;align-items:center;gap:10px}.hdr-logo span{font-size:15px;font-weight:500;color:var(--co)}.hdr-logo small{display:block;font-size:9px;color:var(--juice);letter-spacing:1.5px;margin-top:1px}.hdr-badge{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--co);opacity:.5}.hdr-badge .dot{width:6px;height:6px;border-radius:3px;background:var(--juice)}.hdr-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.hdr-card{background:rgba(254,254,252,.06);border-radius:10px;padding:10px 12px}.hdr-card label{font-size:9px;color:var(--cw);opacity:.5;display:block;margin-bottom:2px}.hdr-card .val{font-size:18px;font-weight:500;color:var(--lemon)}.hdr-card .val.wh{color:var(--co)}
+.ct{padding:20px 20px 32px}.card{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:14px;border:1px solid rgba(0,80,86,.06)}.card h2{font-size:18px;font-weight:500;color:var(--sp);margin-bottom:4px}.card h3{font-size:14px;font-weight:500;color:var(--sp);margin-bottom:10px}.card p{font-size:13px;color:#666;line-height:1.5}
+.timeline{position:relative;padding-left:28px}.timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:rgba(0,80,86,.06);border-radius:1px}.t-phase{position:relative;margin-bottom:18px}.t-dot{position:absolute;left:-28px;top:2px;width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;z-index:1}.t-dot.active{background:var(--lemon);animation:pulse 2s infinite}.t-dot.locked{background:rgba(0,80,86,.08)}.t-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid rgba(0,80,86,.06)}.t-card.ac{border-color:rgba(224,237,48,.3);background:rgba(224,237,48,.02)}.t-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}.t-lbl{font-size:9px;font-weight:500;letter-spacing:2px;font-family:var(--mono);margin-bottom:3px}.t-title{font-size:15px;font-weight:500;color:var(--sp)}.t-dates{font-size:10px;color:#999;font-family:var(--mono)}.t-st{font-size:9px;padding:3px 9px;border-radius:12px;font-weight:500;white-space:nowrap}.t-desc{font-size:12px;color:#777;line-height:1.5;margin-bottom:12px}.t-items{display:flex;flex-direction:column;gap:4px}.t-item{display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 10px;border-radius:6px;background:rgba(0,80,86,.015)}.t-item .ck{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.t-item .ck.on{background:rgba(139,184,57,.1)}.t-item .ck.off{background:rgba(0,80,86,.04)}.t-item .ck.prog{background:rgba(224,237,48,.15)}.t-item span{color:#555;flex:1}.t-item .tag{font-size:9px;padding:1px 6px;border-radius:8px;font-weight:500;white-space:nowrap}.t-prog{margin-top:10px;display:flex;align-items:center;gap:8px}.t-bar{flex:1;height:4px;border-radius:2px;background:rgba(0,80,86,.06)}.t-bar-f{height:4px;border-radius:2px}.t-pct{font-size:11px;font-weight:500;font-family:var(--mono);min-width:30px}
+.dunning{border:1px solid rgba(226,75,74,.15);border-radius:14px;padding:18px 20px;background:rgba(226,75,74,.02);margin-bottom:14px}.dunning h3{font-size:14px;font-weight:500;color:var(--danger);margin-bottom:8px;display:flex;align-items:center;gap:6px}.dunning .rule{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(226,75,74,.06);font-size:12px}.dunning .rule:last-child{border:none}.dunning .day{min-width:55px;font-weight:500;font-family:var(--mono);font-size:11px;color:var(--danger)}.dunning .act{color:#666;line-height:1.4}
+.prem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.prem-card{border:1px solid rgba(201,149,107,.15);border-radius:12px;padding:16px;background:rgba(201,149,107,.02);transition:all .2s;position:relative;overflow:hidden}.prem-card:hover{border-color:rgba(201,149,107,.3);background:rgba(201,149,107,.04)}.prem-card .ptag{position:absolute;top:10px;right:10px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;background:rgba(201,149,107,.1);color:var(--cu);font-family:var(--mono)}.prem-card .iw{width:36px;height:36px;border-radius:10px;background:rgba(201,149,107,.06);display:flex;align-items:center;justify-content:center;margin-bottom:8px}.prem-card h4{font-size:13px;font-weight:500;color:var(--sp);margin-bottom:3px;padding-right:65px}.prem-card p{font-size:11px;color:#888;line-height:1.4}.prem-card .pi{margin-top:8px;display:flex;flex-direction:column;gap:3px}.prem-card .pit{font-size:10px;color:#999;display:flex;align-items:center;gap:5px}.prem-card .pit::before{content:'';width:4px;height:4px;border-radius:2px;background:var(--cu);flex-shrink:0}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,80,86,.04);font-size:12px}.inv-row:last-child{border:none}.inv-row .lbl{color:#888}.inv-row .vl{font-weight:500;color:var(--sp)}.inv-row .vl.paid{color:var(--juice)}
+.contact{background:var(--sp);border-radius:14px;padding:20px;text-align:center;margin-top:6px}.contact h3{font-size:14px;font-weight:500;color:var(--co);margin-bottom:4px}.contact p{font-size:12px;color:rgba(254,254,252,.4);margin-bottom:14px}.contact-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(139,184,57,.12);color:var(--cw);font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:var(--font);transition:all .2s}.contact-btn:hover{background:rgba(139,184,57,.2)}
 .foot{text-align:center;padding:20px;font-size:9px;color:#ccc}
-
-@media(max-width:600px){
-  .hdr-cards{grid-template-columns:1fr 1fr}
-  .hdr-cards>:last-child{grid-column:1/-1}
-}
+@media(max-width:600px){.hdr-cards{grid-template-columns:1fr 1fr}.hdr-cards>:last-child{grid-column:1/-1}.prem-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<div class="hdr"><div class="hdr-top"><div class="hdr-logo"><svg width="26" height="26" viewBox="0 0 48 48"><g transform="translate(24,24)"><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(30)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(150)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(210)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(300)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(330)"/><circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.3"/></g></svg><div><span>vitality kitchen</span><small>panel de proyecto</small></div></div><div class="hdr-badge"><div class="dot"></div> Licencia activa</div></div><div class="hdr-cards"><div class="hdr-card"><label>Fase actual</label><div class="val" style="font-size:14px;">Fase 1 de 3</div></div><div class="hdr-card"><label>Progreso global</label><div class="val">18%</div></div><div class="hdr-card"><label>Entrega estimada</label><div class="val wh" style="font-size:14px;">Agosto 2026</div></div></div></div>
 
-<!-- HEADER -->
-<div class="hdr">
-  <div class="hdr-top">
-    <div class="hdr-logo">
-      <svg width="26" height="26" viewBox="0 0 48 48"><g transform="translate(24,24)"><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(30)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(150)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(210)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(300)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(330)"/><circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.3"/></g></svg>
-      <div><span>vitality kitchen</span><small>panel de proyecto</small></div>
-    </div>
-    <div class="hdr-badge"><div class="dot"></div> Licencia activa</div>
-  </div>
-  <div class="hdr-cards">
-    <div class="hdr-card"><label>Fase actual</label><div class="val" style="font-size:14px;color:#E0ED30;">Fase 1 de 4</div></div>
-    <div class="hdr-card"><label>Progreso global</label><div class="val">18%</div></div>
-    <div class="hdr-card"><label>Entrega estimada</label><div class="val white" style="font-size:14px;">Agosto 2026</div></div>
-  </div>
-</div>
+<div class="ct">
 
-<!-- CONTENT -->
-<div class="content">
+<div class="card fade" style="animation-delay:.1s"><h2>Programa de auditoría operativa</h2><p>Tu proyecto se desarrolla en <strong>12 semanas (3 fases)</strong> enfocadas 100% en la operación diaria de tu restaurante: cocina, barra, salón, inocuidad, limpieza, servicio y gestión de personal.</p><p style="margin-top:8px;font-size:12px;color:var(--kale);font-weight:500;">Los módulos financieros, costeo, almacén y compras son módulos premium que se contratan por separado ($300 USD cada uno).</p></div>
 
-  <!-- WELCOME -->
-  <div class="welcome fade" style="animation-delay:.1s">
-    <h2>Bienvenido al desarrollo de tu ecosistema</h2>
-    <p>Tu licencia está activa y tu proyecto está en construcción. Aquí puedes seguir el avance de cada fase en tiempo real. Los módulos se irán habilitando conforme se completen y aprueben. Tu equipo LiTa está trabajando en esto.</p>
-  </div>
+<div class="card fade" style="animation-delay:.15s"><h3>Resumen de inversión</h3><div class="inv-row"><span class="lbl">Licencia de activación (anual)</span><span class="vl paid">$8,000 MXN ✓</span></div><div class="inv-row"><span class="lbl">Suscripción mensual (1 sucursal)</span><span class="vl">$2,800 MXN / mes</span></div><div class="inv-row"><span class="lbl">Primer cobro realizado</span><span class="vl paid">$10,800 MXN ✓</span></div><div class="inv-row"><span class="lbl">Próximo cobro</span><span class="vl">1 de junio, 2026</span></div><div class="inv-row"><span class="lbl">Método de pago</span><span class="vl">Stripe · Visa ****6411</span></div></div>
 
-  <!-- INVESTMENT SUMMARY -->
-  <div class="inv fade" style="animation-delay:.15s">
-    <h3>Resumen de inversión</h3>
-    <div class="inv-row"><span class="label">Licencia de activación (anual)</span><span class="val paid">$8,000 MXN ✓</span></div>
-    <div class="inv-row"><span class="label">Suscripción mensual (1 sucursal)</span><span class="val">$2,800 MXN / mes</span></div>
-    <div class="inv-row"><span class="label">Primer cobro realizado</span><span class="val paid">$10,800 MXN ✓</span></div>
-    <div class="inv-row"><span class="label">Próximo cobro</span><span class="val">1 de junio, 2026</span></div>
-    <div class="inv-row"><span class="label">Método de pago</span><span class="val">Stripe · Visa ****6411</span></div>
-  </div>
+<div class="dunning fade" style="animation-delay:.2s"><h3><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l7 13H1L8 1z" stroke="#E24B4A" stroke-width="1.2" fill="none"/><line x1="8" y1="6" x2="8" y2="9.5" stroke="#E24B4A" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="#E24B4A"/></svg>Política de pago y acceso</h3><div class="rule"><div class="day">Día 1</div><div class="act">Se genera el cargo automático de la suscripción mensual vía Stripe.</div></div><div class="rule"><div class="day">Día 3</div><div class="act">Si el pago no se procesa, se envía recordatorio vía WhatsApp y correo: <em>"Tu ecosistema necesita tu energía para seguir nutriendo tu operación."</em></div></div><div class="rule"><div class="day">Día 5</div><div class="act">Último aviso: <em>"Tu acceso se pausará mañana. Renueva para que tu equipo siga creciendo."</em></div></div><div class="rule"><div class="day">Día 6</div><div class="act"><strong style="color:#A32D2D;">El acceso se bloquea completamente.</strong> Operadores, gerentes y propietario no pueden ingresar. Los datos se preservan pero quedan inaccesibles.</div></div><div class="rule"><div class="day">Día 30</div><div class="act">Aviso de cancelación definitiva. Los datos se mantienen 60 días adicionales antes de eliminarse permanentemente.</div></div></div>
 
-  <!-- TIMELINE / ROADMAP -->
-  <div style="font-size:14px;font-weight:500;color:var(--sp);margin-bottom:14px;display:flex;align-items:center;gap:6px;" class="fade" style="animation-delay:.2s">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    Roadmap de desarrollo
-  </div>
+<div style="font-size:14px;font-weight:500;color:var(--sp);margin-bottom:14px;display:flex;align-items:center;gap:6px;" class="fade" style="animation-delay:.25s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Roadmap operativo — 12 semanas</div>
 
-  <div class="timeline">
+<div class="timeline">
 
-    <!-- FASE 1 -->
-    <div class="t-phase fade" style="animation-delay:.25s">
-      <div class="t-dot active"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#005056"/></svg></div>
-      <div class="t-card active-card">
-        <div class="t-header">
-          <div>
-            <div class="t-phase-label" style="color:#B8A040;">FASE 1</div>
-            <div class="t-title">Fundamentos y acceso</div>
-            <div class="t-dates">Mayo 2026 — Semanas 1 a 4</div>
-          </div>
-          <div class="t-status" style="background:rgba(224,237,48,.12);color:#8B7F20;">En desarrollo</div>
-        </div>
-        <div class="t-desc">Infraestructura base del sistema, login seguro, panel de administración y primer módulo operativo funcional.</div>
-        <div class="t-items">
-          <div class="t-item"><div class="check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Base de datos relacional (PostgreSQL + RLS)</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div>
-          <div class="t-item"><div class="check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Diseño de marca y paleta Vitality Kitchen</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div>
-          <div class="t-item"><div class="check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Gatekeeper / Login MFA (autenticación segura)</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div>
-          <div class="t-item"><div class="check prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Sistema de cobro Stripe + facturación CFDI</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div>
-          <div class="t-item"><div class="check prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Hub operativo con 9 áreas + panel propietario</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div>
-          <div class="t-item"><div class="check off"></div><span>Landing page vitalitykitchencontrol en vivo</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div>
-        </div>
-        <div class="t-progress"><div class="t-bar"><div class="t-bar-fill" style="width:55%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#8B7F20;">55%</div></div>
-      </div>
-    </div>
+<div class="t-phase fade" style="animation-delay:.3s"><div class="t-dot active"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#005056"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#B8A040;">FASE 1</div><div class="t-title">Fundamentos + Inocuidad + Cocina</div><div class="t-dates">Mayo — Junio 2026 · Semanas 1 a 4</div></div><div class="t-st" style="background:rgba(224,237,48,.12);color:#8B7F20;">En desarrollo</div></div><div class="t-desc">Infraestructura, acceso seguro, y los primeros módulos que tocan la cocina diaria: inocuidad, termometría, producción y checklists.</div><div class="t-items"><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Gatekeeper / Login MFA + seguridad base</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Diseño de marca + paleta Vitality Kitchen</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Hub operativo + panel propietario</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Inocuidad / Termometría (3 bitácoras + alertas)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Cocina / Producción (líneas, gramajes, pre-fermentos)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio turno + cierre (Cocina)</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Sistema de fotos con sello GPS + Voice-to-text</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Alertas WhatsApp al propietario</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:40%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#8B7F20;">40%</div></div></div></div>
 
-    <!-- FASE 2 -->
-    <div class="t-phase fade" style="animation-delay:.35s">
-      <div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div>
-      <div class="t-card">
-        <div class="t-header">
-          <div>
-            <div class="t-phase-label" style="color:#999;">FASE 2</div>
-            <div class="t-title">Módulos operativos core</div>
-            <div class="t-dates">Junio 2026 — Semanas 5 a 8</div>
-          </div>
-          <div class="t-status" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div>
-        </div>
-        <div class="t-desc">Los módulos que tocan tu cocina diaria: inocuidad, producción, checklists de apertura/cierre, y el sistema de evidencia fotográfica incorruptible.</div>
-        <div class="t-items">
-          <div class="t-item"><div class="check off"></div><span>Inocuidad / Termometría (3 bitácoras + alertas)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Cocina / Producción (líneas, gramajes, pre-fermentos)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Checklists apertura + cambio de turno + cierre</span></div>
-          <div class="t-item"><div class="check off"></div><span>Sistema de fotos con sello GPS + Voice-to-text</span></div>
-          <div class="t-item"><div class="check off"></div><span>Alertas WhatsApp al propietario (8 reglas)</span></div>
-          <div class="t-item"><div class="check off"></div><span>SOPs contextuales (Manual 5S, Higiene integrados)</span></div>
-        </div>
-        <div class="t-progress"><div class="t-bar"><div class="t-bar-fill" style="width:0%;background:var(--juice);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div>
-      </div>
-    </div>
+<div class="t-phase fade" style="animation-delay:.4s"><div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div><div class="t-card"><div class="t-header"><div><div class="t-lbl" style="color:#999;">FASE 2</div><div class="t-title">Barra + Salón + Servicio + Limpieza</div><div class="t-dates">Junio — Julio 2026 · Semanas 5 a 8</div></div><div class="t-st" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div></div><div class="t-desc">Áreas de atención al comensal: barra, salón, terrazas, protocolo de servicio y roles de limpieza profunda.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Barra / Bebidas (recetas, merma líquidos, destrucción envases)</span></div><div class="t-item"><div class="ck off"></div><span>Salón principal (montaje, iluminación, temperatura ambiente)</span></div><div class="t-item"><div class="ck off"></div><span>Terraza 1 + Terraza 2 (checklists por zona)</span></div><div class="t-item"><div class="ck off"></div><span>Protocolo de servicio (pasos, tiempos, estándares)</span></div><div class="t-item"><div class="ck off"></div><span>Rol de limpieza por área (diaria, semanal, profunda)</span></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio + cierre (Barra, Salón, Terrazas)</span></div><div class="t-item"><div class="ck off"></div><span>SOPs contextuales (Manual 5S, Higiene, Glosario)</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:0%;background:var(--juice);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div></div></div>
 
-    <!-- FASE 3 -->
-    <div class="t-phase fade" style="animation-delay:.45s">
-      <div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div>
-      <div class="t-card">
-        <div class="t-header">
-          <div>
-            <div class="t-phase-label" style="color:#999;">FASE 3</div>
-            <div class="t-title">Áreas completas + almacén</div>
-            <div class="t-dates">Julio 2026 — Semanas 9 a 12</div>
-          </div>
-          <div class="t-status" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div>
-        </div>
-        <div class="t-desc">Se habilitan las áreas restantes: barra, almacén con cruce a 3 vías, salón/terrazas, RRHH, y el sistema de recepción de mercancía.</div>
-        <div class="t-items">
-          <div class="t-item"><div class="check off"></div><span>Barra / Bebidas (sliders de líquidos, destrucción envases)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Almacén / Recepción (cruce PO ↔ Recepción ↔ Factura)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Salón / Terraza 1 / Terraza 2 / Servicio</span></div>
-          <div class="t-item"><div class="check off"></div><span>Recursos Humanos (turnos, habilidades, asistencia)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Vistas por rol: Propietario, Gerente, Operador</span></div>
-          <div class="t-item"><div class="check off"></div><span>App móvil nativa (modo quiosco, offline, sello real)</span></div>
-        </div>
-        <div class="t-progress"><div class="t-bar"><div class="t-bar-fill" style="width:0%;background:var(--juice);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div>
-      </div>
-    </div>
-
-    <!-- FASE 4 -->
-    <div class="t-phase fade" style="animation-delay:.55s">
-      <div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div>
-      <div class="t-card">
-        <div class="t-header">
-          <div>
-            <div class="t-phase-label" style="color:#999;">FASE 4</div>
-            <div class="t-title">Inteligencia financiera + lanzamiento</div>
-            <div class="t-dates">Agosto 2026 — Semanas 13 a 16</div>
-          </div>
-          <div class="t-status" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div>
-        </div>
-        <div class="t-desc">El cerebro financiero del sistema: costeo de recetas, food cost real vs. teórico, Matriz BCG, dashboard ejecutivo de gerencia, y conexión con el POS.</div>
-        <div class="t-items">
-          <div class="t-item"><div class="check off"></div><span>Financiero / Costeo (food cost %, recetas, márgenes)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Cruce teórico vs. real + protección de margen 20%</span></div>
-          <div class="t-item"><div class="check off"></div><span>Matriz BCG (Estrella, Vaca, Interrogación, Perro)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Dashboard ejecutivo de Gerencia</span></div>
-          <div class="t-item"><div class="check off"></div><span>Integración con POS (ventas → costo real)</span></div>
-          <div class="t-item"><div class="check off"></div><span>Lanzamiento completo + capacitación de equipo</span></div>
-        </div>
-        <div class="t-progress"><div class="t-bar"><div class="t-bar-fill" style="width:0%;background:var(--juice);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- CONTACT -->
-  <div class="contact fade" style="animation-delay:.6s;margin-top:20px;">
-    <h3>¿Tienes preguntas sobre tu proyecto?</h3>
-    <p>Tu equipo LiTa está asignado y disponible para resolver cualquier duda sobre el desarrollo.</p>
-    <button class="contact-btn" onclick="this.textContent='Mensaje enviado ✓';this.style.background='rgba(139,184,57,.25)';">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 3h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="#DFF6A6" stroke-width="1.2"/><path d="M2 3l6 5 6-5" stroke="#DFF6A6" stroke-width="1.2"/></svg>
-      Contactar a LiTa support
-    </button>
-  </div>
+<div class="t-phase fade" style="animation-delay:.5s"><div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div><div class="t-card"><div class="t-header"><div><div class="t-lbl" style="color:#999;">FASE 3</div><div class="t-title">RRHH + Gerencia + App móvil + Lanzamiento</div><div class="t-dates">Julio — Agosto 2026 · Semanas 9 a 12</div></div><div class="t-st" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div></div><div class="t-desc">Cierre del programa: gestión de personal, vistas por rol, dashboard gerencia, app móvil nativa y capacitación.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Recursos Humanos (turnos, habilidades, asistencia)</span></div><div class="t-item"><div class="ck off"></div><span>Matriz de habilidades por colaborador</span></div><div class="t-item"><div class="ck off"></div><span>Gerencia (dashboard ejecutivo, mapas de calor, audit trail)</span></div><div class="t-item"><div class="ck off"></div><span>Vistas por rol: Propietario, Gerente, Operador</span></div><div class="t-item"><div class="ck off"></div><span>App móvil nativa (modo quiosco, offline, sello real)</span></div><div class="t-item"><div class="ck off"></div><span>Capacitación de equipo + entrega oficial</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:0%;background:var(--juice);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div></div></div>
 
 </div>
 
-<!-- FOOTER -->
+<!-- PREMIUM MODULES -->
+<div style="margin-top:24px;" class="fade" style="animation-delay:.55s"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="font-size:14px;font-weight:500;color:var(--sp);display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4.5H15l-3.8 3 1.4 4.5L8 10l-4.6 3 1.4-4.5L1 5.5h5z" stroke="#C9956B" stroke-width="1.2" fill="none"/></svg>Módulos premium</div><div style="font-size:10px;color:var(--cu);font-weight:500;padding:3px 10px;border-radius:8px;background:rgba(201,149,107,.08);">$300 USD / módulo</div></div><div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.4;">Módulos avanzados de inteligencia financiera y logística. Se contratan por separado sobre la base operativa. Incluyen configuración, capacitación y soporte.</div>
+
+<div class="prem-grid">
+
+<div class="prem-card"><div class="ptag">$300 USD</div><div class="iw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="12" width="4" height="9" rx="1" stroke="#C9956B" stroke-width="1.5"/><rect x="10" y="7" width="4" height="14" rx="1" stroke="#C9956B" stroke-width="1.5"/><rect x="17" y="3" width="4" height="18" rx="1" stroke="#C9956B" stroke-width="1.5"/></svg></div><h4>Financiero / Food Cost</h4><p>Food cost teórico vs. real con protección de margen.</p><div class="pi"><div class="pit">Food cost % por platillo y período</div><div class="pit">Costo teórico vs. real automático</div><div class="pit">Alertas de margen bajo 20%</div><div class="pit">Reportes semanales al propietario</div></div></div>
+
+<div class="prem-card"><div class="ptag">$300 USD</div><div class="iw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#C9956B" stroke-width="1.5"/><path d="M9 14l2 2 4-4" stroke="#C9956B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Costeo de recetas</h4><p>Cada receta con ingredientes, gramajes y costo unitario.</p><div class="pi"><div class="pit">Recetas maestras (R-XX) y sub-recetas (SR-XX)</div><div class="pit">Pre-fermentos independientes por fórmula</div><div class="pit">Tabla de gramajes estándar</div><div class="pit">Clasificación Matriz BCG automática</div></div></div>
+
+<div class="prem-card"><div class="ptag">$300 USD</div><div class="iw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 8l9-5 9 5v8l-9 5-9-5V8z" stroke="#C9956B" stroke-width="1.5"/><path d="M3 8l9 5 9-5M12 13v9" stroke="#C9956B" stroke-width="1.5"/></svg></div><h4>Almacén / Recepción</h4><p>Entradas, salidas y cruce a 3 vías completo.</p><div class="pi"><div class="pit">Recepción con foto + temperatura</div><div class="pit">Cruce PO ↔ Recepción ↔ Factura</div><div class="pit">Mínimos / Máximos con alertas</div><div class="pit">Control PEPS automatizado</div></div></div>
+
+<div class="prem-card"><div class="ptag">$300 USD</div><div class="iw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2V3zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7V3z" stroke="#C9956B" stroke-width="1.5"/></svg></div><h4>Compras inteligentes</h4><p>Órdenes de compra automáticas por consumo y stock.</p><div class="pi"><div class="pit">Generación automática de OC</div><div class="pit">Cruce con facturas CFDI (XML)</div><div class="pit">Evaluación de proveedores</div><div class="pit">Histórico de precios por insumo</div></div></div>
+
+<div class="prem-card" style="grid-column:1/-1;"><div class="ptag">$300 USD</div><div class="iw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#C9956B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h4>Integración POS → Dashboard financiero</h4><p>Conexión con tu punto de venta para cruzar ventas reales contra costo de operación. Dashboard ejecutivo con termómetro de rentabilidad.</p><div class="pi"><div class="pit">Conexión API con POS (Square, Aloha, Soft Restaurant, etc.)</div><div class="pit">Ventas vs. costo real por período y por platillo</div><div class="pit">Termómetro de rentabilidad y margen neto 20%</div><div class="pit">Dashboard ejecutivo para propietario e inversionistas</div></div></div>
+
+</div>
+
+<div style="text-align:center;margin-top:14px;padding:12px;border-radius:10px;background:rgba(201,149,107,.04);border:1px dashed rgba(201,149,107,.15);"><div style="font-size:12px;color:var(--cu);font-weight:500;">¿Quieres todos los módulos premium?</div><div style="font-size:11px;color:#999;margin-top:3px;">Paquete completo: <strong style="color:var(--cu);">$1,200 USD</strong> (ahorro de $300 USD) — 5 módulos + implementación prioritaria</div></div>
+
+</div>
+
+<div class="contact fade" style="animation-delay:.6s;margin-top:20px;"><h3>¿Tienes preguntas sobre tu proyecto?</h3><p>Tu equipo LiTa está asignado y disponible para resolver cualquier duda.</p><button class="contact-btn" onclick="this.textContent='Mensaje enviado ✓';this.style.background='rgba(139,184,57,.25)';"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 3h12v8a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" stroke="#DFF6A6" stroke-width="1.2"/><path d="M2 3l6 5 6-5" stroke="#DFF6A6" stroke-width="1.2"/></svg>Contactar a LiTa support</button></div>
+
+</div>
+
 <div class="foot">Vitality Kitchen Control · Powered by LiTa Support · 2026</div>
-
 </body>
 </html>
