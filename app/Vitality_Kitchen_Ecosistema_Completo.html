@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitality Kitchen — Ecosistema Operativo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;min-height:100vh}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.fade{animation:fadeUp .4s ease}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+input:focus{outline:none}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var S={
+  screen:'login',loginStep:1,payProc:false,
+  role:'oper',hubArea:null,bitacora:null,
+  checks:{},photos:{},
+  tempStr:'',tempEntries:[],
+  photoCapture:null,voiceState:'idle',voiceText:'',
+  auditLog:[]
+};
+
+var K='#146B4F',GJ='#8BB839',CW='#DFF6A6',LZ='#E0ED30',SP='#005056',BB='#97B9FF',CO='#FEFEFC',CU='#C9956B';
+
+var AREAS=[
+  {id:'cocina',n:'Cocina / Producción',st:'germinando',ic:'M12 2c0 4-4 6-4 10a4 4 0 108 0c0-4-4-6-4-10z'},
+  {id:'barra',n:'Barra / Bebidas',st:'germinando',ic:'M6 3h12l-2 13a2 2 0 01-2 2h-4a2 2 0 01-2-2L6 3z'},
+  {id:'almacen',n:'Almacén / Recepción',st:'germinando',ic:'M3 8l9-5 9 5v8l-9 5-9-5V8z'},
+  {id:'inocuidad',n:'Inocuidad / Termometría',st:'activo',ic:'M14 14.76V3a2 2 0 10-4 0v11.76a4 4 0 104 0z'},
+  {id:'financiero',n:'Financiero / Costeo',st:'germinando',ic:'M3 12h4v9H3zM10 7h4v14h-4zM17 3h4v18h-4z'},
+  {id:'sops',n:'SOPs / Conocimiento',st:'germinando',ic:'M4 4h6a2 2 0 012 2v14a1 1 0 00-1-1H4V4z'},
+  {id:'rrhh',n:'Recursos Humanos',st:'germinando',ic:'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'},
+  {id:'salon',n:'Salón / Terrazas / Servicio',st:'germinando',ic:'M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36l-.7-.7M6.34 6.34l-.7-.7m12.72 0l-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z'},
+  {id:'gerencia',n:'Gerencia',st:'germinando',ic:'M12 2l8 4v5c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z',full:true}
+];
+
+var CHECKS_AP=[
+  {id:'a1',t:'Verificar temperaturas refrigeración (4°C)',critical:true},
+  {id:'a2',t:'Verificar temperaturas congelación (-18°C)',critical:true},
+  {id:'a3',t:'Revisar caducidades y PEPS',critical:true},
+  {id:'a4',t:'Sanitizar superficies de trabajo',photo:true},
+  {id:'a5',t:'Verificar stock mínimo líneas producción',critical:true},
+  {id:'a6',t:'Encender y calibrar hornos, planchas',},
+  {id:'a7',t:'Confirmar personal vs. rol de turno',},
+  {id:'a8',t:'Foto general cocina al abrir',photo:true,critical:true}
+];
+
+var CHECKS_CT=[
+  {id:'ct1',t:'Temperaturas al cambio (refri + conge)',critical:true},
+  {id:'ct2',t:'Inventario rápido proteínas',critical:true},
+  {id:'ct3',t:'Entregar pendientes producción',},
+  {id:'ct4',t:'Reportar fallas de equipo',},
+  {id:'ct5',t:'Verificar limpieza estaciones',photo:true},
+  {id:'ct6',t:'Firmar bitácora entrega-recepción',critical:true}
+];
+
+var CHECKS_CI=[
+  {id:'c1',t:'Temperaturas finales (refri + conge)',critical:true},
+  {id:'c2',t:'Etiquetar mise en place con fecha',critical:true},
+  {id:'c3',t:'Limpiar y sanitizar superficies',photo:true},
+  {id:'c4',t:'Apagar hornos, verificar gas cerrado',critical:true},
+  {id:'c5',t:'Sacar basura y limpiar contenedores',photo:true},
+  {id:'c6',t:'Inventario cierre: proteínas, lácteos',critical:true},
+  {id:'c7',t:'Registrar mermas del día',critical:true},
+  {id:'c8',t:'Activar alarmas y cerrar con llave',critical:true},
+  {id:'c9',t:'Foto general cocina al cierre',photo:true,critical:true}
+];
+
+var WA_ALERTS=[
+  {time:'06:05',msg:'Apertura iniciada por Chef Marco',level:'info'},
+  {time:'06:18',msg:'ALERTA: Congelador 2 a -12°C (límite -18°C)',level:'danger'},
+  {time:'06:45',msg:'Apertura completada — 12/12 puntos',level:'info'},
+  {time:'15:05',msg:'ALERTA: Refri postres a 6°C (límite 4°C)',level:'danger'},
+  {time:'15:20',msg:'Cambio turno firmado Marco → Luis',level:'info'},
+  {time:'23:10',msg:'CIERRE: Cumplimiento 94% · 3/3 fases',level:'info'}
+];
+
+function now(){return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function short(){return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});}
+function dayStr(){return new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});}
+
+function addAudit(a,d){S.auditLog.unshift({time:now(),a:a,d:d,u:S.role==='admin'?'LiTa Admin':S.role==='client'?'Propietario':'Chef Marco'});}
+
+function ic(path,color,size){size=size||20;return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none"><path d="'+path+'" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+
+function logo(sz){
+  sz=sz||28;var h='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 48 48"><g transform="translate(24,24)">';
+  for(var i=0;i<12;i++)h+='<line x1="0" y1="-13" x2="0" y2="-7" stroke="'+LZ+'" stroke-width="2.2" stroke-linecap="round" transform="rotate('+i*30+')"/>';
+  h+='<circle cx="0" cy="0" r="2.5" fill="none" stroke="'+LZ+'" stroke-width="1.3"/></g></svg>';return h;
+}
+
+function badge(t,c,bg){return '<span style="font-size:9px;padding:2px 7px;border-radius:12px;background:'+(bg||'rgba(139,184,57,.1)')+';color:'+(c||K)+';font-weight:500;">'+t+'</span>';}
+
+function toggle(id,on){
+  return '<div data-toggle="'+id+'" style="width:48px;height:26px;border-radius:13px;background:'+(on?GJ:'rgba(0,80,86,.12)')+';cursor:pointer;position:relative;transition:background .25s;flex-shrink:0;"><div style="width:20px;height:20px;border-radius:10px;background:#FFF;position:absolute;top:3px;left:'+(on?'25':'3')+'px;transition:left .2s;pointer-events:none;"></div></div>';
+}
+
+function tempIsOOR(){
+  if(!S.bitacora||!S.tempStr)return false;
+  var v=parseFloat(S.tempStr);if(isNaN(v))return false;
+  return S.bitacora==='cong'?v>-18:v>4;
+}
+
+function R(){
+  var el=document.getElementById('app');
+  if(S.screen==='login')el.innerHTML=loginHTML();
+  else if(S.screen==='payment')el.innerHTML=payHTML();
+  else el.innerHTML=mainHTML();
+  B();
+}
+
+// ===================== LOGIN =====================
+function loginHTML(){
+  var h='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:'+SP+';padding:2rem 1rem;">';
+  h+='<div style="width:100%;max-width:400px;" class="fade">';
+  h+='<div style="text-align:center;margin-bottom:28px;">'+logo(40);
+  h+='<div style="font-size:24px;font-weight:500;color:'+CO+';margin-top:6px;">vitality kitchen</div>';
+  h+='<div style="font-size:11px;color:'+GJ+';letter-spacing:2px;margin-top:2px;">cocina consciente</div></div>';
+
+  h+='<div style="background:rgba(254,254,252,.97);border-radius:16px;padding:28px 24px;">';
+
+  if(S.loginStep===1){
+    h+='<div style="font-size:15px;font-weight:500;color:'+SP+';margin-bottom:2px;">Acceso al proyecto</div>';
+    h+='<div style="font-size:11px;color:'+K+';opacity:.6;margin-bottom:20px;">Ingresa tus credenciales autorizadas</div>';
+    h+='<label style="font-size:11px;color:'+SP+';font-weight:500;display:block;margin-bottom:4px;">Correo electrónico</label>';
+    h+='<input type="email" placeholder="tu@correo.com" value="chef.marco@vitality.kitchen" style="width:100%;height:40px;border:1px solid '+CW+';border-radius:8px;padding:0 12px;font-size:13px;color:'+SP+';margin-bottom:12px;background:#fff;" onfocus="this.style.borderColor=\''+GJ+'\'" onblur="this.style.borderColor=\''+CW+'\'"/>';
+    h+='<label style="font-size:11px;color:'+SP+';font-weight:500;display:block;margin-bottom:4px;">Contraseña</label>';
+    h+='<input type="password" placeholder="••••••••" value="12345678" style="width:100%;height:40px;border:1px solid '+CW+';border-radius:8px;padding:0 12px;font-size:13px;color:'+SP+';margin-bottom:16px;background:#fff;" onfocus="this.style.borderColor=\''+GJ+'\'" onblur="this.style.borderColor=\''+CW+'\'"/>';
+  }else if(S.loginStep===2){
+    h+='<div style="text-align:center;">';
+    h+='<div style="font-size:15px;font-weight:500;color:'+SP+';margin-bottom:2px;">Verificación en dos pasos</div>';
+    h+='<div style="font-size:11px;color:'+K+';opacity:.6;margin-bottom:20px;">Código de 6 dígitos de tu app autenticadora</div>';
+    h+='<div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;">';
+    var code='847291';
+    for(var i=0;i<6;i++){
+      h+='<input type="text" maxlength="1" value="'+code[i]+'" style="width:40px;height:48px;text-align:center;border:1.5px solid '+CW+';border-radius:8px;font-size:20px;font-weight:500;color:'+SP+';background:#fff;font-family:monospace;"/>';
+    }
+    h+='</div></div>';
+  }else{
+    h+='<div style="text-align:center;padding:12px 0;">';
+    h+='<div style="width:56px;height:56px;border-radius:50%;background:rgba(139,184,57,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">'+ic('M5 12l5 5L20 7',GJ,28)+'</div>';
+    h+='<div style="font-size:16px;font-weight:500;color:'+SP+';">Identidad verificada</div>';
+    h+='<div style="font-size:12px;color:'+K+';opacity:.5;margin-top:4px;">Bienvenido al ecosistema Vitality Kitchen</div>';
+    h+='<div style="font-size:10px;color:'+GJ+';opacity:.4;margin-top:6px;font-family:monospace;letter-spacing:.5px;">SESSION · JWT TOKEN ACTIVO</div>';
+    h+='</div>';
+  }
+
+  h+='<button data-action="login-next" style="width:100%;height:44px;border:none;border-radius:10px;background:'+K+';color:'+CO+';font-size:14px;font-weight:500;'+(S.loginStep===3?'margin-top:12px;':'')+'">';
+  h+=(S.loginStep===1?'Verificar identidad':S.loginStep===2?'Validar código':'Entrar al ecosistema')+'</button>';
+
+  if(S.loginStep===1){
+    h+='<div style="text-align:center;margin-top:12px;"><span style="font-size:11px;color:'+K+';opacity:.4;border-bottom:1px dashed rgba(20,107,79,.25);cursor:pointer;">Solicitar acceso al proyecto</span></div>';
+  }
+  h+='</div>';
+
+  h+='<div style="display:flex;gap:4px;justify-content:center;margin-top:16px;">';
+  for(var i=1;i<=3;i++)h+='<div style="width:8px;height:8px;border-radius:4px;background:'+(S.loginStep>=i?LZ:'rgba(224,237,48,.2)')+';transition:all .3s;"></div>';
+  h+='</div>';
+  h+='<div style="text-align:center;margin-top:12px;font-size:10px;color:rgba(254,254,252,.2);">Protegido por LiTa support · Audit trail activo</div>';
+  h+='</div></div>';
+  return h;
+}
+
+// ===================== PAYMENT =====================
+function payHTML(){
+  var h='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:'+SP+';padding:2rem 1rem;">';
+  h+='<div style="width:100%;max-width:420px;" class="fade">';
+  h+='<div style="text-align:center;margin-bottom:24px;">'+logo(36);
+  h+='<div style="font-size:20px;font-weight:500;color:'+CO+';margin-top:4px;">vitality kitchen</div>';
+  h+='<div style="font-size:11px;color:'+GJ+';letter-spacing:2px;">activa tu ecosistema</div></div>';
+
+  h+='<div style="background:rgba(254,254,252,.97);border-radius:16px;padding:24px 22px;">';
+  h+='<div style="font-size:14px;font-weight:500;color:'+SP+';margin-bottom:2px;">Plan de inversión</div>';
+  h+='<div style="font-size:11px;color:'+K+';opacity:.5;margin-bottom:16px;">Powered by LiTa support · Pago seguro vía Stripe</div>';
+
+  h+='<div style="border:1.5px solid '+GJ+';border-radius:12px;padding:12px 14px;margin-bottom:8px;background:rgba(139,184,57,.03);">';
+  h+='<div style="display:flex;justify-content:space-between;"><div><div style="font-size:13px;font-weight:500;color:'+SP+';">Licencia de activación</div><div style="font-size:10px;color:'+K+';opacity:.5;">Pago único · Renovación anual</div></div>';
+  h+='<div style="text-align:right;"><div style="font-size:20px;font-weight:500;color:'+K+';">$8,000</div><div style="font-size:10px;color:'+K+';opacity:.4;">MXN</div></div></div>';
+  h+='<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">';
+  ['Acceso completo','LiTa support','Audit trail','Multi-sucursal'].forEach(function(t){h+='<span style="font-size:9px;padding:2px 7px;border-radius:16px;background:rgba(139,184,57,.08);color:'+K+';">'+t+'</span>';});
+  h+='</div></div>';
+
+  h+='<div style="border:1.5px solid '+CW+';border-radius:12px;padding:12px 14px;margin-bottom:14px;">';
+  h+='<div style="display:flex;justify-content:space-between;"><div><div style="font-size:13px;font-weight:500;color:'+SP+';">Suscripción por sucursal</div><div style="font-size:10px;color:'+K+';opacity:.5;">Cargo mensual recurrente</div></div>';
+  h+='<div style="text-align:right;"><div style="font-size:20px;font-weight:500;color:'+K+';">$2,800</div><div style="font-size:10px;color:'+K+';opacity:.4;">MXN / mes</div></div></div></div>';
+
+  h+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid '+CW+';margin-bottom:14px;">';
+  h+='<span style="font-size:12px;color:'+K+';opacity:.5;">Total primer cobro</span>';
+  h+='<div><span style="font-size:24px;font-weight:500;color:'+SP+';">$10,800</span><span style="font-size:11px;color:'+K+';opacity:.4;margin-left:4px;">MXN</span></div></div>';
+
+  h+='<button id="pay-btn" data-action="pay" style="width:100%;height:44px;border:none;border-radius:10px;background:'+(S.payProc?SP:K)+';color:'+CO+';font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;">';
+  if(S.payProc)h+='<div style="width:16px;height:16px;border:2px solid '+CW+';border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;"></div> Procesando...';
+  else h+=ic('M2 5h20v14H2zM2 10h20',CO,16)+' Pagar con Stripe';
+  h+='</button>';
+
+  h+='<div style="text-align:center;margin-top:10px;font-size:10px;color:'+K+';opacity:.25;">Cifrado SSL · Facturación automática CFDI</div>';
+  h+='</div>';
+  h+='<div style="text-align:center;margin-top:14px;font-size:10px;color:rgba(254,254,252,.2);line-height:1.6;">Al pagar aceptas los términos de servicio.<br/>La suscripción se cobra el día 1 de cada mes.</div>';
+  h+='</div></div>';
+  return h;
+}
+
+// ===================== MAIN APP =====================
+function mainHTML(){
+  var r=S.role;
+  var hBg=r==='admin'?'#1a1a1a':r==='client'?K:SP;
+  var hAcc=r==='admin'?CU:r==='client'?CO:LZ;
+
+  var h='<div class="fade">';
+
+  // ROLE TABS
+  h+='<div style="display:flex;border-bottom:1px solid rgba(0,80,86,.06);">';
+  [['admin','Super Admin','LiTa'],['client','Propietario','Vitality'],['oper','Operador','Turno']].forEach(function(x){
+    var active=r===x[0];
+    h+='<div data-role="'+x[0]+'" style="flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;';
+    if(active)h+='background:'+(x[0]==='admin'?'#1a1a1a':x[0]==='client'?K:SP)+';color:'+(x[0]==='admin'?CU:CO)+';';
+    else h+='background:transparent;color:rgba(0,80,86,.3);';
+    h+='">'+x[1]+'<br/><span style="font-size:9px;opacity:.6;">'+x[2]+'</span></div>';
+  });
+  h+='</div>';
+
+  // HEADER
+  h+='<div style="background:'+hBg+';padding:14px 16px 16px;">';
+  h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">';
+  h+='<div style="display:flex;align-items:center;gap:8px;">'+logo(24);
+  h+='<div><div style="font-size:13px;font-weight:500;color:'+hAcc+';">vitality kitchen</div>';
+  h+='<div style="font-size:9px;color:'+(r==='admin'?CU:GJ)+';letter-spacing:1px;opacity:.7;">';
+  h+=(r==='admin'?'ojo de dios · lita':r==='client'?'panel propietario':'cocina · turno vespertino')+'</div></div></div>';
+  h+='<div style="display:flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:3px;background:'+GJ+';"></div><span style="font-size:10px;color:'+hAcc+';opacity:.4;">Activa</span></div></div>';
+
+  // METRIC CARDS
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">';
+  if(r==='admin'){
+    h+='<div style="background:rgba(201,149,107,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CU+';opacity:.5;">Clientes</div><div style="font-size:16px;font-weight:500;color:'+CU+';">1</div></div>';
+    h+='<div style="background:rgba(201,149,107,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CU+';opacity:.5;">Sucursales</div><div style="font-size:16px;font-weight:500;color:'+CU+';">1</div></div>';
+    h+='<div style="background:rgba(226,75,74,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CU+';opacity:.5;">Alertas</div><div style="font-size:16px;font-weight:500;color:#E24B4A;">2</div></div>';
+  }else if(r==='client'){
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CW+';opacity:.5;">Cumplimiento</div><div style="font-size:16px;font-weight:500;color:'+LZ+';">87%</div></div>';
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CW+';opacity:.5;">Alertas WA</div><div style="font-size:16px;font-weight:500;color:#F09595;">2</div></div>';
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+CW+';opacity:.5;">FC%</div><div style="font-size:16px;font-weight:500;color:'+GJ+';">28%</div></div>';
+  }else{
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+LZ+';opacity:.5;">Turno</div><div style="font-size:13px;font-weight:500;color:'+CO+';">Vespert.</div></div>';
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+LZ+';opacity:.5;">Registros</div><div style="font-size:16px;font-weight:500;color:'+LZ+';">'+S.tempEntries.length+'</div></div>';
+    h+='<div style="background:rgba(254,254,252,.06);border-radius:8px;padding:8px 10px;"><div style="font-size:9px;color:'+LZ+';opacity:.5;">Checks</div><div style="font-size:16px;font-weight:500;color:'+CO+';">'+Object.values(S.checks).filter(Boolean).length+'</div></div>';
+  }
+  h+='</div></div>';
+
+  // CONTENT AREA
+  h+='<div style="padding:12px 14px 20px;background:#f5f5f0;">';
+
+  if(!S.hubArea&&!S.bitacora){
+    h+=hubHTML();
+  }else if(S.hubArea&&!S.bitacora){
+    h+=areaHTML();
+  }else if(S.bitacora){
+    h+=bitacoraHTML();
+  }
+
+  h+='<div style="text-align:center;margin-top:16px;font-size:9px;color:rgba(0,80,86,.12);">Protegido por LiTa support · Audit trail activo · v1.0.0</div>';
+  h+='</div></div>';
+  return h;
+}
+
+function hubHTML(){
+  var h='<div style="font-size:12px;font-weight:500;color:'+SP+';margin-bottom:10px;display:flex;align-items:center;gap:5px;">'+ic('M6 21c4-4 6-8 6-14 0 6 2 10 6 14',GJ,14)+' Áreas operativas</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+  AREAS.forEach(function(a){
+    var act=a.st==='activo';
+    h+='<div data-hub-area="'+a.id+'" style="border:1px solid '+(act?'rgba(139,184,57,.15)':'rgba(0,80,86,.06)')+';border-radius:11px;padding:11px 10px;cursor:pointer;transition:all .2s;background:'+(act?'rgba(139,184,57,.02)':'#fff')+';'+(a.full?'grid-column:1/-1;':'')+'" onmouseover="this.style.borderColor=\''+CW+'\'" onmouseout="this.style.borderColor=\''+(act?'rgba(139,184,57,.15)':'rgba(0,80,86,.06)')+'\'">';
+    h+='<div style="position:relative;">';
+    h+='<div style="position:absolute;top:0;right:0;">'+badge(act?'activo':'germinando',act?K:'rgba(0,80,86,.3)',act?'rgba(139,184,57,.1)':'rgba(223,246,166,.18)')+'</div>';
+    h+='<div style="opacity:'+(act?'1':'.3')+';margin-bottom:4px;">'+ic(a.ic,act?K:SP)+'</div>';
+    h+='<div style="font-size:11px;font-weight:500;color:'+SP+';padding-right:50px;">'+a.n+'</div>';
+    h+='</div></div>';
+  });
+  h+='</div>';
+
+  if(S.role==='client'){
+    h+='<div style="margin-top:14px;font-size:12px;font-weight:500;color:'+SP+';margin-bottom:8px;">Alertas WhatsApp de hoy</div>';
+    WA_ALERTS.forEach(function(w){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1px solid rgba(139,184,57,.08);margin-bottom:4px;background:#fff;">';
+      h+='<div style="width:7px;height:7px;border-radius:4px;background:'+(w.level==='danger'?'#E24B4A':w.level==='warning'?'#EF9F27':GJ)+';flex-shrink:0;"></div>';
+      h+='<div style="flex:1;font-size:11px;color:'+SP+';">'+w.msg+'</div>';
+      h+='<span style="font-size:9px;color:'+K+';opacity:.3;font-family:monospace;">'+w.time+'</span></div>';
+    });
+  }
+
+  if(S.role==='admin'&&S.auditLog.length>0){
+    h+='<div style="margin-top:14px;font-size:12px;font-weight:500;color:'+SP+';margin-bottom:8px;">Audit trail de la sesión</div>';
+    S.auditLog.slice(0,12).forEach(function(a){
+      var isDanger=a.a.indexOf('ALERTA')>=0;
+      h+='<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,80,86,.04);font-size:10px;">';
+      h+='<span style="color:#888;min-width:55px;font-family:monospace;">'+a.time+'</span>';
+      h+='<span style="font-weight:500;color:'+(isDanger?'#A32D2D':SP)+';min-width:80px;">'+a.a+'</span>';
+      h+='<span style="color:#888;flex:1;">'+a.d+'</span>';
+      h+='<span style="color:#aaa;">'+a.u+'</span></div>';
+    });
+  }
+  return h;
+}
+
+function areaHTML(){
+  var a=AREAS.find(function(x){return x.id===S.hubArea;});
+  var act=a.st==='activo';
+
+  var h='<div data-action="back-hub" style="display:flex;align-items:center;gap:4px;font-size:11px;color:'+K+';opacity:.5;cursor:pointer;margin-bottom:10px;">'+ic('M15 18l-6-6 6-6',K,14)+' Ecosistema</div>';
+
+  h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">';
+  h+='<div style="width:40px;height:40px;border-radius:10px;background:'+(act?'rgba(139,184,57,.06)':'rgba(0,80,86,.03)')+';display:flex;align-items:center;justify-content:center;">'+ic(a.ic,act?K:SP,22)+'</div>';
+  h+='<div><div style="font-size:15px;font-weight:500;color:'+SP+';">'+a.n+'</div>';
+  h+=badge(act?'activo':'germinando',act?K:'rgba(0,80,86,.3)',act?'rgba(139,184,57,.1)':'rgba(223,246,166,.18)')+'</div></div>';
+
+  if(act&&S.hubArea==='inocuidad'){
+    // CHECKLIST SECTIONS
+    var phases=[
+      {id:'ap',label:'Checklist de apertura (06:00)',items:CHECKS_AP},
+      {id:'ct',label:'Cambio de turno (15:00)',items:CHECKS_CT},
+      {id:'ci',label:'Cierre (23:00)',items:CHECKS_CI}
+    ];
+    phases.forEach(function(ph){
+      var doneCount=ph.items.filter(function(c){return S.checks[c.id];}).length;
+      var pct=Math.round(doneCount/ph.items.length*100);
+      h+='<div style="font-size:12px;font-weight:500;color:'+SP+';margin-bottom:6px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;">'+ph.label+'<span style="font-size:11px;color:'+(pct===100?K:SP)+';font-weight:500;">'+pct+'%</span></div>';
+      h+='<div style="height:3px;border-radius:2px;background:rgba(0,80,86,.05);margin-bottom:8px;"><div style="height:3px;border-radius:2px;background:'+(pct===100?GJ:LZ)+';width:'+pct+'%;transition:width .3s;"></div></div>';
+      ph.items.forEach(function(c){
+        var on=S.checks[c.id]||false;
+        h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;border:1px solid '+(on?'rgba(139,184,57,.12)':'rgba(0,80,86,.04)')+';margin-bottom:4px;background:'+(on?'rgba(139,184,57,.02)':'#fff')+';transition:all .2s;">';
+        h+=toggle(c.id,on);
+        h+='<div style="flex:1;font-size:12px;color:'+(on?K:SP)+';">'+c.t+'</div>';
+        var badges='';
+        if(c.critical)badges+=badge('crítico','#A32D2D','rgba(226,75,74,.06)');
+        if(c.photo)badges+=' '+badge('foto','#0C447C','rgba(151,185,255,.08)');
+        h+=badges+'</div>';
+      });
+    });
+
+    h+='<div style="font-size:12px;font-weight:500;color:'+SP+';margin-top:16px;margin-bottom:8px;">Bitácoras de temperatura</div>';
+    [['cong','Congelación','Límite: -18°C'],['refri','Refrigeración','Límite: 4°C'],['cons','Conservación','Límite: 4°C / -18°C']].forEach(function(b){
+      h+='<div data-open-bit="'+b[0]+'" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1px solid rgba(139,184,57,.1);margin-bottom:6px;cursor:pointer;background:rgba(139,184,57,.02);" onmouseover="this.style.borderColor=\''+GJ+'\'" onmouseout="this.style.borderColor=\'rgba(139,184,57,.1)\'">';
+      h+=ic('M14 14.76V3a2 2 0 10-4 0v11.76a4 4 0 104 0z',K);
+      h+='<div style="flex:1;"><div style="font-size:13px;font-weight:500;color:'+SP+';">'+b[1]+'</div><div style="font-size:10px;color:'+K+';opacity:.4;">'+b[2]+'</div></div>';
+      h+=ic('M9 18l6-6-6-6',GJ,14)+'</div>';
+    });
+  }else if(!act){
+    h+='<div style="margin-top:10px;padding:14px;border-radius:10px;background:rgba(223,246,166,.06);border:1px dashed rgba(139,184,57,.15);text-align:center;">';
+    h+=ic('M6 21c4-4 6-8 6-14 0 6 2 10 6 14',GJ,20);
+    h+='<div style="font-size:12px;color:'+K+';opacity:.4;margin-top:6px;">Esta área está germinando — nutriéndose de tus procesos para florecer pronto</div>';
+    h+='<div style="font-size:11px;color:'+GJ+';opacity:.4;margin-top:4px;">Sube tus formatos para que LiTa los integre</div></div>';
+  }
+  return h;
+}
+
+function bitacoraHTML(){
+  var label=S.bitacora==='cong'?'Congelación':S.bitacora==='refri'?'Refrigeración':'Conservación';
+  var limit=S.bitacora==='cong'?-18:4;
+  var oor=tempIsOOR();
+
+  var h='<div data-action="back-area" style="display:flex;align-items:center;gap:4px;font-size:11px;color:'+K+';opacity:.5;cursor:pointer;margin-bottom:10px;">'+ic('M15 18l-6-6 6-6',K,14)+' Inocuidad</div>';
+
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
+  h+='<div><div style="font-size:17px;font-weight:500;color:'+SP+';">'+label+'</div>';
+  h+='<div style="font-size:10px;color:'+K+';opacity:.4;">'+dayStr()+'</div></div>';
+  h+='<div style="padding:4px 10px;border-radius:16px;font-size:11px;font-weight:500;color:'+(oor?'#A32D2D':K)+';background:'+(oor?'rgba(252,235,235,.5)':'rgba(139,184,57,.08)')+';border:1px solid '+(oor?'rgba(226,75,74,.15)':'rgba(139,184,57,.12)')+';transition:all .3s;">Límite: '+limit+'°C</div></div>';
+
+  // TEMP DISPLAY
+  h+='<div style="height:60px;border-radius:12px;border:2px solid '+(oor?'#E24B4A':S.tempStr?GJ:CW)+';background:'+(oor?'rgba(252,235,235,.3)':S.tempStr?'rgba(139,184,57,.02)':'#fff')+';display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:500;color:'+(oor?'#A32D2D':SP)+';font-family:monospace;margin-bottom:10px;transition:all .3s;">';
+  h+=(S.tempStr||'<span style="opacity:.12;">--</span>')+(S.tempStr?'°':'')+'</div>';
+
+  if(oor){
+    h+='<div style="padding:8px 10px;border-radius:8px;background:rgba(252,235,235,.3);border:1px solid rgba(226,75,74,.12);margin-bottom:10px;display:flex;align-items:center;gap:6px;">';
+    h+=ic('M12 9v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z','#E24B4A',16);
+    h+='<span style="font-size:11px;color:#A32D2D;font-weight:500;">Fuera de rango — foto y justificación requeridas</span></div>';
+  }
+
+  // NUMPAD
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:12px;">';
+  [1,2,3,4,5,6,7,8,9,'-',0,'del'].forEach(function(k){
+    h+='<div data-numkey="'+k+'" style="height:44px;border-radius:8px;border:1px solid rgba(0,80,86,.06);display:flex;align-items:center;justify-content:center;font-size:'+(k==='del'?'12':'18')+'px;font-weight:500;color:'+(k==='del'?'#A32D2D':SP)+';cursor:pointer;background:#fff;font-family:monospace;transition:all .1s;" onmousedown="this.style.background=\'rgba(139,184,57,.06)\'" onmouseup="this.style.background=\'#fff\'" onmouseleave="this.style.background=\'#fff\'">';
+    h+=(k==='-'?'+/-':k==='del'?'borrar':k)+'</div>';
+  });
+  h+='</div>';
+
+  // PHOTO
+  h+='<div data-action="take-photo" style="border:2px dashed '+(oor&&!S.photoCapture?'#E24B4A':'rgba(139,184,57,.2)')+';border-radius:10px;padding:14px;text-align:center;cursor:pointer;margin-bottom:10px;background:'+(S.photoCapture?'rgba(139,184,57,.03)':'#fff')+';border-style:'+(S.photoCapture?'solid':'dashed')+';">';
+  if(S.photoCapture){
+    h+=ic('M5 12l5 5L20 7',GJ,20);
+    h+='<div style="font-size:11px;color:'+K+';font-weight:500;margin-top:2px;">Foto capturada</div>';
+    h+='<div style="font-size:9px;color:'+K+';opacity:.3;font-family:monospace;">'+S.photoCapture.time+' · GPS:'+S.photoCapture.gps+' · SELLO LITA</div>';
+  }else{
+    h+=ic('M3 7a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM12 13a3 3 0 100-6 3 3 0 000 6z',oor?'#E24B4A':K,20);
+    h+='<div style="font-size:11px;color:'+(oor?'#A32D2D':K)+';opacity:'+(oor?'.7':'.4')+';margin-top:2px;">'+(oor?'Foto obligatoria — toca aquí':'Toca para tomar foto (opcional)')+'</div>';
+  }
+  h+='</div>';
+
+  // VOICE
+  h+='<div data-action="voice" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid '+(S.voiceState==='recording'?'rgba(226,75,74,.2)':S.voiceState==='done'?'rgba(139,184,57,.15)':'rgba(0,80,86,.06)')+';background:'+(S.voiceState==='recording'?'rgba(252,235,235,.2)':S.voiceState==='done'?'rgba(139,184,57,.03)':'#fff')+';cursor:pointer;margin-bottom:12px;">';
+  if(S.voiceState==='done'){
+    h+=ic('M5 12l5 5L20 7',GJ,16);
+    h+='<div style="flex:1;"><div style="font-size:12px;color:'+K+';font-weight:500;">Nota transcrita</div>';
+    h+='<div style="font-size:11px;color:'+SP+';opacity:.6;font-style:italic;">"'+S.voiceText+'"</div></div>';
+  }else if(S.voiceState==='recording'){
+    h+='<div style="width:10px;height:10px;border-radius:5px;background:#E24B4A;animation:blink 1s infinite;flex-shrink:0;"></div>';
+    h+='<div style="flex:1;font-size:12px;color:#A32D2D;">Grabando... toca para detener</div>';
+  }else{
+    h+=ic('M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3zM19 10v2a7 7 0 01-14 0v-2M12 19v4',oor?'#E24B4A':K,16);
+    h+='<div style="flex:1;font-size:12px;color:'+(oor?'#A32D2D':'rgba(0,80,86,.4)')+';">'+(oor?'Graba justificación por voz (requerido)':'Toca para grabar observación')+'</div>';
+  }
+  h+='</div>';
+
+  // SAVE BUTTON
+  var canSave=S.tempStr&&(!oor||(S.photoCapture&&S.voiceState==='done'));
+  h+='<button data-action="save-temp" style="width:100%;height:44px;border:none;border-radius:10px;background:'+(canSave?K:'rgba(0,80,86,.06)')+';color:'+(canSave?CO:'rgba(0,80,86,.2)')+';font-size:14px;font-weight:500;cursor:'+(canSave?'pointer':'not-allowed')+';display:flex;align-items:center;justify-content:center;gap:6px;">';
+  h+=ic('M12 5v14M5 12h14',canSave?CO:'rgba(0,80,86,.15)',16)+' Registrar lectura</button>';
+
+  if(oor&&!S.photoCapture){
+    h+='<div style="text-align:center;margin-top:6px;font-size:10px;color:#A32D2D;opacity:.6;">Completa foto + justificación para poder registrar</div>';
+  }
+
+  // ENTRIES
+  if(S.tempEntries.length>0){
+    h+='<div style="margin-top:14px;font-size:12px;font-weight:500;color:'+SP+';margin-bottom:6px;">Registros ('+S.tempEntries.length+')</div>';
+    S.tempEntries.forEach(function(e){
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid '+(e.oor?'rgba(226,75,74,.1)':'rgba(139,184,57,.08)')+';background:'+(e.oor?'rgba(252,235,235,.2)':'rgba(139,184,57,.02)')+';margin-bottom:4px;">';
+      h+='<div style="font-size:20px;font-weight:500;color:'+(e.oor?'#A32D2D':K)+';min-width:48px;text-align:center;font-family:monospace;">'+e.temp+'°</div>';
+      h+='<div style="flex:1;"><div style="font-size:11px;color:'+SP+';">'+e.time+'</div>';
+      if(e.voice)h+='<div style="font-size:10px;color:'+SP+';opacity:.5;font-style:italic;">"'+e.voice+'"</div>';
+      h+='</div><div style="display:flex;gap:3px;">';
+      h+=badge(e.oor?'Alerta':'OK',e.oor?'#A32D2D':K,e.oor?'rgba(226,75,74,.08)':'rgba(139,184,57,.08)');
+      if(e.photo)h+=badge('Foto','#0C447C','rgba(151,185,255,.1)');
+      h+='</div></div>';
+    });
+  }
+
+  // SOP CONTEXTUAL
+  if(oor){
+    h+='<div style="margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid rgba(151,185,255,.15);background:rgba(151,185,255,.03);">';
+    h+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;">';
+    h+=ic('M4 4h6a2 2 0 012 2v14a1 1 0 00-1-1H4V4zM20 4h-6a2 2 0 00-2 2v14a1 1 0 011-1h7V4z',BB,14);
+    h+='<span style="font-size:11px;font-weight:500;color:#0C447C;">SOP: Acción correctiva por temperatura</span></div>';
+    h+='<div style="font-size:10px;color:#0C447C;opacity:.6;line-height:1.5;">';
+    h+='1. Verificar termómetro funcione<br/>2. Revisar puerta equipo cerrada<br/>3. +2hrs fuera de rango: descartar<br/>4. Notificar al Chef inmediatamente</div></div>';
+  }
+
+  return h;
+}
+
+// ===================== BINDINGS =====================
+function B(){
+  document.querySelectorAll('[data-action="login-next"]').forEach(function(el){
+    el.onclick=function(){
+      if(S.loginStep<3){S.loginStep++;addAudit(S.loginStep===2?'Login':'MFA',S.loginStep===2?'Credenciales OK':'OTP validado');}
+      else{S.screen='payment';addAudit('Sesión','JWT activo');}
+      R();
+    };
+  });
+
+  document.querySelectorAll('[data-action="pay"]').forEach(function(el){
+    el.onclick=function(){
+      if(S.payProc)return;
+      S.payProc=true;addAudit('Pago','$10,800 MXN vía Stripe');R();
+      setTimeout(function(){S.payProc=false;S.screen='hub';addAudit('Licencia','Activada — Vitality Kitchen Puebla');R();},2200);
+    };
+  });
+
+  document.querySelectorAll('[data-role]').forEach(function(el){
+    el.onclick=function(){S.role=this.getAttribute('data-role');S.hubArea=null;S.bitacora=null;R();};
+  });
+
+  document.querySelectorAll('[data-hub-area]').forEach(function(el){
+    el.onclick=function(){S.hubArea=this.getAttribute('data-hub-area');addAudit('Navegación','Abrió '+S.hubArea);R();};
+  });
+
+  document.querySelectorAll('[data-action="back-hub"]').forEach(function(el){
+    el.onclick=function(){S.hubArea=null;S.bitacora=null;R();};
+  });
+
+  document.querySelectorAll('[data-action="back-area"]').forEach(function(el){
+    el.onclick=function(){S.bitacora=null;S.tempStr='';S.photoCapture=null;S.voiceState='idle';S.voiceText='';R();};
+  });
+
+  document.querySelectorAll('[data-toggle]').forEach(function(el){
+    el.onclick=function(){
+      var id=this.getAttribute('data-toggle');
+      S.checks[id]=!S.checks[id];
+      addAudit('Check '+(S.checks[id]?'ON':'OFF'),id);
+      R();
+    };
+  });
+
+  document.querySelectorAll('[data-open-bit]').forEach(function(el){
+    el.onclick=function(){
+      S.bitacora=this.getAttribute('data-open-bit');
+      S.tempStr='';S.photoCapture=null;S.voiceState='idle';S.voiceText='';
+      addAudit('Bitácora',S.bitacora);R();
+    };
+  });
+
+  document.querySelectorAll('[data-numkey]').forEach(function(el){
+    el.onclick=function(){
+      var k=this.getAttribute('data-numkey');
+      if(k==='del')S.tempStr=S.tempStr.slice(0,-1);
+      else if(k==='-')S.tempStr=S.tempStr[0]==='-'?S.tempStr.slice(1):'-'+S.tempStr;
+      else if(S.tempStr.length<5)S.tempStr+=k;
+      R();
+    };
+  });
+
+  document.querySelectorAll('[data-action="take-photo"]').forEach(function(el){
+    el.onclick=function(){
+      if(S.photoCapture)S.photoCapture=null;
+      else{S.photoCapture={time:now(),gps:'19.0414,-98.2063'};addAudit('Foto','Sello GPS + timestamp');}
+      R();
+    };
+  });
+
+  document.querySelectorAll('[data-action="voice"]').forEach(function(el){
+    el.onclick=function(){
+      if(S.voiceState==='done'){S.voiceState='idle';S.voiceText='';R();return;}
+      if(S.voiceState==='recording'){
+        S.voiceState='done';
+        var phrases=['Se detectó puerta abierta del congelador por 10 min','Producto recién ingresado, aún no alcanza temp','Falla en compresor, se reportó a mantenimiento','Producto en descongelación controlada'];
+        S.voiceText=phrases[Math.floor(Math.random()*phrases.length)];
+        addAudit('Voz','Transcrito: '+S.voiceText.substring(0,35)+'...');
+        R();return;
+      }
+      S.voiceState='recording';addAudit('Voz','Grabando...');R();
+    };
+  });
+
+  document.querySelectorAll('[data-action="save-temp"]').forEach(function(el){
+    el.onclick=function(){
+      var oor=tempIsOOR();
+      var canSave=S.tempStr&&(!oor||(S.photoCapture&&S.voiceState==='done'));
+      if(!canSave)return;
+      S.tempEntries.unshift({temp:S.tempStr,time:short(),oor:oor,photo:!!S.photoCapture,voice:S.voiceText});
+      addAudit('Registro',S.tempStr+'°C '+(oor?'FUERA DE RANGO':'OK'));
+      S.tempStr='';S.photoCapture=null;S.voiceState='idle';S.voiceText='';
+      R();
+    };
+  });
+}
+
+R();
+</script>
+</body>
+</html>
