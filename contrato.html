@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Contrato de Prestación de Servicios · Vitality Kitchen Control</title>
+<meta name="description" content="Contrato de prestación de servicios tecnológicos entre LiTa Support y Vitality Kitchen.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kale:#146B4F;--juice:#8BB839;--cucumber:#DFF6A6;--lemon:#E0ED30;
+  --spirulina:#005056;--coconut:#FEFEFC;--copper:#C9956B;
+  --dark:#0a0a0a;--gray:#888;--border:rgba(254,254,252,.07);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--dark);color:var(--coconut);line-height:1.7;overflow-x:hidden;}
+a{color:var(--juice);text-decoration:none;}a:hover{color:var(--lemon);}
+::selection{background:var(--kale);color:var(--coconut);}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:56px;background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo span{font-size:13px;font-weight:500;color:var(--coconut);}
+.nav-logo small{font-size:9px;color:var(--juice);letter-spacing:2px;display:block;margin-top:1px;}
+.nav-badge{width:30px;height:30px;border-radius:6px;background:var(--kale);display:flex;align-items:center;justify-content:center;}
+.nav-back{font-size:12px;color:var(--gray);letter-spacing:1px;display:flex;align-items:center;gap:6px;transition:color .2s;}
+.nav-back:hover{color:var(--coconut);}
+.doc-hero{padding:72px 40px 48px;max-width:880px;margin:0 auto;border-bottom:1px solid var(--border);}
+.doc-tag{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;border:1px solid rgba(201,149,107,.2);background:rgba(201,149,107,.04);font-size:10px;font-family:var(--mono);letter-spacing:2px;color:var(--copper);margin-bottom:20px;}
+.doc-hero h1{font-size:clamp(26px,4vw,40px);font-weight:600;letter-spacing:-.5px;color:var(--coconut);margin-bottom:12px;line-height:1.2;}
+.doc-hero p{font-size:15px;color:rgba(254,254,252,.5);max-width:600px;line-height:1.6;}
+.doc-meta{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;}
+.doc-meta-item{font-size:11px;font-family:var(--mono);color:var(--gray);}
+.doc-meta-item strong{color:var(--copper);font-weight:500;}
+.doc-layout{display:grid;grid-template-columns:220px 1fr;max-width:1100px;margin:0 auto;padding:48px 40px 80px;gap:48px;}
+@media(max-width:768px){.doc-layout{grid-template-columns:1fr;}.toc{display:none;}}
+.toc{position:sticky;top:72px;height:fit-content;}
+.toc-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:14px;}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:2px;}
+.toc-list a{font-size:12px;color:rgba(254,254,252,.4);padding:5px 0 5px 12px;border-left:2px solid transparent;display:block;transition:all .2s;line-height:1.3;}
+.toc-list a:hover{color:var(--coconut);border-left-color:var(--kale);}
+.toc-list a.active{color:var(--copper);border-left-color:var(--copper);}
+.doc-content{max-width:680px;}
+.doc-section{margin-bottom:48px;scroll-margin-top:80px;}
+.section-num{font-size:9px;font-family:var(--mono);color:var(--copper);letter-spacing:3px;font-weight:500;margin-bottom:8px;}
+.doc-section h2{font-size:20px;font-weight:600;color:var(--coconut);margin-bottom:16px;letter-spacing:-.2px;}
+.doc-section h3{font-size:14px;font-weight:600;color:var(--copper);margin:24px 0 10px;letter-spacing:.5px;}
+.doc-section p{font-size:14px;color:rgba(254,254,252,.65);margin-bottom:12px;line-height:1.75;}
+.doc-section ul{padding-left:0;margin-bottom:14px;display:flex;flex-direction:column;gap:7px;}
+.doc-section li{font-size:13.5px;color:rgba(254,254,252,.6);line-height:1.6;display:flex;gap:10px;align-items:flex-start;}
+.doc-section li::before{content:'—';color:var(--kale);flex-shrink:0;font-family:var(--mono);font-size:12px;margin-top:2px;}
+.callout{border:1px solid rgba(139,184,57,.15);background:rgba(139,184,57,.04);border-radius:10px;padding:18px 20px;margin:20px 0;}
+.callout.warn{border-color:rgba(201,149,107,.2);background:rgba(201,149,107,.04);}
+.callout.danger{border-color:rgba(220,80,80,.2);background:rgba(220,80,80,.04);}
+.callout-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--juice);margin-bottom:8px;}
+.callout.warn .callout-title{color:var(--copper);}
+.callout.danger .callout-title{color:#e05050;}
+.callout p{font-size:13px;color:rgba(254,254,252,.6);margin:0;line-height:1.6;}
+.doc-table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px;}
+.doc-table th{background:rgba(20,107,79,.15);color:var(--juice);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(139,184,57,.15);font-family:var(--mono);}
+.doc-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:rgba(254,254,252,.6);vertical-align:top;line-height:1.5;}
+.doc-table tr:last-child td{border-bottom:none;}
+.clause{
+  border:1px solid var(--border);border-radius:10px;
+  padding:20px 22px;margin:16px 0;
+  background:rgba(254,254,252,.015);
+}
+.clause-num{font-size:10px;font-family:var(--mono);color:var(--copper);letter-spacing:2px;margin-bottom:8px;}
+.clause p{font-size:13.5px;color:rgba(254,254,252,.6);margin:0;line-height:1.7;}
+.doc-divider{height:1px;background:var(--border);margin:40px 0;}
+footer{border-top:1px solid var(--border);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:12px;}
+footer p{font-size:12px;color:var(--gray);font-family:var(--mono);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:12px;color:var(--gray);transition:color .2s;}
+.footer-links a:hover{color:var(--coconut);}
+.fade{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+.fade.show{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-badge">
+      <svg viewBox="0 0 48 48" fill="none" width="16" height="16"><g transform="translate(24,24)"><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(300)"/><circle cx="0" cy="0" r="2" fill="none" stroke="#E0ED30" stroke-width="1.2"/></g></svg>
+    </div>
+    <div><span>vitality kitchen</span><small>control · contrato</small></div>
+  </div>
+  <a href="/" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Volver al inicio
+  </a>
+</nav>
+
+<div class="doc-hero">
+  <div class="doc-tag">CONTRATO LEGAL</div>
+  <h1>Contrato de Prestación de Servicios Tecnológicos</h1>
+  <p>Acuerdo vinculante entre el Prestador (LiTa Support) y el Cliente (Vitality Kitchen) para la implementación y operación de la plataforma de control operativo.</p>
+  <div class="doc-meta">
+    <div class="doc-meta-item">Versión <strong>1.0</strong></div>
+    <div class="doc-meta-item">Vigente desde <strong>1 de mayo de 2026</strong></div>
+    <div class="doc-meta-item">Jurisdicción <strong>México · Ley Federal</strong></div>
+    <div class="doc-meta-item">Renovación <strong>Automática mensual</strong></div>
+  </div>
+</div>
+
+<div class="doc-layout">
+
+  <aside class="toc">
+    <div class="toc-title">Cláusulas</div>
+    <ul class="toc-list">
+      <li><a href="#c1">I. Partes contratantes</a></li>
+      <li><a href="#c2">II. Objeto del contrato</a></li>
+      <li><a href="#c3">III. Servicios incluidos</a></li>
+      <li><a href="#c4">IV. Precio y forma de pago</a></li>
+      <li><a href="#c5">V. Duración y renovación</a></li>
+      <li><a href="#c6">VI. Obligaciones del Prestador</a></li>
+      <li><a href="#c7">VII. Obligaciones del Cliente</a></li>
+      <li><a href="#c8">VIII. Confidencialidad</a></li>
+      <li><a href="#c9">IX. Propiedad intelectual</a></li>
+      <li><a href="#c10">X. Niveles de servicio (SLA)</a></li>
+      <li><a href="#c11">XI. Limitación de responsabilidad</a></li>
+      <li><a href="#c12">XII. Suspensión y terminación</a></li>
+      <li><a href="#c13">XIII. Módulos premium</a></li>
+      <li><a href="#c14">XIV. Jurisdicción y disputas</a></li>
+    </ul>
+  </aside>
+
+  <main class="doc-content">
+
+    <div class="doc-section fade" id="c1">
+      <div class="section-num">CLÁUSULA I</div>
+      <h2>Partes contratantes</h2>
+      <p>El presente Contrato de Prestación de Servicios Tecnológicos (en adelante "el Contrato") se celebra entre:</p>
+      <div class="clause">
+        <div class="clause-num">PRESTADOR</div>
+        <p><strong>De la Mora Zumarán · LiTa Support</strong> — empresa de tecnología para restaurantes con operación en los Estados Unidos Mexicanos, en adelante denominada "el Prestador" o "LiTa Support".</p>
+      </div>
+      <div class="clause">
+        <div class="clause-num">CLIENTE</div>
+        <p><strong>Vitality Kitchen</strong> — establecimiento de alimentos y bebidas con operación en Puebla, México, representado por su propietario o representante legal, en adelante denominado "el Cliente".</p>
+      </div>
+      <p>Ambas partes, de manera libre y voluntaria, se sujetan a los términos y condiciones establecidos en el presente instrumento.</p>
+    </div>
+
+    <div class="doc-section fade" id="c2">
+      <div class="section-num">CLÁUSULA II</div>
+      <h2>Objeto del contrato</h2>
+      <p>El Prestador se obliga a proporcionar al Cliente el acceso, implementación y soporte de la plataforma denominada <strong>Vitality Kitchen Control</strong> — un ecosistema digital de control operativo, financiero y de inocuidad para restaurantes, accesible vía web y dispositivos móviles.</p>
+      <p>La plataforma comprende módulos de operación diaria, trazabilidad de inocuidad, control de producción, inventarios, checklists operativos y reportería, según el plan contratado.</p>
+    </div>
+
+    <div class="doc-section fade" id="c3">
+      <div class="section-num">CLÁUSULA III</div>
+      <h2>Servicios incluidos en el plan base</h2>
+      <ul>
+        <li>Acceso completo a los 9 módulos operativos de la plataforma</li>
+        <li>Sistema de checklists de apertura, cambio de turno y cierre por área</li>
+        <li>Módulo de inocuidad y termometría con bitácoras digitales</li>
+        <li>Control de producción semanal e inventarios quincenales</li>
+        <li>Evidencia fotográfica con sello GPS e incorruptible</li>
+        <li>Alertas vía WhatsApp al propietario en tiempo real</li>
+        <li>Audit trail permanente e inalterable de todas las operaciones</li>
+        <li>3 vistas de rol: Super Administrador, Propietario, Operador</li>
+        <li>Soporte técnico LiTa dedicado (tiempo de respuesta: 24 horas hábiles)</li>
+        <li>Acceso a actualizaciones de la plataforma durante la vigencia</li>
+        <li>Respaldo automático diario de toda la información del Cliente</li>
+      </ul>
+      <div class="callout">
+        <div class="callout-title">Licencia de activación</div>
+        <p>El cobro único de activación ($8,000 MXN) cubre la implementación, configuración inicial, tropicalización de formatos al negocio del Cliente y el primer mes de servicio.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="c4">
+      <div class="section-num">CLÁUSULA IV</div>
+      <h2>Precio y forma de pago</h2>
+      <table class="doc-table">
+        <thead><tr><th>Concepto</th><th>Monto</th><th>Frecuencia</th></tr></thead>
+        <tbody>
+          <tr><td>Licencia de activación + Mes 1</td><td>$10,950 MXN</td><td>Cobro único al contratar</td></tr>
+          <tr><td>Suscripción mensual (1 sucursal)</td><td>$2,950 MXN</td><td>Mensual recurrente</td></tr>
+          <tr><td>Módulo Premium (c/u)</td><td>$300 USD</td><td>Cobro único por módulo</td></tr>
+        </tbody>
+      </table>
+      <h3>Condiciones de pago</h3>
+      <ul>
+        <li>El cobro se realiza automáticamente mediante Stripe al método de pago registrado</li>
+        <li>El invoice se envía automáticamente al correo electrónico registrado por el Cliente</li>
+        <li>Los precios están expresados en pesos mexicanos (MXN) más IVA cuando aplique</li>
+        <li>El Prestador se reserva el derecho de actualizar precios con 30 días de anticipación</li>
+      </ul>
+      <h3>Política de impago y dunning</h3>
+      <ul>
+        <li><strong>Día 1:</strong> Cargo automático procesado. Invoice enviado al correo registrado</li>
+        <li><strong>Día 3:</strong> Recordatorio de pago vía WhatsApp y correo si no se procesó el cobro</li>
+        <li><strong>Día 5:</strong> Aviso final — "Tu acceso se pausará mañana. Renueva para que tu equipo siga creciendo"</li>
+        <li><strong>Día 6:</strong> Acceso bloqueado completamente. Datos preservados, inaccesibles</li>
+        <li><strong>Día 30:</strong> Aviso de cancelación definitiva. Datos conservados 60 días adicionales</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="c5">
+      <div class="section-num">CLÁUSULA V</div>
+      <h2>Duración y renovación</h2>
+      <p>El presente Contrato tiene una vigencia inicial de <strong>un mes</strong> a partir del primer cobro exitoso, renovándose automáticamente cada mes mediante el cargo recurrente correspondiente.</p>
+      <p>Cualquiera de las partes puede dar por terminado el Contrato con <strong>15 días naturales de anticipación</strong>, notificando por escrito al correo electrónico de la contraparte. La terminación no genera derecho a reembolso del período en curso.</p>
+    </div>
+
+    <div class="doc-section fade" id="c6">
+      <div class="section-num">CLÁUSULA VI</div>
+      <h2>Obligaciones del Prestador</h2>
+      <ul>
+        <li>Mantener la plataforma disponible según los SLA establecidos en la Cláusula X</li>
+        <li>Implementar las medidas de seguridad descritas en la Política de Privacidad</li>
+        <li>Realizar respaldos automáticos diarios de la información del Cliente</li>
+        <li>Notificar al Cliente con al menos 24 horas de anticipación ante mantenimientos programados</li>
+        <li>Responder solicitudes de soporte en un máximo de 24 horas hábiles</li>
+        <li>Mantener estricta confidencialidad de toda la información del Cliente</li>
+        <li>Entregar la plataforma con las funcionalidades descritas en el roadmap acordado</li>
+        <li>Notificar de inmediato cualquier incidente de seguridad que afecte datos del Cliente</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="c7">
+      <div class="section-num">CLÁUSULA VII</div>
+      <h2>Obligaciones del Cliente</h2>
+      <ul>
+        <li>Pagar puntualmente la suscripción mensual mediante el método de pago registrado</li>
+        <li>Mantener confidenciales sus credenciales de acceso y no compartirlas con personas no autorizadas</li>
+        <li>Utilizar la plataforma exclusivamente para los fines operativos del negocio</li>
+        <li>No intentar acceder a datos de otros clientes ni a partes de la plataforma no autorizadas</li>
+        <li>Reportar de inmediato al Prestador cualquier uso no autorizado o incidente de seguridad</li>
+        <li>No reproducir, copiar ni distribuir la plataforma ni sus componentes</li>
+        <li>Mantener actualizados sus datos de contacto y método de pago</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="c8">
+      <div class="section-num">CLÁUSULA VIII</div>
+      <h2>Confidencialidad</h2>
+      <p>Ambas partes se obligan a mantener estricta confidencialidad respecto a:</p>
+      <ul>
+        <li>Información operativa, recetas, procesos y datos de producción del Cliente</li>
+        <li>Datos de personal, nómina y estructura organizacional del Cliente</li>
+        <li>Información financiera, costos y márgenes del negocio</li>
+        <li>Tecnología, algoritmos y código fuente de la plataforma del Prestador</li>
+        <li>Términos comerciales y condiciones particulares pactadas entre las partes</li>
+      </ul>
+      <p>Esta obligación de confidencialidad tiene vigencia durante la relación contractual y por un período adicional de <strong>5 años</strong> después de su terminación, sin importar la causa.</p>
+      <div class="callout danger">
+        <div class="callout-title">Incumplimiento de confidencialidad</div>
+        <p>La violación a esta cláusula por cualquiera de las partes dará lugar a la terminación inmediata del Contrato y a las acciones legales correspondientes conforme a la legislación mexicana aplicable.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="c9">
+      <div class="section-num">CLÁUSULA IX</div>
+      <h2>Propiedad intelectual</h2>
+      <h3>Propiedad del Prestador</h3>
+      <p>La plataforma Vitality Kitchen Control, incluyendo su código fuente, diseño, arquitectura, algoritmos, interfaces y documentación, es propiedad exclusiva del Prestador y está protegida por las leyes de propiedad intelectual mexicanas.</p>
+      <h3>Propiedad del Cliente</h3>
+      <p>Todos los datos operativos ingresados por el Cliente — incluyendo recetas, inventarios, bitácoras y registros — son y seguirán siendo propiedad exclusiva del Cliente. El Prestador no adquiere ningún derecho sobre dichos datos.</p>
+      <h3>Licencia de uso</h3>
+      <p>El Prestador otorga al Cliente una licencia de uso no exclusiva, no transferible y temporal de la plataforma, vigente únicamente durante la relación contractual activa.</p>
+    </div>
+
+    <div class="doc-section fade" id="c10">
+      <div class="section-num">CLÁUSULA X</div>
+      <h2>Niveles de servicio (SLA)</h2>
+      <table class="doc-table">
+        <thead><tr><th>Métrica</th><th>Compromiso</th></tr></thead>
+        <tbody>
+          <tr><td>Disponibilidad mensual</td><td>99% (excluye mantenimientos programados)</td></tr>
+          <tr><td>Tiempo de respuesta soporte</td><td>Máximo 24 horas hábiles</td></tr>
+          <tr><td>Tiempo resolución incidente crítico</td><td>Máximo 4 horas hábiles</td></tr>
+          <tr><td>Notificación mantenimiento programado</td><td>Mínimo 24 horas antes</td></tr>
+          <tr><td>Ventana de mantenimiento</td><td>Domingos 02:00–06:00 hrs</td></tr>
+          <tr><td>Recuperación ante desastre (RTO)</td><td>4 horas hábiles</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <div class="callout-title">Créditos por incumplimiento SLA</div>
+        <p>Si la disponibilidad mensual cae por debajo del 99% por causas atribuibles al Prestador, el Cliente tendrá derecho a un crédito equivalente a la parte proporcional del período afectado en su próximo cobro.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="c11">
+      <div class="section-num">CLÁUSULA XI</div>
+      <h2>Limitación de responsabilidad</h2>
+      <p>El Prestador no será responsable por:</p>
+      <ul>
+        <li>Pérdidas indirectas, incidentales o consecuentes derivadas del uso de la plataforma</li>
+        <li>Interrupciones causadas por fuerza mayor, fallas en servicios de terceros o problemas de conectividad del Cliente</li>
+        <li>Datos ingresados incorrectamente por usuarios del Cliente</li>
+        <li>Accesos no autorizados derivados de negligencia del Cliente en la gestión de credenciales</li>
+      </ul>
+      <p>La responsabilidad máxima total del Prestador en cualquier caso no excederá el equivalente a <strong>3 meses de suscripción</strong> pagados por el Cliente.</p>
+    </div>
+
+    <div class="doc-section fade" id="c12">
+      <div class="section-num">CLÁUSULA XII</div>
+      <h2>Suspensión y terminación</h2>
+      <h3>Causas de suspensión temporal</h3>
+      <ul>
+        <li>Impago de la suscripción mensual (a partir del Día 6 según política de dunning)</li>
+        <li>Uso indebido de la plataforma o violación a los términos de uso</li>
+        <li>Mantenimientos programados con previa notificación</li>
+      </ul>
+      <h3>Causas de terminación inmediata</h3>
+      <ul>
+        <li>Violación grave a la cláusula de confidencialidad</li>
+        <li>Intento de acceso no autorizado a sistemas del Prestador</li>
+        <li>Uso de la plataforma para actividades ilegales</li>
+        <li>Impago superior a 30 días naturales</li>
+      </ul>
+      <h3>Efectos de la terminación</h3>
+      <ul>
+        <li>El acceso a la plataforma se suspende inmediatamente</li>
+        <li>Los datos del Cliente se conservan por 30 días para exportación</li>
+        <li>Transcurridos 60 días sin solicitud de exportación, los datos se eliminan definitivamente</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="c13">
+      <div class="section-num">CLÁUSULA XIII</div>
+      <h2>Módulos premium</h2>
+      <p>Los siguientes módulos están disponibles como extensiones del plan base, con cobro único de <strong>$300 USD cada uno</strong>:</p>
+      <ul>
+        <li>Módulo Financiero — dashboard de ingresos, egresos y flujo de caja</li>
+        <li>Módulo de Costeo — recetas con food cost, márgenes y precio sugerido</li>
+        <li>Módulo de Almacén — entradas, salidas y trazabilidad de inventario</li>
+        <li>Módulo de Compras — órdenes, proveedores y comparativa de precios</li>
+        <li>Módulo POS — punto de venta integrado con caja y cortes</li>
+      </ul>
+      <p>Estos módulos son propiedad del Cliente una vez adquiridos y permanecen activos mientras el plan base esté vigente.</p>
+    </div>
+
+    <div class="doc-section fade" id="c14">
+      <div class="section-num">CLÁUSULA XIV</div>
+      <h2>Jurisdicción y resolución de disputas</h2>
+      <p>Para la interpretación y cumplimiento del presente Contrato, las partes se someten a las leyes de los <strong>Estados Unidos Mexicanos</strong> y a la jurisdicción de los tribunales competentes de la ciudad de <strong>Puebla, Puebla</strong>, renunciando expresamente a cualquier otro fuero que por razón de sus domicilios presentes o futuros pudiera corresponderles.</p>
+      <p>Antes de acudir a instancias legales, las partes se comprometen a intentar resolver cualquier controversia mediante <strong>negociación directa de buena fe</strong> durante un período de 30 días naturales.</p>
+      <div class="callout">
+        <div class="callout-title">Aceptación del contrato</div>
+        <p>Al marcar la casilla de aceptación en la plataforma y realizar el primer pago, el Cliente declara haber leído, entendido y aceptado íntegramente los términos del presente Contrato, el cual tendrá plena validez legal como si hubiera sido firmado de forma manuscrita.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:0 40px;">
+  <div class="doc-divider"></div>
+</div>
+
+<footer>
+  <p>© 2026 De la Mora Zumarán · LiTa Support · Todos los derechos reservados</p>
+  <div class="footer-links">
+    <a href="/privacidad.html">Privacidad</a>
+    <a href="/terminos.html">Términos</a>
+    <a href="/contrato.html">Contrato</a>
+    <a href="/">Inicio</a>
+  </div>
+</footer>
+
+<script>
+var obs=new IntersectionObserver(function(e){e.forEach(function(el){if(el.isIntersecting)el.target.classList.add('show');});},{threshold:.1});
+document.querySelectorAll('.fade').forEach(function(el){obs.observe(el);});
+var sections=document.querySelectorAll('.doc-section');
+var tocLinks=document.querySelectorAll('.toc-list a');
+window.addEventListener('scroll',function(){
+  var pos=window.scrollY+100;
+  sections.forEach(function(s){
+    if(s.offsetTop<=pos&&s.offsetTop+s.offsetHeight>pos){
+      tocLinks.forEach(function(l){l.classList.remove('active');});
+      var a=document.querySelector('.toc-list a[href="#'+s.id+'"]');
+      if(a)a.classList.add('active');
+    }
+  });
+});
+</script>
+</body>
+</html>
