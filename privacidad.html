@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Política de Privacidad y Confidencialidad · Vitality Kitchen Control</title>
+<meta name="description" content="Política de privacidad, confidencialidad y tratamiento de datos personales de la plataforma Vitality Kitchen Control.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kale:#146B4F;--juice:#8BB839;--cucumber:#DFF6A6;--lemon:#E0ED30;
+  --spirulina:#005056;--coconut:#FEFEFC;--copper:#C9956B;
+  --dark:#0a0a0a;--gray:#888;--surface:#111;--border:rgba(254,254,252,.07);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--dark);color:var(--coconut);line-height:1.7;overflow-x:hidden;}
+a{color:var(--juice);text-decoration:none;}
+a:hover{color:var(--lemon);}
+::selection{background:var(--kale);color:var(--coconut);}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:56px;
+  background:rgba(10,10,10,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo span{font-size:13px;font-weight:500;color:var(--coconut);}
+.nav-logo small{font-size:9px;color:var(--juice);letter-spacing:2px;display:block;margin-top:1px;}
+.nav-badge{width:30px;height:30px;border-radius:6px;background:var(--kale);display:flex;align-items:center;justify-content:center;}
+.nav-badge svg{width:16px;height:16px;}
+.nav-back{font-size:12px;color:var(--gray);letter-spacing:1px;display:flex;align-items:center;gap:6px;transition:color .2s;}
+.nav-back:hover{color:var(--coconut);}
+
+/* HERO */
+.doc-hero{
+  padding:72px 40px 48px;
+  max-width:880px;margin:0 auto;
+  border-bottom:1px solid var(--border);
+}
+.doc-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:5px 14px;border-radius:20px;
+  border:1px solid rgba(139,184,57,.2);background:rgba(139,184,57,.04);
+  font-size:10px;font-family:var(--mono);letter-spacing:2px;color:var(--juice);
+  margin-bottom:20px;
+}
+.doc-hero h1{
+  font-size:clamp(26px,4vw,40px);font-weight:600;letter-spacing:-.5px;
+  color:var(--coconut);margin-bottom:12px;line-height:1.2;
+}
+.doc-hero p{font-size:15px;color:rgba(254,254,252,.5);max-width:600px;line-height:1.6;}
+.doc-meta{
+  display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;
+}
+.doc-meta-item{font-size:11px;font-family:var(--mono);color:var(--gray);}
+.doc-meta-item strong{color:var(--copper);font-weight:500;}
+
+/* LAYOUT */
+.doc-layout{
+  display:grid;grid-template-columns:220px 1fr;
+  max-width:1100px;margin:0 auto;
+  padding:48px 40px 80px;gap:48px;
+}
+@media(max-width:768px){.doc-layout{grid-template-columns:1fr;} .toc{display:none;}}
+
+/* TOC */
+.toc{position:sticky;top:72px;height:fit-content;}
+.toc-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:14px;}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:2px;}
+.toc-list a{
+  font-size:12px;color:rgba(254,254,252,.4);padding:5px 0 5px 12px;
+  border-left:2px solid transparent;display:block;transition:all .2s;
+  line-height:1.3;
+}
+.toc-list a:hover{color:var(--coconut);border-left-color:var(--kale);}
+.toc-list a.active{color:var(--juice);border-left-color:var(--juice);}
+
+/* CONTENT */
+.doc-content{max-width:680px;}
+.doc-section{margin-bottom:48px;scroll-margin-top:80px;}
+.section-num{
+  font-size:9px;font-family:var(--mono);color:var(--copper);
+  letter-spacing:3px;font-weight:500;margin-bottom:8px;
+}
+.doc-section h2{
+  font-size:20px;font-weight:600;color:var(--coconut);
+  margin-bottom:16px;letter-spacing:-.2px;
+}
+.doc-section h3{
+  font-size:14px;font-weight:600;color:var(--juice);
+  margin:24px 0 10px;letter-spacing:.5px;
+}
+.doc-section p{
+  font-size:14px;color:rgba(254,254,252,.65);margin-bottom:12px;
+  line-height:1.75;
+}
+.doc-section ul,.doc-section ol{
+  padding-left:0;margin-bottom:14px;
+  display:flex;flex-direction:column;gap:7px;
+}
+.doc-section li{
+  font-size:13.5px;color:rgba(254,254,252,.6);line-height:1.6;
+  display:flex;gap:10px;align-items:flex-start;
+}
+.doc-section li::before{
+  content:'—';color:var(--kale);flex-shrink:0;font-family:var(--mono);
+  font-size:12px;margin-top:2px;
+}
+.doc-section ol li{counter-increment:item;}
+.doc-section ol li::before{content:counter(item) '.';color:var(--copper);}
+.doc-section ol{counter-reset:item;}
+
+/* CALLOUT */
+.callout{
+  border:1px solid rgba(139,184,57,.15);background:rgba(139,184,57,.04);
+  border-radius:10px;padding:18px 20px;margin:20px 0;
+}
+.callout.warn{border-color:rgba(201,149,107,.2);background:rgba(201,149,107,.04);}
+.callout.info{border-color:rgba(151,185,255,.15);background:rgba(151,185,255,.04);}
+.callout-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--juice);margin-bottom:8px;}
+.callout.warn .callout-title{color:var(--copper);}
+.callout.info .callout-title{color:#97B9FF;}
+.callout p{font-size:13px;color:rgba(254,254,252,.6);margin:0;line-height:1.6;}
+
+/* TABLE */
+.doc-table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px;}
+.doc-table th{
+  background:rgba(20,107,79,.15);color:var(--juice);
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:10px 14px;text-align:left;border-bottom:1px solid rgba(139,184,57,.15);
+  font-family:var(--mono);
+}
+.doc-table td{
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  color:rgba(254,254,252,.6);vertical-align:top;line-height:1.5;
+}
+.doc-table tr:last-child td{border-bottom:none;}
+.doc-table tr:hover td{background:rgba(254,254,252,.02);}
+
+/* DIVIDER */
+.doc-divider{height:1px;background:var(--border);margin:40px 0;}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:32px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1100px;margin:0 auto;flex-wrap:wrap;gap:12px;
+}
+footer p{font-size:12px;color:var(--gray);font-family:var(--mono);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-size:12px;color:var(--gray);transition:color .2s;}
+.footer-links a:hover{color:var(--coconut);}
+
+/* FADE */
+.fade{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+.fade.show{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-badge">
+      <svg viewBox="0 0 48 48" fill="none"><g transform="translate(24,24)"><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-10" x2="0" y2="-6" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(300)"/><circle cx="0" cy="0" r="2" fill="none" stroke="#E0ED30" stroke-width="1.2"/></g></svg>
+    </div>
+    <div><span>vitality kitchen</span><small>control · privacidad</small></div>
+  </div>
+  <a href="/" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Volver al inicio
+  </a>
+</nav>
+
+<div class="doc-hero">
+  <div class="doc-tag">DOCUMENTO LEGAL</div>
+  <h1>Política de Privacidad y Confidencialidad</h1>
+  <p>Tratamiento, almacenamiento y protección de datos personales y operativos en la plataforma Vitality Kitchen Control.</p>
+  <div class="doc-meta">
+    <div class="doc-meta-item">Versión <strong>1.0</strong></div>
+    <div class="doc-meta-item">Vigente desde <strong>1 de mayo de 2026</strong></div>
+    <div class="doc-meta-item">Última actualización <strong>1 de mayo de 2026</strong></div>
+    <div class="doc-meta-item">Jurisdicción <strong>México · LFPDPPP</strong></div>
+  </div>
+</div>
+
+<div class="doc-layout">
+
+  <!-- TOC -->
+  <aside class="toc">
+    <div class="toc-title">Contenido</div>
+    <ul class="toc-list">
+      <li><a href="#s1">1. Responsable del tratamiento</a></li>
+      <li><a href="#s2">2. Datos que recopilamos</a></li>
+      <li><a href="#s3">3. Finalidad del tratamiento</a></li>
+      <li><a href="#s4">4. Hospedaje y almacenamiento</a></li>
+      <li><a href="#s5">5. Confidencialidad operativa</a></li>
+      <li><a href="#s6">6. Respaldo de información</a></li>
+      <li><a href="#s7">7. Transferencia de datos</a></li>
+      <li><a href="#s8">8. Derechos ARCO</a></li>
+      <li><a href="#s9">9. Cookies y rastreo</a></li>
+      <li><a href="#s10">10. Seguridad técnica</a></li>
+      <li><a href="#s11">11. Retención y eliminación</a></li>
+      <li><a href="#s12">12. Cambios a esta política</a></li>
+      <li><a href="#s13">13. Contacto</a></li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="doc-content">
+
+    <div class="doc-section fade" id="s1">
+      <div class="section-num">01</div>
+      <h2>Responsable del tratamiento</h2>
+      <p>El responsable del tratamiento de datos personales en la plataforma <strong>Vitality Kitchen Control</strong> es <strong>De la Mora Zumarán · LiTa Support</strong> (en adelante "el Prestador"), con domicilio en los Estados Unidos Mexicanos.</p>
+      <p>La plataforma opera exclusivamente para el cliente <strong>Vitality Kitchen</strong> (en adelante "el Cliente") bajo un acuerdo de prestación de servicios tecnológicos.</p>
+      <div class="callout">
+        <div class="callout-title">Responsable de contacto</div>
+        <p>Para cualquier asunto relacionado con esta política: <strong>hola@litasupport.mx</strong> — Tiempo de respuesta: máximo 5 días hábiles.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="s2">
+      <div class="section-num">02</div>
+      <h2>Datos que recopilamos</h2>
+      <h3>Datos de identificación y acceso</h3>
+      <ul>
+        <li>Nombre completo y correo electrónico del usuario registrado</li>
+        <li>Número de teléfono (para alertas WhatsApp operativas)</li>
+        <li>Rol dentro de la operación (propietario, gerente, operador)</li>
+        <li>Credenciales de acceso encriptadas (contraseña con hash)</li>
+      </ul>
+      <h3>Datos operativos generados en la plataforma</h3>
+      <ul>
+        <li>Registros de temperatura y bitácoras de inocuidad</li>
+        <li>Checklists completados con marca de tiempo y responsable</li>
+        <li>Fotografías con sello GPS y metadatos de operación</li>
+        <li>Notas de voz transcritas mediante tecnología de reconocimiento</li>
+        <li>Registros de inventario, producción y control de merma</li>
+        <li>Datos de acceso (hora, dispositivo, dirección IP)</li>
+      </ul>
+      <h3>Datos de facturación</h3>
+      <ul>
+        <li>Correo electrónico para envío de invoice</li>
+        <li>Los datos de tarjeta bancaria son procesados directamente por Stripe — el Prestador no almacena números de tarjeta en sus sistemas</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="s3">
+      <div class="section-num">03</div>
+      <h2>Finalidad del tratamiento</h2>
+      <table class="doc-table">
+        <thead><tr><th>Dato</th><th>Finalidad</th><th>Base legal</th></tr></thead>
+        <tbody>
+          <tr><td>Correo y nombre</td><td>Autenticación, notificaciones de sistema, envío de invoice</td><td>Ejecución de contrato</td></tr>
+          <tr><td>Teléfono</td><td>Alertas operativas vía WhatsApp al propietario</td><td>Consentimiento explícito</td></tr>
+          <tr><td>Bitácoras y registros</td><td>Trazabilidad operativa, auditorías internas, cumplimiento de inocuidad</td><td>Interés legítimo / contrato</td></tr>
+          <tr><td>Fotografías GPS</td><td>Evidencia incorruptible de operación</td><td>Consentimiento explícito</td></tr>
+          <tr><td>IP y dispositivo</td><td>Seguridad, detección de acceso no autorizado</td><td>Interés legítimo</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <div class="callout-title">Dato importante</div>
+        <p>Los datos operativos nunca se utilizan para fines comerciales, de marketing o análisis de terceros. Su única finalidad es el control operativo del Cliente.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="s4">
+      <div class="section-num">04</div>
+      <h2>Hospedaje y almacenamiento de datos</h2>
+      <p>La plataforma utiliza la siguiente infraestructura de hospedaje:</p>
+      <h3>Infraestructura actual</h3>
+      <ul>
+        <li><strong>Sitio web estático:</strong> GitHub Pages — servidores en Estados Unidos (Microsoft/GitHub)</li>
+        <li><strong>Base de datos operativa:</strong> Supabase (PostgreSQL) — servidores en región us-east-1</li>
+        <li><strong>Archivos y fotografías:</strong> Supabase Storage — mismo proveedor y región</li>
+        <li><strong>Procesamiento de pagos:</strong> Stripe Inc. — infraestructura certificada PCI-DSS Nivel 1</li>
+      </ul>
+      <h3>Estándares de seguridad del hospedaje</h3>
+      <ul>
+        <li>Cifrado en tránsito: TLS 1.2 / TLS 1.3 en todas las conexiones</li>
+        <li>Cifrado en reposo: AES-256 para todos los archivos almacenados</li>
+        <li>HTTPS forzado con HSTS (max-age=31556952) en el sitio principal</li>
+        <li>Acceso a base de datos restringido por Row Level Security (RLS)</li>
+      </ul>
+      <div class="callout info">
+        <div class="callout-title">Transferencia internacional</div>
+        <p>Al utilizar la plataforma, el Cliente acepta que sus datos operativos sean almacenados en servidores ubicados en Estados Unidos, bajo los términos de privacidad de GitHub y Supabase, los cuales cumplen con estándares equivalentes a la normativa mexicana aplicable.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="s5">
+      <div class="section-num">05</div>
+      <h2>Confidencialidad operativa</h2>
+      <p>El Prestador reconoce que toda la información operativa del Cliente — incluyendo recetas, procesos, gramajes, costos, proveedores, personal y datos de producción — constituye <strong>información confidencial y propiedad exclusiva del Cliente</strong>.</p>
+      <h3>Compromisos del Prestador</h3>
+      <ul>
+        <li>No divulgar, reproducir ni compartir información operativa del Cliente con terceros bajo ninguna circunstancia</li>
+        <li>No utilizar datos del Cliente para desarrollar productos, servicios o análisis para terceros</li>
+        <li>El personal con acceso a la plataforma está sujeto a acuerdos de confidencialidad internos</li>
+        <li>Las capturas de pantalla y grabación de pantalla están técnicamente bloqueadas en módulos sensibles</li>
+        <li>Los datos del Cliente no se mezclan con datos de otros clientes en ningún nivel de la infraestructura</li>
+      </ul>
+      <h3>Propiedad de los datos</h3>
+      <p>El Cliente es el propietario absoluto de todos los datos operativos generados en la plataforma. El Prestador actúa como procesador de datos, no como titular. En caso de terminación del servicio, el Cliente puede solicitar la exportación completa de sus datos en formato estándar (CSV / JSON) dentro de los 30 días siguientes a la cancelación.</p>
+    </div>
+
+    <div class="doc-section fade" id="s6">
+      <div class="section-num">06</div>
+      <h2>Respaldo de información</h2>
+      <h3>Política de respaldos automáticos</h3>
+      <ul>
+        <li><strong>Frecuencia:</strong> Respaldo automático diario a las 03:00 hrs (hora del servidor)</li>
+        <li><strong>Retención:</strong> Últimos 30 días de respaldos diarios disponibles</li>
+        <li><strong>Tipo:</strong> Respaldo completo de base de datos (full backup) en formato encriptado</li>
+        <li><strong>Ubicación:</strong> Almacenamiento geográficamente separado del servidor principal</li>
+      </ul>
+      <h3>Respaldos adicionales</h3>
+      <ul>
+        <li>Respaldo semanal adicional con retención de 3 meses</li>
+        <li>El Cliente puede solicitar un respaldo manual en cualquier momento contactando al soporte</li>
+        <li>Tiempo de recuperación objetivo (RTO): 4 horas hábiles en caso de incidente crítico</li>
+        <li>Punto de recuperación objetivo (RPO): máximo 24 horas de pérdida de datos en caso de desastre</li>
+      </ul>
+      <div class="callout warn">
+        <div class="callout-title">Responsabilidad del cliente</div>
+        <p>El Cliente es responsable de la veracidad e integridad de los datos que ingresa a la plataforma. El Prestador garantiza la preservación de los datos registrados, pero no puede garantizar la exactitud de datos ingresados incorrectamente.</p>
+      </div>
+    </div>
+
+    <div class="doc-section fade" id="s7">
+      <div class="section-num">07</div>
+      <h2>Transferencia de datos a terceros</h2>
+      <p>El Prestador <strong>no vende, arrienda ni transfiere</strong> datos personales u operativos del Cliente a terceros, excepto en los siguientes casos estrictamente necesarios:</p>
+      <ul>
+        <li><strong>Stripe Inc.:</strong> Datos mínimos para procesamiento del cobro (correo, monto). Stripe es responsable independiente de estos datos bajo su propia política de privacidad</li>
+        <li><strong>Supabase Inc.:</strong> Proveedor de infraestructura de base de datos. Actúa como subprocesador bajo contrato DPA</li>
+        <li><strong>GitHub Inc.:</strong> Hospedaje del sitio web estático (sin datos sensibles)</li>
+        <li><strong>Autoridades competentes:</strong> Únicamente ante requerimiento legal formal de autoridad mexicana competente</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="s8">
+      <div class="section-num">08</div>
+      <h2>Derechos ARCO</h2>
+      <p>De conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP), el titular de los datos tiene los siguientes derechos:</p>
+      <ul>
+        <li><strong>Acceso:</strong> Conocer qué datos personales suyos están en posesión del Prestador</li>
+        <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos</li>
+        <li><strong>Cancelación:</strong> Solicitar la eliminación de sus datos del sistema</li>
+        <li><strong>Oposición:</strong> Oponerse al tratamiento de sus datos para finalidades específicas</li>
+      </ul>
+      <p>Para ejercer cualquier derecho ARCO, el titular debe enviar solicitud escrita a <strong>hola@litasupport.mx</strong> con: nombre completo, correo registrado, derecho que desea ejercer y descripción clara de la solicitud. El Prestador responderá en un plazo máximo de <strong>20 días hábiles</strong>.</p>
+    </div>
+
+    <div class="doc-section fade" id="s9">
+      <div class="section-num">09</div>
+      <h2>Cookies y tecnologías de rastreo</h2>
+      <p>La plataforma utiliza exclusivamente cookies técnicas necesarias para el funcionamiento del sistema de autenticación. No se utilizan cookies de seguimiento, publicidad ni análisis de comportamiento de terceros.</p>
+      <h3>Cookies utilizadas</h3>
+      <table class="doc-table">
+        <thead><tr><th>Cookie</th><th>Propósito</th><th>Duración</th></tr></thead>
+        <tbody>
+          <tr><td>auth_session</td><td>Mantener sesión autenticada del usuario</td><td>Sesión</td></tr>
+          <tr><td>csrf_token</td><td>Protección contra ataques CSRF</td><td>Sesión</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-section fade" id="s10">
+      <div class="section-num">10</div>
+      <h2>Medidas de seguridad técnica</h2>
+      <ul>
+        <li>Autenticación multifactor (MFA) obligatoria para todos los usuarios</li>
+        <li>Contraseñas almacenadas con hash bcrypt (sin texto plano)</li>
+        <li>Tokens de acceso con expiración y rotación automática</li>
+        <li>Row Level Security en base de datos — cada usuario solo accede a sus propios datos</li>
+        <li>Audit trail inmutable de todas las acciones realizadas en la plataforma</li>
+        <li>Bloqueo de acceso automático a los 6 días de impago</li>
+        <li>Monitoreo de accesos anómalos y alertas automáticas al administrador</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="s11">
+      <div class="section-num">11</div>
+      <h2>Retención y eliminación de datos</h2>
+      <ul>
+        <li>Datos activos: se conservan durante toda la vigencia del contrato de servicio</li>
+        <li>Datos tras cancelación: se mantienen accesibles durante <strong>30 días</strong> post-cancelación para exportación</li>
+        <li>Eliminación definitiva: a los 60 días de la cancelación sin solicitud de exportación pendiente</li>
+        <li>Datos de facturación: 5 años por obligación fiscal mexicana</li>
+        <li>Logs de seguridad: 90 días por política interna</li>
+      </ul>
+    </div>
+
+    <div class="doc-section fade" id="s12">
+      <div class="section-num">12</div>
+      <h2>Cambios a esta política</h2>
+      <p>El Prestador se reserva el derecho de modificar esta política de privacidad. Cualquier cambio material será notificado al Cliente con <strong>al menos 15 días de anticipación</strong> mediante correo electrónico al correo registrado en la plataforma.</p>
+      <p>El uso continuado de la plataforma tras la notificación constituirá aceptación de los cambios. En caso de desacuerdo, el Cliente podrá cancelar el servicio sin penalización dentro de los 15 días siguientes a la notificación.</p>
+    </div>
+
+    <div class="doc-section fade" id="s13">
+      <div class="section-num">13</div>
+      <h2>Contacto y consultas</h2>
+      <div class="callout">
+        <div class="callout-title">Datos de contacto</div>
+        <p><strong>LiTa Support · De la Mora Zumarán</strong><br>Correo: hola@litasupport.mx<br>Horario de atención: Lunes a viernes, 9:00 a 18:00 hrs (hora de México)<br>Tiempo de respuesta: máximo 5 días hábiles</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:0 40px;">
+  <div class="doc-divider"></div>
+</div>
+
+<footer>
+  <p>© 2026 De la Mora Zumarán · LiTa Support · Todos los derechos reservados</p>
+  <div class="footer-links">
+    <a href="/privacidad.html">Privacidad</a>
+    <a href="/terminos.html">Términos</a>
+    <a href="/contrato.html">Contrato</a>
+    <a href="/">Inicio</a>
+  </div>
+</footer>
+
+<script>
+var obs=new IntersectionObserver(function(e){e.forEach(function(el){if(el.isIntersecting)el.target.classList.add('show');})},{threshold:.1});
+document.querySelectorAll('.fade').forEach(function(el){obs.observe(el);});
+// TOC active
+var sections=document.querySelectorAll('.doc-section');
+var tocLinks=document.querySelectorAll('.toc-list a');
+window.addEventListener('scroll',function(){
+  var pos=window.scrollY+100;
+  sections.forEach(function(s){
+    if(s.offsetTop<=pos&&s.offsetTop+s.offsetHeight>pos){
+      tocLinks.forEach(function(l){l.classList.remove('active');});
+      var active=document.querySelector('.toc-list a[href="#'+s.id+'"]');
+      if(active)active.classList.add('active');
+    }
+  });
+});
+</script>
+</body>
+</html>
