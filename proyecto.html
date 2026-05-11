@@ -20,9 +20,155 @@
 .contact{background:var(--sp);border-radius:14px;padding:20px;text-align:center;margin-top:6px}.contact h3{font-size:16px;font-weight:500;color:var(--co);margin-bottom:4px}.contact p{font-size:14px;color:rgba(254,254,252,.4);margin-bottom:14px}.contact-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(139,184,57,.12);color:var(--cw);font-size:15px;font-weight:500;border:none;cursor:pointer;font-family:var(--font);transition:all .2s}.contact-btn:hover{background:rgba(139,184,57,.2)}
 .foot{text-align:center;padding:20px;font-size:14px;color:#ccc}
 @media(max-width:600px){.hdr-cards{grid-template-columns:1fr 1fr}.hdr-cards>:last-child{grid-column:1/-1}.prem-grid{grid-template-columns:1fr}}
+
+/* ── BIENVENIDA OVERLAY ── */
+#bienvenida-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--kale);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  animation:none;
+}
+#bienvenida-overlay.oculto{display:none;}
+.bv-card{
+  background:var(--co);border-radius:20px;
+  width:100%;max-width:480px;
+  overflow:hidden;
+  animation:fadeUp .5s ease;
+}
+.bv-header{
+  background:var(--kale);padding:28px 28px 24px;
+  text-align:center;position:relative;
+}
+.bv-sun{
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(224,237,48,.12);border:2px solid rgba(224,237,48,.25);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+  animation:pulse 2s ease-in-out infinite;
+}
+.bv-header h1{
+  font-size:22px;font-weight:700;color:var(--co);
+  letter-spacing:-.3px;line-height:1.2;margin-bottom:6px;
+}
+.bv-header p{font-size:14px;color:rgba(254,254,252,.55);line-height:1.5;}
+.bv-body{padding:24px 28px;}
+.bv-phrase{
+  font-size:14px;font-style:italic;color:var(--kale);
+  text-align:center;margin-bottom:20px;line-height:1.6;
+  padding:14px 18px;background:rgba(139,184,57,.08);
+  border-radius:10px;border-left:3px solid var(--juice);
+}
+.bv-resumen{margin-bottom:20px;}
+.bv-resumen-title{
+  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:#999;margin-bottom:10px;font-family:var(--mono);
+}
+.bv-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(0,80,86,.06);font-size:14px;
+}
+.bv-row:last-child{border:none;}
+.bv-row .lbl{color:#888;}
+.bv-row .val{font-weight:600;color:var(--kale);font-family:var(--mono);}
+.bv-row .val.green{color:var(--juice);}
+.bv-row .val.lemon{color:#7a6a00;}
+.bv-roadmap{margin-bottom:20px;}
+.bv-roadmap-title{
+  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:#999;margin-bottom:10px;font-family:var(--mono);
+}
+.bv-week{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:7px 0;border-bottom:1px solid rgba(0,80,86,.04);
+}
+.bv-week:last-child{border:none;}
+.bv-week-num{
+  font-size:11px;font-family:var(--mono);font-weight:600;
+  color:var(--juice);min-width:72px;flex-shrink:0;margin-top:1px;
+}
+.bv-week-txt{font-size:13px;color:#666;line-height:1.4;}
+.bv-cta{
+  width:100%;background:var(--kale);color:var(--lemon);
+  border:none;border-radius:40px;padding:15px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  font-family:var(--font);letter-spacing:.3px;
+  transition:background .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.bv-cta:hover{background:var(--sp);}
+.bv-footer{
+  text-align:center;padding:14px 28px 20px;
+  font-size:12px;color:#aaa;line-height:1.5;
+}
+.bv-footer a{color:var(--kale);}
 </style>
 </head>
 <body>
+
+<!-- ══ BIENVENIDA POST-PAGO ══ -->
+<div id="bienvenida-overlay">
+  <div class="bv-card">
+    <div class="bv-header">
+      <div class="bv-sun">
+        <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
+          <g transform="translate(16,16)">
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/>
+            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/>
+            <circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.2"/>
+          </g>
+        </svg>
+      </div>
+      <h1>¡Bienvenido, Vitality Kitchen!</h1>
+      <p>Tu ecosistema está activo. Pago recibido con éxito.</p>
+    </div>
+
+    <div class="bv-body">
+      <div class="bv-phrase">
+        "A partir de hoy, tu operación tiene raíces más profundas.<br>
+        Alimentos reales, energía natural y hábitos conscientes —<br>
+        ahora también en cada turno de tu cocina."
+      </div>
+
+      <div class="bv-resumen">
+        <div class="bv-resumen-title">Resumen de tu activación</div>
+        <div class="bv-row"><span class="lbl">Licencia de activación</span><span class="val green">$8,000 MXN ✓</span></div>
+        <div class="bv-row"><span class="lbl">Primer mes</span><span class="val green">$2,950 MXN ✓</span></div>
+        <div class="bv-row"><span class="lbl">Total cobrado</span><span class="val lemon">$10,950 MXN</span></div>
+        <div class="bv-row"><span class="lbl">Próximo cobro</span><span class="val" id="bv-next-date">1 de junio, 2026</span></div>
+        <div class="bv-row"><span class="lbl">Invoice</span><span class="val">Automático al correo</span></div>
+        <div class="bv-row"><span class="lbl">Soporte</span><span class="val">lita@litasupport.mx</span></div>
+      </div>
+
+      <div class="bv-roadmap">
+        <div class="bv-roadmap-title">Tu roadmap — 14 semanas</div>
+        <div class="bv-week"><span class="bv-week-num">Sem 1–2</span><span class="bv-week-txt">Configuración inicial, acceso al portal y roles de usuario</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 3–4</span><span class="bv-week-txt">Termometría digital y bitácoras de inocuidad</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 5–6</span><span class="bv-week-txt">Checklists operativos: barra, salón y supervisor</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 7–8</span><span class="bv-week-txt">Control semanal de producción e inventarios</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 9–10</span><span class="bv-week-txt">Alertas WhatsApp, reportes de cierre y audit trail</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 11–12</span><span class="bv-week-txt">Ajustes operativos y capacitación avanzada de equipo</span></div>
+        <div class="bv-week"><span class="bv-week-num">Sem 13–14</span><span class="bv-week-txt">Entrega final, validación de módulos y revisión 360°</span></div>
+      </div>
+
+      <button class="bv-cta" onclick="cerrarBienvenida()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ir a mi portal de proyecto
+      </button>
+    </div>
+
+    <div class="bv-footer">
+      Powered by LiTa Support · <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a><br>
+      Tu invoice oficial llega por separado vía Stripe al correo registrado.
+    </div>
+  </div>
+</div>
 <div class="hdr"><div class="hdr-top"><div class="hdr-logo"><svg width="26" height="26" viewBox="0 0 48 48"><g transform="translate(24,24)"><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(30)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(150)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(210)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(300)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(330)"/><circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.3"/></g></svg><div><span>vitality kitchen</span><small>panel de proyecto</small></div></div><div class="hdr-badge"><div class="dot"></div> Licencia activa</div></div><div class="hdr-cards"><div class="hdr-card"><label>Fase actual</label><div class="val" style="font-size:16px;">Fase 1 de 3</div></div><div class="hdr-card"><label>Progreso global</label><div class="val">18%</div></div><div class="hdr-card"><label>Entrega estimada</label><div class="val wh" style="font-size:16px;">Agosto 2026</div></div></div></div>
 
 <div class="ct">
@@ -72,15 +218,40 @@
 
 <div class="foot">Vitality Kitchen Control · Powered by LiTa Support · 2026</div>
 <script>
-// Próximo cobro: siempre el día 1 del mes siguiente
 (function(){
-  var now = new Date();
-  var next = new Date(now.getFullYear(), now.getMonth()+1, 1);
-  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  var txt = '1 de ' + meses[next.getMonth()] + ', ' + next.getFullYear();
-  var el = document.getElementById('next-charge');
-  if(el) el.textContent = txt;
+  var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var now=new Date();
+  var next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  var txt='1 de '+meses[next.getMonth()]+', '+next.getFullYear();
+
+  // Fecha en portal
+  var el=document.getElementById('next-charge');
+  if(el) el.textContent=txt;
+
+  // Fecha en bienvenida
+  var bv=document.getElementById('bv-next-date');
+  if(bv) bv.textContent=txt;
+
+  // Mostrar bienvenida: viene de Stripe o primera visita en esta sesión
+  var yaVio=sessionStorage.getItem('vk_bienvenida_vista');
+  var desdeStripe=document.referrer.indexOf('stripe.com')>-1||
+                  document.referrer.indexOf('buy.stripe.com')>-1||
+                  window.location.search.indexOf('session_id')>-1||
+                  window.location.search.indexOf('payment')>-1;
+  var ov=document.getElementById('bienvenida-overlay');
+  if(ov){
+    if(!yaVio||desdeStripe){ ov.classList.remove('oculto'); }
+    else { ov.classList.add('oculto'); }
+  }
 })();
+
+function cerrarBienvenida(){
+  sessionStorage.setItem('vk_bienvenida_vista','1');
+  var ov=document.getElementById('bienvenida-overlay');
+  ov.style.opacity='0';
+  ov.style.transition='opacity .35s ease';
+  setTimeout(function(){ ov.classList.add('oculto'); ov.style.opacity=''; },380);
+}
 </script>
 </body>
 </html>
