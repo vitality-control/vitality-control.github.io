@@ -43,13 +43,23 @@ nav{
 .nav-links{display:flex;align-items:center;gap:28px;}
 .nav-links a{font-size:15px;color:var(--muted);transition:color .2s;letter-spacing:.2px;}
 .nav-links a:hover{color:var(--kale);}
+.nav-ingresar{
+  color:var(--kale);padding:8px 18px;border-radius:40px;font-size:13px;font-weight:600;
+  border:1.5px solid var(--border);transition:all .2s;letter-spacing:.3px;
+}
+.nav-ingresar:hover{background:var(--cucumber);border-color:var(--juice);}
 .nav-cta{
   background:var(--kale);color:var(--lemon)!important;
   padding:9px 20px;border-radius:40px;font-size:15px;font-weight:600;
   transition:background .2s,transform .15s;letter-spacing:.3px;
 }
 .nav-cta:hover{background:var(--spirulina);transform:translateY(-1px);}
-@media(max-width:768px){.nav-links{display:none;}.nav-cta{display:none;}}
+@media(max-width:768px){.nav-links{display:none;}.nav-ingresar{
+  color:var(--kale);padding:8px 18px;border-radius:40px;font-size:13px;font-weight:600;
+  border:1.5px solid var(--border);transition:all .2s;letter-spacing:.3px;
+}
+.nav-ingresar:hover{background:var(--cucumber);border-color:var(--juice);}
+.nav-cta{display:none;}}
 
 /* ── HERO ── */
 .hero{
@@ -277,7 +287,8 @@ footer p{font-size:14px;color:var(--muted);font-family:var(--mono);}
     <a href="#inversion">Inversión</a>
     <a href="#seguridad">Seguridad</a>
     <a href="#acceso">Activar</a>
-    <a href="/terminos.html" class="nav-cta">Activar ecosistema →</a>
+    <a href="/portal.html" class="nav-ingresar">Ingresar</a>
+    <a href="/terminos.html" class="nav-cta">Activar · $10,950 MXN →</a>
   </div>
 </nav>
 
@@ -295,7 +306,7 @@ footer p{font-size:14px;color:var(--muted);font-family:var(--mono);}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4 7l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Activar · $10,950 MXN
       </a>
-      <a href="#pilares" class="btn-secondary">Ver plataforma</a>
+      <a href="/portal.html" class="btn-secondary">Ya soy cliente → Ingresar</a>
     </div>
     <div class="hero-stat fade fade-delay-4">
       <div><div class="stat-n">9</div><div class="stat-l">Módulos operativos</div></div>
@@ -443,6 +454,11 @@ footer p{font-size:14px;color:var(--muted);font-family:var(--mono);}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 4V3a4 4 0 018 0v1" stroke="currentColor" stroke-width="1.5"/></svg>
         Activar con Stripe · Pago seguro
       </a>
+      <div style="margin-bottom:14px;">
+        <a href="/portal.html" style="display:inline-flex;align-items:center;gap:6px;color:rgba(254,254,252,.5);font-size:13px;border-bottom:1px solid rgba(254,254,252,.2);padding-bottom:2px;transition:color .2s;" onmouseover="this.style.color='var(--coconut)'" onmouseout="this.style.color='rgba(254,254,252,.5)'">
+          ← Ya tengo acceso · Ingresar al portal
+        </a>
+      </div>
       <div class="acceso-legal">
         Al activar aceptas los <a href="/terminos.html">Términos de Servicio</a>,
         la <a href="/privacidad.html">Política de Privacidad</a> y el
