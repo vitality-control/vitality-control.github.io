@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Admin · LiTa Support</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kale:#146B4F;--juice:#8BB839;--cucumber:#DFF6A6;--lemon:#E0ED30;
+  --spirulina:#005056;--coconut:#FEFEFC;
+  --bg:#0f1a14;--surface:#162019;--card:#1c2b20;--card2:#213026;
+  --border:rgba(139,184,57,.1);--border2:rgba(139,184,57,.06);
+  --text:#e8f0e9;--muted:#6b8a72;--dim:#3d5040;
+  --green:#8BB839;--yellow:#E0ED30;--red:#e05555;--blue:#97B9FF;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+::selection{background:var(--kale);color:var(--coconut);}
+a{color:var(--green);text-decoration:none;}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:52px;
+  background:rgba(15,26,20,.95);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.admin-badge{
+  background:var(--yellow);color:var(--spirulina);
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;font-family:var(--mono);
+}
+.topbar-title{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.topbar-link{font-size:12px;color:var(--muted);letter-spacing:.5px;transition:color .2s;}
+.topbar-link:hover{color:var(--text);}
+.topbar-link.ext{color:var(--green);}
+.live-dot{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;font-family:var(--mono);color:var(--muted);
+}
+.live-dot::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--green);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px);}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--border2);
+  padding:20px 0;position:sticky;top:52px;height:calc(100vh - 52px);
+  overflow-y:auto;
+}
+.sidebar-section{
+  font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:var(--dim);padding:0 16px;margin:18px 0 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 16px;cursor:pointer;color:var(--muted);
+  font-size:13px;transition:all .15s;
+  border-left:2px solid transparent;
+}
+.nav-item:hover{background:rgba(139,184,57,.05);color:var(--text);}
+.nav-item.active{background:rgba(139,184,57,.08);color:var(--yellow);border-left-color:var(--yellow);}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{
+  margin-left:auto;font-size:9px;font-family:var(--mono);
+  padding:2px 6px;border-radius:8px;
+}
+.nb-ok{background:rgba(139,184,57,.15);color:var(--green);}
+.nb-prog{background:rgba(224,237,48,.12);color:var(--yellow);}
+.nb-pend{background:rgba(255,255,255,.06);color:var(--dim);}
+
+/* ── CONTENT ── */
+.content{padding:24px 28px;overflow-y:auto;}
+
+/* ── SECTION ── */
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  padding:16px 18px;
+}
+.kpi-label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;}
+.kpi-val.green{color:var(--green);}
+.kpi-val.yellow{color:var(--yellow);}
+.kpi-val.red{color:var(--red);}
+.kpi-val.blue{color:var(--blue);}
+.kpi-val.white{color:var(--text);}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px;}
+
+/* ── PROGRESS MASTER ── */
+.master-progress{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  padding:20px 22px;margin-bottom:24px;
+}
+.mp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.mp-title{font-size:14px;font-weight:600;color:var(--text);}
+.mp-pct{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--yellow);}
+.mp-bar-wrap{height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.mp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--kale),var(--green),var(--yellow));transition:width .6s ease;}
+.mp-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.mp-phase{background:rgba(255,255,255,.03);border-radius:8px;padding:12px 14px;}
+.mp-phase-label{font-size:9px;font-family:var(--mono);letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+.mp-phase-name{font-size:12px;color:var(--text);margin-bottom:6px;}
+.mp-phase-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;}
+.mp-phase-fill{height:100%;border-radius:2px;}
+.mp-phase-pct{font-size:11px;font-family:var(--mono);color:var(--muted);margin-top:4px;}
+
+/* ── FASE CARDS ── */
+.fase-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.fase-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+.fase-status-badge{
+  font-size:10px;font-family:var(--mono);font-weight:700;letter-spacing:2px;
+  padding:5px 12px;border-radius:20px;text-transform:uppercase;
+}
+.fsb-active{background:rgba(224,237,48,.12);color:var(--yellow);}
+.fsb-done{background:rgba(139,184,57,.12);color:var(--green);}
+.fsb-locked{background:rgba(255,255,255,.05);color:var(--dim);}
+
+/* ── MODULES TABLE ── */
+.modules-table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+.modules-table th{
+  font-size:9px;font-family:var(--mono);font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--border2);
+}
+.modules-table td{
+  padding:10px 12px;border-bottom:1px solid var(--border2);
+  font-size:13px;color:var(--text);vertical-align:middle;
+}
+.modules-table tr:last-child td{border-bottom:none;}
+.modules-table tr:hover td{background:rgba(139,184,57,.03);}
+.mod-name{font-size:13px;color:var(--text);}
+.mod-area{font-size:11px;color:var(--muted);margin-top:2px;}
+.status-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;font-family:var(--mono);letter-spacing:1px;
+  padding:3px 9px;border-radius:12px;white-space:nowrap;
+}
+.sp-done{background:rgba(139,184,57,.12);color:var(--green);}
+.sp-prog{background:rgba(224,237,48,.1);color:var(--yellow);}
+.sp-pend{background:rgba(255,255,255,.05);color:var(--dim);}
+.sp-block{background:rgba(224,85,85,.08);color:var(--red);}
+.sp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.sp-done .sp-dot{background:var(--green);}
+.sp-prog .sp-dot{background:var(--yellow);animation:pulse 1.5s infinite;}
+.sp-pend .sp-dot{background:var(--dim);}
+.sp-block .sp-dot{background:var(--red);}
+
+.progress-cell{display:flex;align-items:center;gap:8px;}
+.prog-bar{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;min-width:80px;}
+.prog-fill{height:100%;border-radius:2px;}
+.prog-pct{font-size:11px;font-family:var(--mono);color:var(--muted);min-width:32px;text-align:right;}
+
+.tag-client{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9px;font-family:var(--mono);letter-spacing:1px;padding:2px 7px;border-radius:8px;
+}
+.tc-visible{background:rgba(151,185,255,.1);color:var(--blue);}
+.tc-hidden{background:rgba(255,255,255,.04);color:var(--dim);}
+
+/* ── NOTAS BACKEND ── */
+.backend-card{
+  background:rgba(224,85,85,.04);border:1px solid rgba(224,85,85,.12);
+  border-radius:10px;padding:14px 16px;margin-bottom:12px;
+}
+.bc-title{font-size:10px;font-family:var(--mono);letter-spacing:2px;color:var(--red);margin-bottom:8px;}
+.bc-item{display:flex;gap:8px;font-size:12px;color:rgba(232,240,233,.5);margin-bottom:5px;line-height:1.4;}
+.bc-item::before{content:'//';color:var(--red);flex-shrink:0;font-family:var(--mono);}
+
+/* ── METRICS GRID ── */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.metric-card{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:18px;
+}
+.metric-title{font-size:11px;font-family:var(--mono);letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+.metric-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border2);font-size:13px;}
+.metric-row:last-child{border-bottom:none;}
+.mr-label{color:var(--muted);}
+.mr-val{font-family:var(--mono);font-weight:600;color:var(--text);}
+.mr-val.g{color:var(--green);}
+.mr-val.y{color:var(--yellow);}
+.mr-val.r{color:var(--red);}
+.mr-val.b{color:var(--blue);}
+
+/* ── TIMELINE SEMANAS ── */
+.weeks-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
+.week-card{
+  background:var(--card);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 8px;text-align:center;
+}
+.week-card.active{border-color:rgba(224,237,48,.3);background:rgba(224,237,48,.04);}
+.week-card.done{border-color:rgba(139,184,57,.2);background:rgba(139,184,57,.04);}
+.week-card.future{opacity:.4;}
+.wk-num{font-size:9px;font-family:var(--mono);color:var(--muted);margin-bottom:4px;}
+.wk-status{font-size:16px;}
+.wk-label{font-size:9px;color:var(--dim);margin-top:4px;line-height:1.2;}
+
+/* ── ENTREGABLES ── */
+.deliverable-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;border-radius:8px;margin-bottom:6px;
+  background:var(--card);border:1px solid var(--border2);
+}
+.dr-check{width:18px;height:18px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.dr-check.on{background:rgba(139,184,57,.15);}
+.dr-check.prog{background:rgba(224,237,48,.12);}
+.dr-check.off{background:rgba(255,255,255,.04);}
+.dr-name{flex:1;font-size:13px;color:var(--text);}
+.dr-type{font-size:10px;font-family:var(--mono);color:var(--muted);}
+.dr-client-tag{font-size:9px;font-family:var(--mono);padding:2px 7px;border-radius:8px;flex-shrink:0;}
+.dct-vis{background:rgba(151,185,255,.1);color:var(--blue);}
+.dct-hid{background:rgba(255,255,255,.04);color:var(--dim);}
+
+/* ── FINANCE ── */
+.finance-card{
+  background:var(--kale);border-radius:12px;padding:20px 22px;margin-bottom:14px;
+}
+.fc-title{font-size:10px;font-family:var(--mono);letter-spacing:2px;color:rgba(223,246,166,.5);text-transform:uppercase;margin-bottom:14px;}
+.fc-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(254,254,252,.1);font-size:14px;}
+.fc-row:last-child{border-bottom:none;}
+.fc-label{color:rgba(254,254,252,.5);}
+.fc-val{font-family:var(--mono);font-weight:700;color:var(--coconut);}
+.fc-val.green{color:var(--lemon);}
+.fc-val.muted{color:rgba(254,254,252,.4);}
+
+/* ── SECCION CLIENTE ── */
+.client-preview{
+  background:var(--card2);border:1.5px solid rgba(151,185,255,.15);border-radius:12px;
+  padding:18px;margin-bottom:16px;
+}
+.cp-label{font-size:9px;font-family:var(--mono);letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:12px;}
+.cp-note{font-size:12px;color:var(--muted);line-height:1.5;font-style:italic;}
+
+/* ── TOGGLE SECTION ── */
+.toggle-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.04);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 12px;cursor:pointer;
+  font-size:12px;color:var(--muted);transition:all .2s;font-family:var(--font);
+}
+.toggle-btn:hover{background:rgba(255,255,255,.07);color:var(--text);}
+
+/* ── FADE ── */
+.fade-in{opacity:0;transform:translateY(12px);transition:opacity .5s,transform .5s;}
+.fade-in.show{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="admin-badge">Admin · LiTa</span>
+    <span class="topbar-title">Dashboard de Control · Vitality Kitchen</span>
+  </div>
+  <div class="topbar-right">
+    <span class="live-dot">En vivo</span>
+    <a href="https://vitality-control.github.io/proyecto.html" target="_blank" class="topbar-link ext">↗ Vista cliente</a>
+    <a href="https://dashboard.stripe.com" target="_blank" class="topbar-link ext">↗ Stripe</a>
+    <a href="https://github.com/vitality-control" target="_blank" class="topbar-link ext">↗ GitHub</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-section">General</div>
+  <div class="nav-item active" onclick="showSection('overview')">
+    <span class="nav-icon">📊</span>Overview
+    <span class="nav-badge nb-prog">18%</span>
+  </div>
+  <div class="nav-item" onclick="showSection('finance')">
+    <span class="nav-icon">💳</span>Finanzas
+    <span class="nav-badge nb-ok">✓</span>
+  </div>
+
+  <div class="sidebar-section">Fases del Proyecto</div>
+  <div class="nav-item" onclick="showSection('fase1')">
+    <span class="nav-icon">🌱</span>Fase 1 — Cocina
+    <span class="nav-badge nb-prog">Act.</span>
+  </div>
+  <div class="nav-item" onclick="showSection('fase2')">
+    <span class="nav-icon">☕</span>Fase 2 — Barra
+    <span class="nav-badge nb-pend">—</span>
+  </div>
+  <div class="nav-item" onclick="showSection('fase3')">
+    <span class="nav-icon">🚀</span>Fase 3 — Cierre
+    <span class="nav-badge nb-pend">—</span>
+  </div>
+
+  <div class="sidebar-section">Control</div>
+  <div class="nav-item" onclick="showSection('entregables')">
+    <span class="nav-icon">📋</span>Entregables
+  </div>
+  <div class="nav-item" onclick="showSection('cliente')">
+    <span class="nav-icon">👤</span>Vista cliente
+  </div>
+  <div class="nav-item" onclick="showSection('backend')">
+    <span class="nav-icon">⚙️</span>Backend / Notas
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- ══ OVERVIEW ══ -->
+<div class="section active" id="sec-overview">
+
+  <div class="kpi-strip fade-in">
+    <div class="kpi-card">
+      <div class="kpi-label">Progreso global</div>
+      <div class="kpi-val yellow">18%</div>
+      <div class="kpi-sub">Fase 1 activa</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Módulos ✓</div>
+      <div class="kpi-val green">3</div>
+      <div class="kpi-sub">de 21 totales</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">En progreso</div>
+      <div class="kpi-val yellow">2</div>
+      <div class="kpi-sub">módulos activos</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Semana actual</div>
+      <div class="kpi-val white">1–2</div>
+      <div class="kpi-sub">de 14 semanas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Revenue</div>
+      <div class="kpi-val green">$10,950</div>
+      <div class="kpi-sub">MXN cobrado</div>
+    </div>
+  </div>
+
+  <div class="master-progress fade-in">
+    <div class="mp-header">
+      <div class="mp-title">Progreso maestro del proyecto</div>
+      <div class="mp-pct">18%</div>
+    </div>
+    <div class="mp-bar-wrap"><div class="mp-bar-fill" style="width:18%;"></div></div>
+    <div class="mp-phases">
+      <div class="mp-phase">
+        <div class="mp-phase-label">FASE 1</div>
+        <div class="mp-phase-name">Cocina + Inocuidad</div>
+        <div class="mp-phase-bar"><div class="mp-phase-fill" style="width:35%;background:var(--yellow);"></div></div>
+        <div class="mp-phase-pct">35% · Semanas 1–4</div>
+      </div>
+      <div class="mp-phase">
+        <div class="mp-phase-label">FASE 2</div>
+        <div class="mp-phase-name">Barra + Salón + Servicio</div>
+        <div class="mp-phase-bar"><div class="mp-phase-fill" style="width:0%;background:var(--green);"></div></div>
+        <div class="mp-phase-pct">0% · Semanas 5–8</div>
+      </div>
+      <div class="mp-phase">
+        <div class="mp-phase-label">FASE 3</div>
+        <div class="mp-phase-name">RRHH + App + Lanzamiento</div>
+        <div class="mp-phase-bar"><div class="mp-phase-fill" style="width:0%;background:var(--blue);"></div></div>
+        <div class="mp-phase-pct">0% · Semanas 9–14</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline semanas -->
+  <div style="font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;" class="fade-in">Timeline 14 semanas</div>
+  <div class="weeks-grid fade-in">
+    <div class="week-card active"><div class="wk-num">SEM 1–2</div><div class="wk-status">⚡</div><div class="wk-label">Config. inicial</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 3–4</div><div class="wk-status">🌡</div><div class="wk-label">Termometría</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 5–6</div><div class="wk-status">☕</div><div class="wk-label">Barra + Salón</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 7–8</div><div class="wk-status">📦</div><div class="wk-label">Producción</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 9–10</div><div class="wk-status">📲</div><div class="wk-label">Alertas + WA</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 11–12</div><div class="wk-status">🔧</div><div class="wk-label">Ajustes</div></div>
+    <div class="week-card future"><div class="wk-num">SEM 13–14</div><div class="wk-status">🎯</div><div class="wk-label">Entrega final</div></div>
+  </div>
+
+  <!-- Métricas rápidas -->
+  <div class="metrics-grid fade-in">
+    <div class="metric-card">
+      <div class="metric-title">Módulos por estado</div>
+      <div class="metric-row"><span class="mr-label">Completados</span><span class="mr-val g">3 módulos</span></div>
+      <div class="metric-row"><span class="mr-label">En progreso</span><span class="mr-val y">2 módulos</span></div>
+      <div class="metric-row"><span class="mr-label">Pendientes Fase 1</span><span class="mr-val">3 módulos</span></div>
+      <div class="metric-row"><span class="mr-label">Bloqueados (F2+F3)</span><span class="mr-val" style="color:var(--dim);">13 módulos</span></div>
+      <div class="metric-row"><span class="mr-label">Total proyecto</span><span class="mr-val">21 módulos</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Entregables</div>
+      <div class="metric-row"><span class="mr-label">Formatos tropicalizados</span><span class="mr-val g">11 / 11 ✓</span></div>
+      <div class="metric-row"><span class="mr-label">Páginas web en vivo</span><span class="mr-val g">5 / 5 ✓</span></div>
+      <div class="metric-row"><span class="mr-label">App operaciones (HTML)</span><span class="mr-val g">✓ lista</span></div>
+      <div class="metric-row"><span class="mr-label">Documentos legales</span><span class="mr-val g">3 / 3 ✓</span></div>
+      <div class="metric-row"><span class="mr-label">Pago Stripe activo</span><span class="mr-val g">✓ cobrado</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ FINANZAS ══ -->
+<div class="section" id="sec-finance">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Finanzas del proyecto</div>
+    <span class="fase-status-badge fsb-done">Pago recibido</span>
+  </div>
+
+  <div class="finance-card fade-in">
+    <div class="fc-title">Cobros realizados</div>
+    <div class="fc-row"><span class="fc-label">Licencia activación</span><span class="fc-val green">$8,000 MXN ✓</span></div>
+    <div class="fc-row"><span class="fc-label">Mes 1</span><span class="fc-val green">$2,950 MXN ✓</span></div>
+    <div class="fc-row"><span class="fc-label">Total cobrado</span><span class="fc-val green">$10,950 MXN</span></div>
+    <div class="fc-row"><span class="fc-label">Procesado por</span><span class="fc-val muted">Stripe</span></div>
+  </div>
+
+  <div class="metrics-grid fade-in">
+    <div class="metric-card">
+      <div class="metric-title">Proyección anual</div>
+      <div class="metric-row"><span class="mr-label">Suscripción mensual</span><span class="mr-val">$2,950 MXN</span></div>
+      <div class="metric-row"><span class="mr-label">Próximo cobro</span><span class="mr-val y" id="dash-next-cobro">1 jun 2026</span></div>
+      <div class="metric-row"><span class="mr-label">MRR proyectado</span><span class="mr-val g">$2,950 MXN</span></div>
+      <div class="metric-row"><span class="mr-label">ARR proyectado</span><span class="mr-val g">$35,400 MXN</span></div>
+      <div class="metric-row"><span class="mr-label">Dunning activo</span><span class="mr-val g">Día 6 ✓</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Módulos premium disponibles</div>
+      <div class="metric-row"><span class="mr-label">Financiero</span><span class="mr-val b">$300 USD</span></div>
+      <div class="metric-row"><span class="mr-label">Costeo</span><span class="mr-val b">$300 USD</span></div>
+      <div class="metric-row"><span class="mr-label">Almacén</span><span class="mr-val b">$300 USD</span></div>
+      <div class="metric-row"><span class="mr-label">Compras</span><span class="mr-val b">$300 USD</span></div>
+      <div class="metric-row"><span class="mr-label">POS</span><span class="mr-val b">$300 USD</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FASE 1 ══ -->
+<div class="section" id="sec-fase1">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Fase 1 · Cocina + Inocuidad + Cocina</div>
+    <span class="fase-status-badge fsb-active">En progreso · 35%</span>
+  </div>
+
+  <div class="master-progress fade-in" style="margin-bottom:16px;">
+    <div class="mp-header">
+      <div class="mp-title">Progreso Fase 1</div>
+      <div class="mp-pct" style="font-size:18px;">35%</div>
+    </div>
+    <div class="mp-bar-wrap"><div class="mp-bar-fill" style="width:35%;"></div></div>
+  </div>
+
+  <table class="modules-table fade-in">
+    <thead>
+      <tr>
+        <th>Módulo</th>
+        <th>Estado</th>
+        <th>Progreso</th>
+        <th>Cliente ve</th>
+        <th>Semana</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="mod-name">Login MFA + Seguridad base</div><div class="mod-area">Autenticación / Acceso</div></td>
+        <td><span class="status-pill sp-done"><span class="sp-dot"></span>Completado</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div><span class="prog-pct">100%</span></div></td>
+        <td><span class="tag-client tc-visible">Visible</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 1</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Diseño de marca + paleta VK</div><div class="mod-area">Identidad visual</div></td>
+        <td><span class="status-pill sp-done"><span class="sp-dot"></span>Completado</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div><span class="prog-pct">100%</span></div></td>
+        <td><span class="tag-client tc-visible">Visible</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 1</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Hub operativo + Panel propietario</div><div class="mod-area">Dashboard principal</div></td>
+        <td><span class="status-pill sp-done"><span class="sp-dot"></span>Completado</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:100%;background:var(--green);"></div></div><span class="prog-pct">100%</span></div></td>
+        <td><span class="tag-client tc-visible">Visible</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 1</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Inocuidad / Termometría</div><div class="mod-area">3 bitácoras + alertas</div></td>
+        <td><span class="status-pill sp-prog"><span class="sp-dot"></span>En progreso</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:60%;background:var(--yellow);"></div></div><span class="prog-pct">60%</span></div></td>
+        <td><span class="tag-client tc-hidden">Oculto</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 2–3</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Cocina / Producción</div><div class="mod-area">Líneas, gramajes, pre-fermentos</div></td>
+        <td><span class="status-pill sp-prog"><span class="sp-dot"></span>En progreso</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:40%;background:var(--yellow);"></div></div><span class="prog-pct">40%</span></div></td>
+        <td><span class="tag-client tc-hidden">Oculto</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 2–4</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Checklists apertura + cierre Cocina</div><div class="mod-area">Formularios operativos</div></td>
+        <td><span class="status-pill sp-pend"><span class="sp-dot"></span>Pendiente</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted);"></div></div><span class="prog-pct">0%</span></div></td>
+        <td><span class="tag-client tc-hidden">Oculto</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 3–4</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Fotos GPS + Voice-to-text</div><div class="mod-area">Evidencia + trazabilidad</div></td>
+        <td><span class="status-pill sp-pend"><span class="sp-dot"></span>Pendiente</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted);"></div></div><span class="prog-pct">0%</span></div></td>
+        <td><span class="tag-client tc-hidden">Oculto</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 4</td>
+      </tr>
+      <tr>
+        <td><div class="mod-name">Alertas WhatsApp propietario</div><div class="mod-area">Notificaciones en tiempo real</div></td>
+        <td><span class="status-pill sp-pend"><span class="sp-dot"></span>Pendiente</span></td>
+        <td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;background:var(--muted);"></div></div><span class="prog-pct">0%</span></div></td>
+        <td><span class="tag-client tc-hidden">Oculto</span></td>
+        <td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 4</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="backend-card fade-in">
+    <div class="bc-title">Notas backend — Solo Admin</div>
+    <div class="bc-item">Termometría: toggles, teclado numérico y foto GPS implementados. Faltan alertas automáticas y SOP contextual.</div>
+    <div class="bc-item">Cocina / Producción: formatos HTML tropicalizados listos (11/11). Pendiente integración con base de datos Supabase.</div>
+    <div class="bc-item">Checklists: estructura HTML lista. Pendiente conectar con auth y guardar registros en DB.</div>
+    <div class="bc-item">Voice-to-text: requiere Web Speech API + fallback. No expuesto al cliente aún.</div>
+  </div>
+</div>
+
+<!-- ══ FASE 2 ══ -->
+<div class="section" id="sec-fase2">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Fase 2 · Barra + Salón + Servicio + Limpieza</div>
+    <span class="fase-status-badge fsb-locked">Bloqueado · Sem 5–8</span>
+  </div>
+
+  <div class="client-preview fade-in">
+    <div class="cp-label">Lo que ve el cliente</div>
+    <div class="cp-note">El cliente ve "Fase 2 — Bloqueado" en su portal con la descripción de áreas. No ve ningún módulo ni avance interno hasta que se publique manualmente desde aquí.</div>
+  </div>
+
+  <table class="modules-table fade-in">
+    <thead><tr><th>Módulo</th><th>Estado</th><th>Progreso</th><th>Cliente ve</th><th>Semana</th></tr></thead>
+    <tbody>
+      <tr><td><div class="mod-name">Barra / Bebidas</div><div class="mod-area">Recetas, merma, destrucción envases</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 5</td></tr>
+      <tr><td><div class="mod-name">Salón principal</div><div class="mod-area">Montaje, iluminación, temperatura</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 5</td></tr>
+      <tr><td><div class="mod-name">Terrazas 1 + 2</div><div class="mod-area">Checklists por zona exterior</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 6</td></tr>
+      <tr><td><div class="mod-name">Protocolo de servicio</div><div class="mod-area">Pasos, tiempos, estándares</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 6</td></tr>
+      <tr><td><div class="mod-name">Rol de limpieza por área</div><div class="mod-area">Diaria, semanal, profunda</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 7</td></div></tr>
+      <tr><td><div class="mod-name">Checklists Barra + Salón + Terrazas</div><div class="mod-area">Apertura, cambio, cierre</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 7</td></tr>
+      <tr><td><div class="mod-name">SOPs contextuales</div><div class="mod-area">Manual 5S, Higiene, Glosario</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 8</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══ FASE 3 ══ -->
+<div class="section" id="sec-fase3">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Fase 3 · RRHH + Gerencia + App + Lanzamiento</div>
+    <span class="fase-status-badge fsb-locked">Bloqueado · Sem 9–14</span>
+  </div>
+
+  <div class="client-preview fade-in">
+    <div class="cp-label">Lo que ve el cliente</div>
+    <div class="cp-note">El cliente ve "Fase 3 — Bloqueado" en su portal. Ningún módulo de esta fase es visible hasta semana 9.</div>
+  </div>
+
+  <table class="modules-table fade-in">
+    <thead><tr><th>Módulo</th><th>Estado</th><th>Progreso</th><th>Cliente ve</th><th>Semana</th></tr></thead>
+    <tbody>
+      <tr><td><div class="mod-name">Recursos Humanos</div><div class="mod-area">Turnos, habilidades, asistencia</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 9</td></tr>
+      <tr><td><div class="mod-name">Matriz de habilidades</div><div class="mod-area">Por colaborador</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 9</td></tr>
+      <tr><td><div class="mod-name">Gerencia / Dashboard ejecutivo</div><div class="mod-area">Mapas de calor, audit trail</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 10</td></tr>
+      <tr><td><div class="mod-name">Vistas por rol</div><div class="mod-area">Propietario, Gerente, Operador</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 11</td></tr>
+      <tr><td><div class="mod-name">App móvil nativa</div><div class="mod-area">Modo quiosco, offline, sello real</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 12</td></tr>
+      <tr><td><div class="mod-name">Capacitación + Entrega oficial</div><div class="mod-area">Cierre y validación del proyecto</div></td><td><span class="status-pill sp-block"><span class="sp-dot"></span>Bloqueado</span></td><td><div class="progress-cell"><div class="prog-bar"><div class="prog-fill" style="width:0%;"></div></div><span class="prog-pct">0%</span></div></td><td><span class="tag-client tc-hidden">Oculto</span></td><td style="font-size:11px;font-family:var(--mono);color:var(--muted);">Sem 13–14</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══ ENTREGABLES ══ -->
+<div class="section" id="sec-entregables">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Entregables del proyecto</div>
+  </div>
+
+  <div style="font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;" class="fade-in">Web + Plataforma</div>
+  <div class="fade-in">
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Landing page (index.html)</div><div class="dr-type">HTML · Web</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Portal post-pago (proyecto.html)</div><div class="dr-type">HTML · Web</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Pantalla bienvenida post-pago</div><div class="dr-type">JS · Overlay</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Página de términos + 2 checkboxes</div><div class="dr-type">HTML · Legal</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Política de privacidad (13 secciones)</div><div class="dr-type">HTML · Legal</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Contrato de servicios (14 cláusulas)</div><div class="dr-type">HTML · Legal</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">App operaciones VK (11 módulos editables)</div><div class="dr-type">HTML · App</div><div class="dr-client-tag dct-hid">admin</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Stripe Payment Link activo</div><div class="dr-type">Stripe</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Dashboard admin (este archivo)</div><div class="dr-type">HTML · Admin</div><div class="dr-client-tag dct-hid">admin</div></div>
+  </div>
+
+  <div style="font-size:11px;font-family:var(--mono);color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin:20px 0 10px;" class="fade-in">Formatos Operativos Tropicalizados</div>
+  <div class="fade-in">
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Checklist Barra Café (abre/cambio/cierre)</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Checklist Salón & Mostrador</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Checklist Supervisor (verificación cruzada)</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Bitácora de Baños (16 franjas horarias)</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Control Semanal de Producción</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Inventario Bebidas (44 ítems)</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+    <div class="deliverable-row"><div class="dr-check on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="dr-name">Inventario Panadería, Repostería, Salón, Caja</div><div class="dr-type">HTML imprimible</div><div class="dr-client-tag dct-vis">visible</div></div>
+  </div>
+</div>
+
+<!-- ══ VISTA CLIENTE ══ -->
+<div class="section" id="sec-cliente">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Control de visibilidad — Cliente VK</div>
+  </div>
+  <div class="client-preview fade-in">
+    <div class="cp-label">Regla de visibilidad activa</div>
+    <div class="cp-note">El cliente (Vitality Kitchen) solo ve lo que está marcado como "Visible" en las tablas de módulos. Todo lo marcado "Oculto" o "Admin" no aparece en su portal. El dashboard admin (este archivo) nunca es accesible desde el portal del cliente.</div>
+  </div>
+  <div class="metrics-grid fade-in">
+    <div class="metric-card">
+      <div class="metric-title">Visible para el cliente ahora</div>
+      <div class="metric-row"><span class="mr-label">Landing page</span><span class="mr-val g">✓</span></div>
+      <div class="metric-row"><span class="mr-label">Portal post-pago</span><span class="mr-val g">✓</span></div>
+      <div class="metric-row"><span class="mr-label">Bienvenida post-pago</span><span class="mr-val g">✓</span></div>
+      <div class="metric-row"><span class="mr-label">Roadmap 14 semanas</span><span class="mr-val g">✓</span></div>
+      <div class="metric-row"><span class="mr-label">Documentos legales</span><span class="mr-val g">✓</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Oculto para el cliente</div>
+      <div class="metric-row"><span class="mr-label">Dashboard admin</span><span class="mr-val r">🔒 Solo admin</span></div>
+      <div class="metric-row"><span class="mr-label">App operaciones interna</span><span class="mr-val r">🔒 Solo admin</span></div>
+      <div class="metric-row"><span class="mr-label">Notas backend</span><span class="mr-val r">🔒 Solo admin</span></div>
+      <div class="metric-row"><span class="mr-label">Métricas técnicas</span><span class="mr-val r">🔒 Solo admin</span></div>
+      <div class="metric-row"><span class="mr-label">Credenciales Stripe/GitHub</span><span class="mr-val r">🔒 Solo admin</span></div>
+    </div>
+  </div>
+  <div style="margin-top:16px;" class="fade-in">
+    <a href="https://vitality-control.github.io/proyecto.html" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--kale);color:var(--lemon);padding:11px 22px;border-radius:8px;font-size:13px;font-weight:600;">
+      ↗ Abrir portal del cliente en nueva pestaña
+    </a>
+  </div>
+</div>
+
+<!-- ══ BACKEND ══ -->
+<div class="section" id="sec-backend">
+  <div class="fase-header fade-in">
+    <div class="fase-title">Notas de Backend — Solo Admin</div>
+  </div>
+  <div class="backend-card fade-in">
+    <div class="bc-title">Infraestructura actual</div>
+    <div class="bc-item">Hosting: GitHub Pages (estático) — vitality-control.github.io</div>
+    <div class="bc-item">Repo: github.com/vitality-control/vitality-control.github.io</div>
+    <div class="bc-item">DB: Supabase (PostgreSQL) — pendiente de conectar en Fase 1</div>
+    <div class="bc-item">Auth: MFA implementado en app operaciones (HTML). Pendiente integrar con Supabase Auth.</div>
+    <div class="bc-item">Pagos: Stripe Payment Link activo — buy.stripe.com/6oU00ifur4et1Mb6lhfEk00</div>
+    <div class="bc-item">Email: lita@litasupport.mx — pendiente configurar en Zoho Mail</div>
+  </div>
+  <div class="backend-card fade-in">
+    <div class="bc-title">Pendientes técnicos críticos</div>
+    <div class="bc-item">Conectar app operaciones con Supabase para persistencia de datos real</div>
+    <div class="bc-item">Implementar Row Level Security (RLS) por tenant en Supabase</div>
+    <div class="bc-item">Configurar webhooks Stripe → notificación automática en pago/fallo</div>
+    <div class="bc-item">Activar Zoho Mail para lita@litasupport.mx</div>
+    <div class="bc-item">Migrar de GitHub Pages a dominio propio cuando escale a multi-tenant</div>
+  </div>
+  <div class="metrics-grid fade-in">
+    <div class="metric-card">
+      <div class="metric-title">Stack técnico</div>
+      <div class="metric-row"><span class="mr-label">Frontend</span><span class="mr-val">HTML · CSS · JS vanilla</span></div>
+      <div class="metric-row"><span class="mr-label">Hosting</span><span class="mr-val">GitHub Pages</span></div>
+      <div class="metric-row"><span class="mr-label">Base de datos</span><span class="mr-val y">Supabase (pendiente)</span></div>
+      <div class="metric-row"><span class="mr-label">Pagos</span><span class="mr-val g">Stripe ✓</span></div>
+      <div class="metric-row"><span class="mr-label">Fuentes</span><span class="mr-val">DM Sans + DM Mono</span></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Accesos admin</div>
+      <div class="metric-row"><span class="mr-label">blanca@delamorazumaran.com</span><span class="mr-val g">VK.DMZ2026</span></div>
+      <div class="metric-row"><span class="mr-label">mario@delamorazumaran.com</span><span class="mr-val g">VK.DMZ2026</span></div>
+      <div class="metric-row"><span class="mr-label">GitHub repo</span><span class="mr-val b">vitality-control</span></div>
+      <div class="metric-row"><span class="mr-label">Stripe</span><span class="mr-val b">dashboard.stripe.com</span></div>
+      <div class="metric-row"><span class="mr-label">Supabase</span><span class="mr-val y">Por conectar</span></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Navegación
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')==="showSection('"+id+"')") n.classList.add('active');
+  });
+  // Re-trigger fade
+  document.querySelectorAll('#sec-'+id+' .fade-in').forEach(el=>{
+    el.classList.remove('show');
+    setTimeout(()=>el.classList.add('show'),50);
+  });
+}
+
+// Fecha dinámica
+(function(){
+  var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var now=new Date(), next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  var el=document.getElementById('dash-next-cobro');
+  if(el) el.textContent='1 '+meses[next.getMonth()]+' '+next.getFullYear();
+})();
+
+// Fade inicial
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('show');});
+},{threshold:.05});
+document.querySelectorAll('.fade-in').forEach(function(el){obs.observe(el);});
+</script>
+</body>
+</html>
