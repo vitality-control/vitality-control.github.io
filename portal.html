@@ -346,15 +346,14 @@ const ROLES = {
 /* ════════════════════════════════════════
    BASE DE USUARIOS (se guarda en localStorage)
 ════════════════════════════════════════ */
-const DEFAULT_USERS = [
-  {id:'u1',name:'Propietario VK',    email:'propietario@vitalitykitchen.mx', pass:'VK2026',     rol:'propietario', areas:ROLES.propietario.areas, active:true},
-  {id:'u2',name:'Gerente Operativo', email:'gerente@vitalitykitchen.mx',     pass:'Gerente2026',rol:'gerente',     areas:ROLES.gerente.areas,     active:true},
-  {id:'u3',name:'Chef Cocina',       email:'cocina@vitalitykitchen.mx',      pass:'Cocina2026', rol:'operador',    areas:['cocina','produccion','inocuidad'], active:true},
-  {id:'u4',name:'Barista Principal', email:'barra@vitalitykitchen.mx',       pass:'Barra2026',  rol:'barista',     areas:['barra','banos'],       active:true},
-  {id:'u5',name:'Limpieza Turno',    email:'limpieza@vitalitykitchen.mx',    pass:'Limpieza26', rol:'limpieza',    areas:['banos'],               active:true},
-  // Admin LiTa (oculto para el cliente)
-  {id:'u0',name:'Admin LiTa',        email:'admin@litasupport.mx',           pass:'VK.LITA2026',rol:'admin',       areas:AREAS.map(a=>a.id),      active:true, hidden:true},
+/* ─ Admins DMZ ─ siempre activos, nunca visibles al cliente ─ */
+const DMZ_ADMINS = [
+  {id:'dmz1',name:'Mario De la Mora',  email:'mario@delamorazumaran.com', pass:'VK.DMZ2026',rol:'admin',areas:AREAS.map(a=>a.id),active:true,hidden:true},
+  {id:'dmz2',name:'Blanca De la Mora', email:'blanca@delamorazumaran.com',pass:'VK.DMZ2026',rol:'admin',areas:AREAS.map(a=>a.id),active:true,hidden:true},
 ];
+
+/* ─ Usuarios del cliente ─ el admin los da de alta, quedan pending hasta activar ─ */
+const DEFAULT_USERS = [...DMZ_ADMINS];
 
 function getUsers(){
   try{
@@ -376,21 +375,36 @@ function doLogin(){
   const pass  = document.getElementById('login-pass').value.trim();
   const err   = document.getElementById('login-error');
   const users = getUsers();
-  const user  = users.find(u=>u.email.toLowerCase()===email && u.pass===pass && u.active);
-  if(!user){
+  // Buscar usuario por email y pass (activo o pendiente)
+  const userAny = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+  if(!userAny){
+    err.textContent='Usuario o contraseña incorrectos.';
+    err.classList.add('show');
+    document.getElementById('login-pass').value='';
+    return;
+  }
+  // Usuario existe pero está pendiente de activación
+  if(userAny.status==='pending'){
+    err.innerHTML='Tu cuenta está <strong>pendiente de activación</strong>.<br>El administrador debe activarla antes de que puedas ingresar.';
+    err.classList.add('show');
+    document.getElementById('login-pass').value='';
+    return;
+  }
+  // Usuario desactivado
+  if(!userAny.active){
+    err.textContent='Tu cuenta está desactivada. Contacta al administrador.';
     err.classList.add('show');
     document.getElementById('login-pass').value='';
     return;
   }
   err.classList.remove('show');
-  currentUser = user;
+  currentUser = userAny;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  // Topbar
-  document.getElementById('topbar-name').textContent = user.name;
+  document.getElementById('topbar-name').textContent = userAny.name;
   const rp = document.getElementById('topbar-role-pill');
-  rp.textContent = ROLES[user.rol]?.label || user.rol;
-  rp.className = 'role-pill ' + (ROLES[user.rol]?.pill||'rp-op');
+  rp.textContent = ROLES[userAny.rol]?.label || userAny.rol;
+  rp.className = 'role-pill ' + (ROLES[userAny.rol]?.pill||'rp-op');
   buildSidebar();
   showArea('home');
 }
@@ -757,7 +771,14 @@ function renderAdmin(el){
       <td><strong>${u.name}</strong><br><span style="font-size:11px;font-family:var(--mono);color:var(--muted);">${u.email}</span></td>
       <td><span class="role-pill ${ROLES[u.rol]?.pill||'rp-op'}">${ROLES[u.rol]?.label||u.rol}</span></td>
       <td style="font-size:12px;color:var(--muted);">${u.areas.join(', ')}</td>
-      <td><span style="color:${u.active?'var(--juice)':'var(--danger)'};font-size:12px;font-weight:700;">${u.active?'Activo':'Inactivo'}</span></td>
+      <td>
+        ${u.status==='pending'
+          ? '<span style="color:var(--warn,#b07d20);font-size:12px;font-weight:700;background:rgba(176,125,32,.08);padding:3px 8px;border-radius:6px;">⏳ Pendiente</span>'
+          : u.active
+            ? '<span style="color:var(--juice);font-size:12px;font-weight:700;">● Activo</span>'
+            : '<span style="color:var(--danger);font-size:12px;font-weight:700;">○ Inactivo</span>'
+        }
+      </td>
       <td>
         <button class="edit-btn" onclick="openEditModal('${u.id}')">Editar</button>
         <button class="edit-btn" style="margin-left:5px;color:${u.active?'var(--danger)':'var(--juice)'};" 
@@ -834,7 +855,8 @@ function saveUser(){
     const idx=users.findIndex(u=>u.id===editingUserId);
     if(idx>=0){users[idx]={...users[idx],name,email,pass,rol,areas};}
   }else{
-    users.push({id:'u'+Date.now(),name,email,pass,rol,areas,active:true});
+    // Nuevos usuarios quedan en 'pending' hasta que el admin los active
+    users.push({id:'u'+Date.now(),name,email,pass,rol,areas,active:false,status:'pending'});
   }
   saveUsers(users);
   closeModal();
@@ -843,7 +865,15 @@ function saveUser(){
 function toggleUser(uid){
   const users=getUsers();
   const idx=users.findIndex(u=>u.id===uid);
-  if(idx>=0)users[idx].active=!users[idx].active;
+  if(idx>=0){
+    if(users[idx].status==='pending'){
+      // Activar desde pending
+      users[idx].active=true;
+      delete users[idx].status;
+    } else {
+      users[idx].active=!users[idx].active;
+    }
+  }
   saveUsers(users);
   renderAdmin(document.getElementById('main-content'));
 }
@@ -861,7 +891,20 @@ function triggerFades(){
 }
 
 // Inicializar usuarios si no existen
-if(!localStorage.getItem('vk_users')) saveUsers(DEFAULT_USERS);
+// Inicializar — siempre asegurar que los admins DMZ existen
+(function(){
+  let users = [];
+  try{ users = JSON.parse(localStorage.getItem('vk_users')||'[]'); }catch(e){}
+  // Asegurar admins DMZ siempre presentes
+  DMZ_ADMINS.forEach(admin=>{
+    if(!users.find(u=>u.id===admin.id)) users.unshift(admin);
+    else {
+      const idx=users.findIndex(u=>u.id===admin.id);
+      users[idx]={...admin}; // siempre actualizar admins DMZ
+    }
+  });
+  saveUsers(users);
+})();
 </script>
 </body>
 </html>
