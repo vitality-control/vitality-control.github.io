@@ -4,274 +4,411 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Vitality Kitchen · Acceso</title>
+<title>Vitality Kitchen · Portal Operativo</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --kale:#146B4F;--juice:#8BB839;--cucumber:#DFF6A6;--lemon:#E0ED30;
   --spirulina:#005056;--coconut:#FEFEFC;--blueberry:#97B9FF;
-  --bg:#FEFEFC;--bg-soft:#F4F7EF;--text:#1A2E1F;--muted:#6B8A72;
-  --border:rgba(20,107,79,.1);--border-soft:rgba(20,107,79,.06);
+  --bg:#FEFEFC;--bg2:#F4F7EF;--text:#1A2E1F;--muted:#6B8A72;--dim:#a0b8a8;
+  --border:rgba(20,107,79,.1);--border2:rgba(20,107,79,.06);
   --danger:#c0392b;--warn:#b07d20;
   --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  /* categorías */
+  --cocina:#146B4F;--cocina-bg:rgba(20,107,79,.07);
+  --barra:#8B6914;--barra-bg:rgba(139,105,20,.07);
+  --almacen:#5A3B8C;--almacen-bg:rgba(90,59,140,.07);
+  --salon:#1A5E9A;--salon-bg:rgba(26,94,154,.07);
+  --servicio:#8C3B2A;--servicio-bg:rgba(140,59,42,.07);
+  --vitrinas:#2A7A3B;--vitrinas-bg:rgba(42,122,59,.07);
 }
 html{scroll-behavior:smooth;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
 body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:160px;}
 ::selection{background:var(--cucumber);color:var(--kale);}
 
-/* ════════════════════
-   LOGIN
-════════════════════ */
-#login-screen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
+/* ══ PANTALLA AUTH ══ */
+#auth-screen{
+  min-height:100vh;display:flex;align-items:stretch;
   background:linear-gradient(135deg,var(--spirulina) 0%,var(--kale) 55%,var(--juice) 100%);
-  padding:24px;position:relative;overflow:hidden;
 }
-#login-screen::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");}
-.login-card{
-  background:var(--coconut);border-radius:20px;
-  padding:48px 44px 40px;width:420px;max-width:100%;
-  box-shadow:0 24px 80px rgba(0,0,0,.3);
-  position:relative;z-index:1;animation:fadeUp .5s ease;
+.auth-left{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px;
 }
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
-.login-logo{
-  width:60px;height:60px;background:var(--kale);border-radius:14px;
+.auth-right{
+  width:460px;flex-shrink:0;background:var(--coconut);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:48px 44px;overflow-y:auto;
+}
+@media(max-width:760px){
+  #auth-screen{flex-direction:column;}
+  .auth-left{display:none;}
+  .auth-right{width:100%;min-height:100vh;}
+}
+.auth-brand{color:white;text-align:center;}
+.auth-mark{
+  width:72px;height:72px;background:rgba(255,255,255,.12);border-radius:16px;
   display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
+  border:1.5px solid rgba(255,255,255,.2);
 }
-.login-brand{font-size:20px;font-weight:700;color:var(--kale);text-align:center;letter-spacing:-.3px;}
-.login-sub{font-size:12px;color:var(--muted);text-align:center;margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;}
-.login-divider{height:1px;background:var(--border);margin:24px 0;}
-.login-label{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:6px;}
-.login-input{
+.auth-brand h1{font-size:32px;font-weight:700;letter-spacing:-1px;color:white;}
+.auth-brand p{font-size:14px;color:rgba(255,255,255,.6);margin-top:8px;line-height:1.6;}
+.auth-features{margin-top:36px;display:flex;flex-direction:column;gap:14px;text-align:left;}
+.af-item{display:flex;align-items:flex-start;gap:12px;}
+.af-dot{width:8px;height:8px;border-radius:50%;background:var(--lemon);flex-shrink:0;margin-top:5px;}
+.af-text{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5;}
+
+/* Tabs login/registro */
+.auth-tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--border);}
+.auth-tab{flex:1;text-align:center;padding:10px;font-size:14px;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.auth-tab.active{color:var(--kale);border-bottom-color:var(--kale);}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+
+.auth-title{font-size:22px;font-weight:700;color:var(--kale);margin-bottom:6px;letter-spacing:-.3px;}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+.field-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:5px;margin-top:14px;}
+.field-label:first-of-type{margin-top:0;}
+.field-input,.field-select{
   width:100%;border:1.5px solid var(--border);border-radius:10px;
-  padding:12px 14px;font-size:15px;font-family:var(--font);color:var(--text);
-  background:white;margin-bottom:14px;transition:border-color .2s;
+  padding:11px 14px;font-size:15px;font-family:var(--font);color:var(--text);
+  background:white;transition:border-color .2s;
 }
-.login-input:focus{outline:none;border-color:var(--kale);}
-.login-btn{
+.field-input:focus,.field-select:focus{outline:none;border-color:var(--kale);}
+.auth-btn{
   width:100%;background:var(--kale);color:var(--lemon);border:none;border-radius:40px;
   padding:14px;font-size:15px;font-weight:700;letter-spacing:.5px;
-  font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;
+  font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:20px;
 }
-.login-btn:hover{background:var(--spirulina);transform:translateY(-1px);}
-.login-error{background:#fff0f0;border:1px solid #ffcccc;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;}
-.login-error.show{display:block;}
-.login-footer{text-align:center;font-size:11px;color:#aaa;margin-top:20px;letter-spacing:.5px;}
+.auth-btn:hover{background:var(--spirulina);transform:translateY(-1px);}
+.auth-error{background:#fff0f0;border:1px solid #ffcccc;border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:14px;display:none;line-height:1.5;}
+.auth-error.show{display:block;}
+.auth-success{background:rgba(139,184,57,.1);border:1px solid rgba(139,184,57,.3);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--kale);margin-bottom:14px;display:none;line-height:1.5;}
+.auth-success.show{display:block;}
+.auth-footer{text-align:center;font-size:11px;color:var(--dim);margin-top:20px;line-height:1.6;}
+.auth-footer a{color:var(--kale);}
 
-/* ════════════════════
-   APP SHELL
-════════════════════ */
-#app{display:none;min-height:100vh;background:var(--bg-soft);}
+/* ══ APP ══ */
+#app{display:none;min-height:100vh;background:var(--bg2);}
 
 /* TOPBAR */
 .topbar{
-  position:sticky;top:0;z-index:100;height:58px;
+  position:sticky;top:0;z-index:100;height:56px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;
+  padding:0 20px;
   background:rgba(254,254,252,.95);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
 }
-.topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-mark{
-  width:36px;height:36px;background:var(--kale);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.topbar-brand{font-size:14px;font-weight:700;color:var(--kale);letter-spacing:-.2px;}
-.topbar-brand small{display:block;font-size:10px;font-weight:400;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
-.topbar-right{display:flex;align-items:center;gap:12px;}
-.user-info{text-align:right;}
-.user-name{font-size:13px;font-weight:600;color:var(--text);}
-.user-role{font-size:10px;font-family:var(--mono);letter-spacing:1px;margin-top:1px;}
-.role-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.topbar-mark{width:32px;height:32px;background:var(--kale);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.topbar-brand{font-size:13px;font-weight:700;color:var(--kale);letter-spacing:-.2px;}
+.topbar-brand small{display:block;font-size:9px;font-weight:400;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.user-chip{display:flex;align-items:center;gap:8px;}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--cucumber);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--kale);}
+.user-name{font-size:12px;font-weight:600;color:var(--text);}
+.role-pill{font-size:9px;font-family:var(--mono);font-weight:700;letter-spacing:1.5px;padding:2px 7px;border-radius:8px;text-transform:uppercase;}
 .rp-admin{background:rgba(20,107,79,.12);color:var(--kale);}
-.rp-owner{background:rgba(0,80,86,.1);color:var(--spirulina);}
-.rp-mgr{background:rgba(151,185,255,.2);color:#1a3a7a;}
-.rp-op{background:rgba(139,184,57,.15);color:#3a5a10;}
-.rp-bar{background:rgba(201,149,107,.15);color:#6b3a10;}
-.rp-clean{background:rgba(150,150,150,.12);color:#444;}
-.logout-btn{background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--font);transition:all .2s;letter-spacing:.5px;}
+.rp-propietario{background:rgba(0,80,86,.1);color:var(--spirulina);}
+.rp-gerente{background:rgba(151,185,255,.2);color:#1a3a7a;}
+.rp-chef{background:rgba(20,107,79,.1);color:var(--kale);}
+.rp-barista{background:rgba(139,105,20,.15);color:#5a3a00;}
+.rp-mesero{background:rgba(140,59,42,.12);color:#5a1a0a;}
+.rp-limpieza{background:rgba(150,150,150,.12);color:#444;}
+.logout-btn{background:transparent;border:1.5px solid var(--border);border-radius:8px;color:var(--muted);padding:6px 12px;font-size:11px;cursor:pointer;font-family:var(--font);transition:all .2s;}
 .logout-btn:hover{background:var(--cucumber);border-color:var(--juice);color:var(--kale);}
 
 /* LAYOUT */
-.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 58px);}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 56px);}
 
 /* SIDEBAR */
-.sidebar{background:var(--coconut);border-right:1px solid var(--border);padding:16px 0;}
-.sidebar-section{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding:0 14px;margin:16px 0 6px;}
-.sidebar-section:first-child{margin-top:0;}
-.nav-item{
-  display:flex;align-items:center;gap:9px;
-  padding:9px 14px;cursor:pointer;color:var(--muted);
-  font-size:13px;transition:all .15s;border-left:2.5px solid transparent;
-  margin:1px 0;
+.sidebar{background:var(--coconut);border-right:1px solid var(--border);overflow-y:auto;position:sticky;top:56px;height:calc(100vh - 56px);}
+.sidebar-inner{padding:12px 0 20px;}
+.sidebar-section{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);padding:14px 14px 5px;}
+.cat-header{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--text);
+  transition:background .15s;border-radius:0;
+  user-select:none;
 }
-.nav-item:hover{background:var(--bg-soft);color:var(--text);}
-.nav-item.active{background:rgba(20,107,79,.06);color:var(--kale);border-left-color:var(--kale);}
-.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
-.nav-lock{font-size:11px;margin-left:auto;opacity:.4;}
-.nav-item.locked{opacity:.4;cursor:not-allowed;}
-.nav-item.locked:hover{background:transparent;color:var(--muted);}
+.cat-header:hover{background:var(--bg2);}
+.cat-header.locked{opacity:.35;cursor:not-allowed;}
+.cat-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.cat-name{flex:1;}
+.cat-chevron{font-size:11px;color:var(--dim);transition:transform .2s;margin-left:auto;}
+.cat-header.open .cat-chevron{transform:rotate(90deg);}
+.cat-lock{font-size:11px;color:var(--dim);margin-left:auto;}
+
+/* SUBCATEGORÍAS */
+.subcats{display:none;background:rgba(0,0,0,.018);}
+.subcats.open{display:block;}
+.subcat-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px 7px 40px;cursor:pointer;
+  font-size:12px;color:var(--muted);
+  border-left:2.5px solid transparent;transition:all .15s;
+}
+.subcat-item:hover{background:var(--bg2);color:var(--text);}
+.subcat-item.active{color:var(--kale);font-weight:600;border-left-color:var(--kale);background:rgba(20,107,79,.04);}
+.subcat-item.locked{opacity:.35;cursor:not-allowed;}
+.subcat-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* COLOR POR CAT */
+.cat-teal  .cat-header:hover,.cat-teal  .subcat-item:hover{background:var(--cocina-bg);}
+.cat-teal  .subcat-item.active{border-left-color:var(--cocina);color:var(--cocina);}
+.cat-amber .cat-header:hover,.cat-amber .subcat-item:hover{background:var(--barra-bg);}
+.cat-amber .subcat-item.active{border-left-color:var(--barra);color:var(--barra);}
+.cat-purple.cat-header:hover,.cat-purple .subcat-item:hover{background:var(--almacen-bg);}
+.cat-purple .subcat-item.active{border-left-color:var(--almacen);color:var(--almacen);}
+.cat-blue  .cat-header:hover,.cat-blue  .subcat-item:hover{background:var(--salon-bg);}
+.cat-blue  .subcat-item.active{border-left-color:var(--salon);color:var(--salon);}
+.cat-coral .cat-header:hover,.cat-coral .subcat-item:hover{background:var(--servicio-bg);}
+.cat-coral .subcat-item.active{border-left-color:var(--servicio);color:var(--servicio);}
+.cat-green .cat-header:hover,.cat-green .subcat-item:hover{background:var(--vitrinas-bg);}
+.cat-green .subcat-item.active{border-left-color:var(--vitrinas);color:var(--vitrinas);}
+
+/* TRANSVERSAL */
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;font-size:12px;color:var(--muted);transition:all .15s;border-left:2.5px solid transparent;}
+.nav-item:hover{background:var(--bg2);color:var(--text);}
+.nav-item.active{color:var(--kale);font-weight:600;border-left-color:var(--kale);background:rgba(20,107,79,.04);}
+.nav-item.locked{opacity:.35;cursor:not-allowed;}
 
 /* CONTENT */
-.content{padding:28px 32px;overflow-y:auto;}
+.content{padding:24px 28px;overflow-y:auto;}
 
-/* WELCOME */
-.welcome-header{margin-bottom:24px;}
-.welcome-title{font-size:24px;font-weight:700;color:var(--kale);letter-spacing:-.5px;margin-bottom:6px;}
-.welcome-sub{font-size:14px;color:var(--muted);line-height:1.6;}
-
-/* AREA GRID */
-.areas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
-@media(max-width:900px){.areas-grid{grid-template-columns:1fr 1fr;}}
-.area-card{
+/* HOME */
+.home-greeting{margin-bottom:24px;}
+.home-greeting h2{font-size:22px;font-weight:700;color:var(--kale);letter-spacing:-.3px;}
+.home-greeting p{font-size:14px;color:var(--muted);margin-top:4px;line-height:1.6;}
+.cats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:900px){.cats-grid{grid-template-columns:1fr 1fr;}}
+.cat-card{
   background:white;border:1.5px solid var(--border);border-radius:14px;
   padding:20px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
 }
-.area-card:hover:not(.area-locked){border-color:var(--juice);transform:translateY(-2px);box-shadow:0 6px 20px rgba(20,107,79,.08);}
-.area-card.area-locked{opacity:.45;cursor:not-allowed;}
-.area-card.area-active{border-color:var(--kale);background:rgba(20,107,79,.02);}
-.area-icon{font-size:28px;margin-bottom:12px;display:block;}
-.area-name{font-size:14px;font-weight:700;color:var(--kale);margin-bottom:4px;}
-.area-desc{font-size:12px;color:var(--muted);line-height:1.4;}
-.area-lock-overlay{
-  position:absolute;top:10px;right:10px;
-  font-size:16px;opacity:.4;
-}
+.cat-card:hover:not(.cat-card-locked){transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.06);}
+.cat-card-locked{opacity:.4;cursor:not-allowed;}
+.cat-card-icon{font-size:28px;margin-bottom:10px;display:block;}
+.cat-card-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.cat-card-subs{font-size:11px;color:var(--muted);}
+.cat-card-count{position:absolute;top:14px;right:14px;font-size:10px;font-family:var(--mono);background:var(--bg2);color:var(--muted);padding:2px 7px;border-radius:8px;}
+.cat-card-lock{position:absolute;top:14px;right:14px;font-size:14px;opacity:.35;}
 
 /* FORM PANEL */
-.form-panel{background:white;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
-.form-panel-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 20px;border-bottom:2px solid var(--kale);background:var(--bg-soft);
-}
-.fp-title{font-size:15px;font-weight:700;color:var(--kale);}
-.fp-sub{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
-.fp-actions{display:flex;gap:8px;}
-.btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:5px;}
-.btn-primary{background:var(--kale);color:var(--lemon);}
-.btn-primary:hover{background:var(--spirulina);}
+.fp{background:white;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px;}
+.fp-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:2px solid;background:var(--bg2);}
+.fp-head.cocina{border-color:var(--cocina);}
+.fp-head.barra{border-color:var(--barra);}
+.fp-head.almacen{border-color:var(--almacen);}
+.fp-head.salon{border-color:var(--salon);}
+.fp-head.servicio{border-color:var(--servicio);}
+.fp-head.vitrinas{border-color:var(--vitrinas);}
+.fp-title{font-size:14px;font-weight:700;}
+.fp-head.cocina .fp-title{color:var(--cocina);}
+.fp-head.barra .fp-title{color:var(--barra);}
+.fp-head.almacen .fp-title{color:var(--almacen);}
+.fp-head.salon .fp-title{color:var(--salon);}
+.fp-head.servicio .fp-title{color:var(--servicio);}
+.fp-head.vitrinas .fp-title{color:var(--vitrinas);}
+.fp-sub{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
+.fp-acts{display:flex;gap:7px;}
+.btn{border:none;border-radius:8px;padding:7px 13px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-family:var(--font);transition:all .15s;display:flex;align-items:center;gap:5px;}
+.btn-kale{background:var(--kale);color:var(--lemon);}
+.btn-kale:hover{background:var(--spirulina);}
 .btn-ghost{background:transparent;color:var(--kale);border:1.5px solid var(--border);}
 .btn-ghost:hover{background:var(--cucumber);}
-.btn-sm{padding:5px 10px;font-size:11px;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+.fp-body{padding:16px 18px 18px;}
+.meta-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--bg2);border-radius:8px;}
+.meta-f label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:4px;}
+.meta-f input,.meta-f select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:var(--font);color:var(--text);background:white;}
+.meta-f input:focus,.meta-f select:focus{outline:none;border-color:var(--kale);}
 
-/* ACCESS DENIED */
-.access-denied{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:80px 40px;text-align:center;
+/* CHECKLIST */
+.cl-ban{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 10px;margin:10px 0 0;border-radius:5px;
+  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:white;
 }
-.ad-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
-.ad-title{font-size:18px;font-weight:700;color:var(--muted);margin-bottom:8px;}
-.ad-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:320px;}
-
-/* ADMIN PANEL */
-.admin-strip{background:rgba(224,237,48,.08);border:1px solid rgba(224,237,48,.2);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--kale);}
-.admin-badge{background:var(--lemon);color:var(--spirulina);font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 8px;border-radius:6px;font-family:var(--mono);}
-
-/* USER MANAGER */
-.user-table{width:100%;border-collapse:collapse;}
-.user-table th{background:var(--cucumber);color:var(--kale);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:10px 14px;text-align:left;font-family:var(--mono);}
-.user-table td{padding:12px 14px;border-bottom:1px solid var(--border-soft);font-size:13px;color:var(--text);vertical-align:middle;}
-.user-table tr:last-child td{border-bottom:none;}
-.user-table tr:hover td{background:rgba(20,107,79,.02);}
-.edit-btn{background:var(--bg-soft);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:var(--font);color:var(--kale);transition:all .15s;}
-.edit-btn:hover{background:var(--cucumber);}
-
-/* MODAL */
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
-.modal-card{background:white;border-radius:16px;padding:28px;width:460px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);}
-.modal-title{font-size:16px;font-weight:700;color:var(--kale);margin-bottom:20px;}
-.field-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:5px;margin-top:14px;}
-.field-input,.field-select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text);background:white;}
-.field-input:focus,.field-select:focus{outline:none;border-color:var(--kale);}
-.area-checkboxes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-.area-check-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s;font-size:13px;color:var(--muted);}
-.area-check-item:hover{border-color:var(--juice);background:rgba(139,184,57,.04);}
-.area-check-item input{width:15px;height:15px;accent-color:var(--kale);}
-.modal-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end;}
-.btn-cancel{background:var(--bg-soft);color:var(--muted);border:none;border-radius:8px;padding:10px 18px;font-size:13px;cursor:pointer;font-family:var(--font);}
-
-/* FADE */
-.fade-in{opacity:0;transform:translateY(12px);transition:opacity .5s,transform .5s;}
-.fade-in.show{opacity:1;transform:none;}
-
-/* CHECKLIST inside portal */
-.cl-section-ban{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--coconut);background:var(--kale-mid,var(--kale));padding:5px 12px;margin:14px 0 0;border-radius:4px;display:flex;align-items:center;justify-content:space-between;}
-.cl-table{width:100%;border-collapse:collapse;}
-.cl-table th{background:var(--bg-soft);color:var(--kale);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 10px;border:1px solid var(--border-soft);font-family:var(--mono);}
-.cl-row td{border:1px solid var(--border-soft);padding:0;height:28px;}
-.cl-row:nth-child(even) td{background:#f9fffe;}
+.cl-table{width:100%;border-collapse:collapse;margin-top:1px;}
+.cl-table th{font-size:9px;font-family:var(--mono);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:6px 8px;background:var(--bg2);border:1px solid var(--border2);}
+.cl-row td{border:1px solid var(--border2);padding:0;height:27px;}
+.cl-row:nth-child(even) td{background:#fafffe;}
 .cl-row:nth-child(odd) td{background:white;}
 .cl-row:hover td{background:var(--cucumber);}
-.td-num{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;padding:0 8px;width:32px;vertical-align:middle;}
-.td-input{width:100%;border:none;background:transparent;padding:0 10px;font-size:13px;font-family:var(--font);height:28px;}
-.td-input:focus{outline:none;background:var(--cucumber);}
-.td-chk{text-align:center;vertical-align:middle;}
-.td-chk input{width:15px;height:15px;accent-color:var(--kale);}
-.add-row-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;margin-top:4px;background:transparent;border:1.5px dashed var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;width:100%;transition:all .15s;font-family:var(--font);}
-.add-row-btn:hover{background:var(--bg-soft);border-color:var(--kale);}
+.cl-num{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;padding:0 7px;width:30px;vertical-align:middle;}
+.cl-inp{width:100%;border:none;background:transparent;padding:0 9px;font-size:13px;font-family:var(--font);height:27px;}
+.cl-inp:focus{outline:none;background:var(--cucumber);}
+.cl-chk{text-align:center;vertical-align:middle;width:32px;}
+.cl-chk input{width:14px;height:14px;accent-color:var(--kale);}
+.cl-del{width:28px;text-align:center;vertical-align:middle;}
+.cl-del button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:0 4px;}
+.cl-del button:hover{color:var(--danger);}
+.add-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;margin-top:3px;background:transparent;border:1.5px dashed var(--border);border-radius:5px;color:var(--muted);font-size:11px;cursor:pointer;width:100%;font-family:var(--font);transition:all .15s;}
+.add-btn:hover{background:var(--bg2);border-color:var(--kale);}
+
+/* TABLA INVENTARIO */
+.inv-table{width:100%;border-collapse:collapse;}
+.inv-table th{font-size:9px;font-family:var(--mono);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:white;padding:7px 10px;text-align:center;}
+.inv-table td{border:1px solid var(--border2);padding:0;height:25px;}
+.inv-table tr:nth-child(even) td{background:#f9fffe;}
+.inv-table tr:nth-child(odd) td{background:white;}
+.inv-td-desc{font-size:13px;color:var(--text);padding:0 8px;border:1px solid var(--border2);height:25px;vertical-align:middle;}
+.inv-inp{width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;padding:0 4px;}
+.inv-inp:focus{outline:none;background:var(--cucumber);}
+.inv-inp.desc{text-align:left;font-family:var(--font);font-size:13px;padding:0 8px;}
+
+/* CARDS SERVICIO/REPORTES */
+.info-card{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-bottom:10px;}
+.info-card h4{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.info-card p{font-size:13px;color:var(--muted);line-height:1.6;}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);font-size:13px;}
+.status-row:last-child{border-bottom:none;}
+.status-label{color:var(--muted);}
+.status-val{font-family:var(--mono);font-weight:600;}
+.status-val.ok{color:var(--juice);}
+.status-val.warn{color:var(--warn);}
+
+/* ACCESS DENIED */
+.denied{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 40px;text-align:center;}
+.denied-icon{font-size:44px;margin-bottom:14px;opacity:.25;}
+.denied-title{font-size:17px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.denied-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:300px;}
+
+/* ADMIN */
+.admin-bar{background:rgba(224,237,48,.08);border:1px solid rgba(224,237,48,.2);border-radius:8px;padding:10px 14px;margin-bottom:18px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--kale);}
+.admin-badge-sm{background:var(--lemon);color:var(--spirulina);font-size:9px;font-weight:700;letter-spacing:2px;padding:2px 7px;border-radius:4px;font-family:var(--mono);}
+.user-table{width:100%;border-collapse:collapse;}
+.user-table th{background:var(--cucumber);color:var(--kale);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;text-align:left;font-family:var(--mono);}
+.user-table td{padding:10px 12px;border-bottom:1px solid var(--border2);font-size:13px;color:var(--text);vertical-align:middle;}
+.user-table tr:last-child td{border-bottom:none;}
+.user-table tr:hover td{background:rgba(20,107,79,.02);}
+.act-btn{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:var(--font);color:var(--kale);transition:all .15s;}
+.act-btn:hover{background:var(--cucumber);}
+
+/* MODAL */
+.modal-back{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:white;border-radius:16px;padding:28px;width:500px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;color:var(--kale);margin-bottom:18px;}
+.area-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;}
+.area-chk{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;color:var(--muted);transition:all .15s;}
+.area-chk:hover{border-color:var(--juice);background:rgba(139,184,57,.04);}
+.area-chk input{width:14px;height:14px;accent-color:var(--kale);}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end;}
+.btn-cancel{background:var(--bg2);color:var(--muted);border:none;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:var(--font);}
+
+/* FADE */
+.fade-in{opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;}
+.fade-in.show{opacity:1;transform:none;}
 </style>
 </head>
 <body>
 
-<!-- ════ LOGIN ════ -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">
-      <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
-        <g transform="translate(16,16)">
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/>
-          <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/>
-          <circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.2"/>
-        </g>
-      </svg>
+<!-- ══════════════════════════════
+     PANTALLA AUTH
+══════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-mark">
+        <svg viewBox="0 0 40 40" fill="none" width="36" height="36">
+          <g transform="translate(20,20)">
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/>
+            <line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/>
+            <circle cx="0" cy="0" r="3" fill="none" stroke="#E0ED30" stroke-width="1.5"/>
+          </g>
+        </svg>
+      </div>
+      <h1>vitality kitchen</h1>
+      <p>Portal Operativo · Puebla<br>Alimentos reales, energía natural<br>y hábitos conscientes.</p>
+      <div class="auth-features">
+        <div class="af-item"><div class="af-dot"></div><div class="af-text">6 áreas operativas con 36 módulos de control</div></div>
+        <div class="af-item"><div class="af-dot"></div><div class="af-text">Acceso personalizado por familia y área</div></div>
+        <div class="af-item"><div class="af-dot"></div><div class="af-text">Bitácoras, checklists e inventarios en tiempo real</div></div>
+        <div class="af-item"><div class="af-dot"></div><div class="af-text">Audit trail y trazabilidad completa de operación</div></div>
+      </div>
     </div>
-    <div class="login-brand">vitality kitchen</div>
-    <div class="login-sub">Portal Operativo</div>
-    <div class="login-divider"></div>
-    <div class="login-error" id="login-error">Usuario o contraseña incorrectos.</div>
-    <label class="login-label">Correo electrónico</label>
-    <input class="login-input" id="login-email" type="email" placeholder="operador@vitalitykitchen.mx" autocomplete="off">
-    <label class="login-label">Contraseña</label>
-    <input class="login-input" id="login-pass" type="password" placeholder="••••••••">
-    <button class="login-btn" onclick="doLogin()">Ingresar →</button>
-    <div style="text-align:center;margin-top:16px;">
-      <a href="/terminos.html" style="font-size:13px;color:var(--kale);font-weight:600;border-bottom:1.5px solid var(--border);padding-bottom:2px;">
-        ¿Aún no tienes acceso? Activar ecosistema →
-      </a>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Iniciar sesión</div>
+      <div class="auth-tab" onclick="switchTab('registro')">Registrarse</div>
     </div>
-    <div class="login-footer">
-      Vitality Kitchen · Puebla 2026 · Powered by LiTa Support<br>
-      <a href="/" style="color:#bbb;font-size:10px;">← Volver al sitio</a>
+
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panel-login">
+      <div class="auth-title">Bienvenido de vuelta</div>
+      <div class="auth-sub">Ingresa con tus credenciales para acceder a tu área operativa.</div>
+      <div class="auth-error" id="login-error"></div>
+      <label class="field-label">Correo electrónico</label>
+      <input class="field-input" id="login-email" type="email" placeholder="tu@vitalitykitchen.mx">
+      <label class="field-label">Contraseña</label>
+      <input class="field-input" id="login-pass" type="password" placeholder="••••••••">
+      <button class="auth-btn" onclick="doLogin()">Ingresar →</button>
+      <div class="auth-footer">
+        ¿No tienes cuenta? <span style="color:var(--kale);cursor:pointer;font-weight:600;" onclick="switchTab('registro')">Regístrate</span><br>
+        <a href="/">← Volver al sitio</a>
+      </div>
+    </div>
+
+    <!-- REGISTRO -->
+    <div class="auth-panel" id="panel-registro">
+      <div class="auth-title">Solicitar acceso</div>
+      <div class="auth-sub">Crea tu cuenta. El administrador la activará antes de que puedas ingresar.</div>
+      <div class="auth-error" id="reg-error"></div>
+      <div class="auth-success" id="reg-success"></div>
+      <label class="field-label">Nombre completo</label>
+      <input class="field-input" id="reg-name" type="text" placeholder="Tu nombre completo">
+      <label class="field-label">Correo electrónico</label>
+      <input class="field-input" id="reg-email" type="email" placeholder="tu@vitalitykitchen.mx">
+      <label class="field-label">Contraseña</label>
+      <input class="field-input" id="reg-pass" type="password" placeholder="mínimo 6 caracteres">
+      <label class="field-label">Tu área de trabajo</label>
+      <select class="field-select" id="reg-area">
+        <option value="">Selecciona tu área principal...</option>
+        <option value="chef">Cocina — Chef / Ayudante</option>
+        <option value="barista">Barra — Barista</option>
+        <option value="mesero">Salón & Servicio — Mesero</option>
+        <option value="limpieza">Limpieza</option>
+        <option value="gerente">Gerencia</option>
+        <option value="otro">Otro</option>
+      </select>
+      <button class="auth-btn" onclick="doRegistro()">Solicitar acceso →</button>
+      <div class="auth-footer">
+        ¿Ya tienes cuenta? <span style="color:var(--kale);cursor:pointer;font-weight:600;" onclick="switchTab('login')">Iniciar sesión</span><br>
+        <a href="/">← Volver al sitio</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ════ APP ════ -->
+<!-- ══════════════════════════════
+     APP
+══════════════════════════════ -->
 <div id="app">
-
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-mark">
-        <svg viewBox="0 0 32 32" fill="none" width="20" height="20">
-          <g transform="translate(16,16)">
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(0)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(45)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(90)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(135)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(180)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(225)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(270)"/>
-            <line x1="0" y1="-8" x2="0" y2="-5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(315)"/>
+        <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+          <g transform="translate(12,12)">
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(0)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(45)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(90)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(135)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(180)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(225)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(270)"/>
+            <line x1="0" y1="-7" x2="0" y2="-4.5" stroke="#E0ED30" stroke-width="1.8" stroke-linecap="round" transform="rotate(315)"/>
             <circle cx="0" cy="0" r="2" fill="none" stroke="#E0ED30" stroke-width="1"/>
           </g>
         </svg>
@@ -279,640 +416,997 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
       <div class="topbar-brand">vitality kitchen<small>portal operativo</small></div>
     </div>
     <div class="topbar-right">
-      <div class="user-info">
-        <div class="user-name" id="topbar-name">—</div>
-        <div class="user-role"><span class="role-pill" id="topbar-role-pill">—</span></div>
+      <div class="user-chip">
+        <div class="user-avatar" id="tb-avatar">—</div>
+        <div>
+          <div class="user-name" id="tb-name">—</div>
+          <div><span class="role-pill" id="tb-role">—</span></div>
+        </div>
       </div>
       <button class="logout-btn" onclick="doLogout()">Salir</button>
     </div>
   </div>
 
   <div class="layout">
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-      <!-- generado por JS según rol -->
-    </nav>
-    <!-- CONTENT -->
-    <main class="content" id="main-content">
-      <!-- generado por JS -->
-    </main>
+    <nav class="sidebar"><div class="sidebar-inner" id="sidebar-inner"></div></nav>
+    <main class="content" id="main-content"></main>
   </div>
 </div>
 
 <!-- MODAL USUARIO -->
-<div class="modal-backdrop" id="user-modal" style="display:none;">
-  <div class="modal-card">
+<div class="modal-back" id="user-modal" style="display:none;">
+  <div class="modal">
     <div class="modal-title" id="modal-title">Nuevo usuario</div>
     <label class="field-label">Nombre completo</label>
-    <input class="field-input" id="modal-name" type="text" placeholder="Nombre del operador">
-    <label class="field-label">Correo electrónico</label>
-    <input class="field-input" id="modal-email" type="email" placeholder="correo@vitalitykitchen.mx">
+    <input class="field-input" id="m-name" type="text">
+    <label class="field-label">Correo</label>
+    <input class="field-input" id="m-email" type="email">
     <label class="field-label">Contraseña</label>
-    <input class="field-input" id="modal-pass" type="text" placeholder="mínimo 6 caracteres">
-    <label class="field-label">Rol</label>
-    <select class="field-select" id="modal-rol" onchange="updateAreaCheckboxes()">
+    <input class="field-input" id="m-pass" type="text">
+    <label class="field-label">Familia / Rol</label>
+    <select class="field-select" id="m-rol" onchange="updateModalAreas()">
       <option value="propietario">Propietario</option>
       <option value="gerente">Gerente</option>
-      <option value="operador">Operador</option>
+      <option value="chef">Chef</option>
       <option value="barista">Barista</option>
+      <option value="mesero">Mesero</option>
       <option value="limpieza">Limpieza</option>
     </select>
     <label class="field-label">Áreas de acceso</label>
-    <div class="area-checkboxes" id="area-checkboxes"></div>
+    <div class="area-grid" id="modal-areas"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveUser()">Guardar usuario</button>
+      <button class="btn btn-kale" onclick="saveUser()">Guardar</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ════════════════════════════════════════
-   DEFINICIÓN DE ROLES Y ÁREAS
-════════════════════════════════════════ */
-const AREAS = [
-  {id:'cocina',    name:'Cocina',     icon:'🍳', desc:'Checklists y producción'},
-  {id:'barra',     name:'Barra',      icon:'☕', desc:'Café, bebidas y calibración'},
-  {id:'salon',     name:'Salón',      icon:'🍽', desc:'Servicio y mostrador'},
-  {id:'banos',     name:'Baños',      icon:'🚿', desc:'Bitácora de limpieza'},
-  {id:'inventario',name:'Inventario', icon:'📦', desc:'Equipo mayor y menor'},
-  {id:'produccion',name:'Producción', icon:'📋', desc:'Control semanal'},
-  {id:'inocuidad', name:'Inocuidad',  icon:'🌡', desc:'Termometría y bitácoras'},
-  {id:'supervisor',name:'Supervisor', icon:'👁', desc:'Verificación cruzada'},
-  {id:'admin',     name:'Admin',      icon:'⚙️', desc:'Usuarios y configuración'},
+/* ════════════════════════════════════
+   ESTRUCTURA CATEGORÍAS + SUBCATS
+════════════════════════════════════ */
+const ESTRUCTURA = [
+  {
+    id:'cocina', name:'Cocina', icon:'🍳', color:'var(--cocina)', css:'teal',
+    subs:[
+      {id:'cocina-produccion',  name:'Producción diaria'},
+      {id:'cocina-recetas',     name:'Control de recetas'},
+      {id:'cocina-inocuidad',   name:'Inocuidad / PEPS'},
+      {id:'cocina-merma',       name:'Merma y desperdicios'},
+      {id:'cocina-checklist',   name:'Checklist apertura / cierre'},
+      {id:'cocina-temperatura', name:'Temperaturas / equipos'},
+    ]
+  },
+  {
+    id:'barra', name:'Barra', icon:'☕', color:'var(--barra)', css:'amber',
+    subs:[
+      {id:'barra-espresso',    name:'Café espresso'},
+      {id:'barra-frias',       name:'Bebidas frías / matcha'},
+      {id:'barra-calibracion', name:'Calibración espresso'},
+      {id:'barra-insumos',     name:'Control de insumos'},
+      {id:'barra-merma',       name:'Merma de leche / café'},
+      {id:'barra-checklist',   name:'Checklist turno'},
+    ]
+  },
+  {
+    id:'almacen', name:'Almacén', icon:'📦', color:'var(--almacen)', css:'purple',
+    subs:[
+      {id:'almacen-inventario', name:'Inventario general'},
+      {id:'almacen-entradas',   name:'Entradas de mercancía'},
+      {id:'almacen-salidas',    name:'Salidas / requisiciones'},
+      {id:'almacen-peps',       name:'PEPS / caducidades'},
+      {id:'almacen-proveedores',name:'Proveedores'},
+      {id:'almacen-conteo',     name:'Conteo quincenal'},
+    ]
+  },
+  {
+    id:'salon', name:'Salón', icon:'🍽', color:'var(--salon)', css:'blue',
+    subs:[
+      {id:'salon-montaje',    name:'Montaje y mise en place'},
+      {id:'salon-checklist',  name:'Checklist apertura / cierre'},
+      {id:'salon-mesas',      name:'Control de mesas'},
+      {id:'salon-limpieza',   name:'Limpieza de salón'},
+      {id:'salon-supervisor', name:'Supervisión de turno'},
+      {id:'salon-banos',      name:'Bitácora baños'},
+    ]
+  },
+  {
+    id:'servicio', name:'Servicio', icon:'🤝', color:'var(--servicio)', css:'coral',
+    subs:[
+      {id:'servicio-protocolo',     name:'Protocolo de atención'},
+      {id:'servicio-tiempos',       name:'Tiempos de servicio'},
+      {id:'servicio-satisfaccion',  name:'Satisfacción del cliente'},
+      {id:'servicio-comandas',      name:'Comandas / pedidos'},
+      {id:'servicio-venta',         name:'Venta sugerida'},
+      {id:'servicio-incidencias',   name:'Incidencias / reportes'},
+    ]
+  },
+  {
+    id:'vitrinas', name:'Vitrinas', icon:'🥐', color:'var(--vitrinas)', css:'green',
+    subs:[
+      {id:'vitrinas-exhibicion',   name:'Exhibición y montaje'},
+      {id:'vitrinas-conteo',       name:'Conteo de producto'},
+      {id:'vitrinas-rotacion',     name:'Rotación / caducidades'},
+      {id:'vitrinas-limpieza',     name:'Limpieza de vitrina'},
+      {id:'vitrinas-sobrantes',    name:'Registro sobrantes'},
+      {id:'vitrinas-temperatura',  name:'Temperatura de vitrina'},
+    ]
+  },
 ];
 
-const ROLES = {
-  admin:      {label:'Control Absoluto', pill:'rp-admin',  areas:AREAS.map(a=>a.id)},
-  propietario:{label:'Propietario',       pill:'rp-owner',  areas:['cocina','barra','salon','banos','inventario','produccion','inocuidad','supervisor']},
-  gerente:    {label:'Gerente',           pill:'rp-mgr',    areas:['cocina','barra','salon','banos','inventario','produccion','inocuidad','supervisor']},
-  operador:   {label:'Operador',          pill:'rp-op',     areas:['cocina','salon','banos','produccion','inocuidad']},
-  barista:    {label:'Barista',           pill:'rp-bar',    areas:['barra','banos']},
-  limpieza:   {label:'Limpieza',          pill:'rp-clean',  areas:['banos']},
+const TRANSVERSALES = [
+  {id:'supervisor',  name:'Supervisor',          icon:'👁'},
+  {id:'alertas',     name:'Alertas & Reportes',  icon:'🔔'},
+];
+
+/* ════════════════════════════════════
+   FAMILIAS DE ACCESO
+════════════════════════════════════ */
+const FAMILIAS = {
+  admin:       {label:'Control Absoluto', pill:'rp-admin',      cats:['cocina','barra','almacen','salon','servicio','vitrinas'], trans:['supervisor','alertas','admin-users']},
+  propietario: {label:'Propietario',      pill:'rp-propietario', cats:['cocina','barra','almacen','salon','servicio','vitrinas'], trans:['supervisor','alertas']},
+  gerente:     {label:'Gerente',          pill:'rp-gerente',     cats:['cocina','barra','almacen','salon','servicio','vitrinas'], trans:['supervisor','alertas']},
+  chef:        {label:'Chef',             pill:'rp-chef',        cats:['cocina','almacen'],  trans:[]},
+  barista:     {label:'Barista',          pill:'rp-barista',     cats:['barra','vitrinas'],  trans:[]},
+  mesero:      {label:'Mesero',           pill:'rp-mesero',      cats:['salon','servicio','vitrinas'], trans:[]},
+  limpieza:    {label:'Limpieza',         pill:'rp-limpieza',    cats:['salon'],             trans:[]},
 };
 
-/* ════════════════════════════════════════
-   BASE DE USUARIOS (se guarda en localStorage)
-════════════════════════════════════════ */
-/* ─ Admins DMZ ─ siempre activos, nunca visibles al cliente ─ */
-const DMZ_ADMINS = [
-  {id:'dmz1',name:'Mario De la Mora',  email:'mario@delamorazumaran.com', pass:'VK.DMZ2026',rol:'admin',areas:AREAS.map(a=>a.id),active:true,hidden:true},
-  {id:'dmz2',name:'Blanca De la Mora', email:'blanca@delamorazumaran.com',pass:'VK.DMZ2026',rol:'admin',areas:AREAS.map(a=>a.id),active:true,hidden:true},
+/* ════════════════════════════════════
+   USUARIOS
+════════════════════════════════════ */
+const DMZ = [
+  {id:'dmz1',name:'Mario De la Mora',  email:'mario@delamorazumaran.com', pass:'VK.DMZ2026',rol:'admin',active:true,hidden:true},
+  {id:'dmz2',name:'Blanca De la Mora', email:'blanca@delamorazumaran.com',pass:'VK.DMZ2026',rol:'admin',active:true,hidden:true},
 ];
 
-/* ─ Usuarios del cliente ─ el admin los da de alta, quedan pending hasta activar ─ */
-const DEFAULT_USERS = [...DMZ_ADMINS];
-
 function getUsers(){
-  try{
-    const saved = localStorage.getItem('vk_users');
-    return saved ? JSON.parse(saved) : DEFAULT_USERS;
-  }catch(e){return DEFAULT_USERS;}
+  try{ return JSON.parse(localStorage.getItem('vk_users_v2')||'[]'); }catch(e){return [];}
 }
-function saveUsers(users){
-  try{localStorage.setItem('vk_users', JSON.stringify(users));}catch(e){}
+function saveUsers(u){ try{localStorage.setItem('vk_users_v2',JSON.stringify(u));}catch(e){} }
+function initUsers(){
+  let users = getUsers();
+  DMZ.forEach(d=>{
+    const idx=users.findIndex(u=>u.id===d.id);
+    if(idx>=0) users[idx]={...d};
+    else users.unshift({...d});
+  });
+  saveUsers(users);
 }
+initUsers();
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════
    AUTH
-════════════════════════════════════════ */
-let currentUser = null;
+════════════════════════════════════ */
+let CU = null; // current user
+
+function switchTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
+  document.getElementById('panel-login').classList.toggle('active',tab==='login');
+  document.getElementById('panel-registro').classList.toggle('active',tab==='registro');
+}
 
 function doLogin(){
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass  = document.getElementById('login-pass').value.trim();
   const err   = document.getElementById('login-error');
   const users = getUsers();
-  // Buscar usuario por email y pass (activo o pendiente)
-  const userAny = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
-  if(!userAny){
-    err.textContent='Usuario o contraseña incorrectos.';
-    err.classList.add('show');
-    document.getElementById('login-pass').value='';
-    return;
-  }
-  // Usuario existe pero está pendiente de activación
-  if(userAny.status==='pending'){
-    err.innerHTML='Tu cuenta está <strong>pendiente de activación</strong>.<br>El administrador debe activarla antes de que puedas ingresar.';
-    err.classList.add('show');
-    document.getElementById('login-pass').value='';
-    return;
-  }
-  // Usuario desactivado
-  if(!userAny.active){
-    err.textContent='Tu cuenta está desactivada. Contacta al administrador.';
-    err.classList.add('show');
-    document.getElementById('login-pass').value='';
-    return;
-  }
+  const user  = users.find(u=>u.email.toLowerCase()===email && u.pass===pass);
+  if(!user){ err.textContent='Usuario o contraseña incorrectos.'; err.classList.add('show'); return; }
+  if(user.status==='pending'){ err.innerHTML='Tu cuenta está <strong>pendiente de activación</strong>.<br>El administrador la activará pronto.'; err.classList.add('show'); return; }
+  if(!user.active){ err.textContent='Tu cuenta está desactivada. Contacta al administrador.'; err.classList.add('show'); return; }
   err.classList.remove('show');
-  currentUser = userAny;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('topbar-name').textContent = userAny.name;
-  const rp = document.getElementById('topbar-role-pill');
-  rp.textContent = ROLES[userAny.rol]?.label || userAny.rol;
-  rp.className = 'role-pill ' + (ROLES[userAny.rol]?.pill||'rp-op');
-  buildSidebar();
-  showArea('home');
+  launchApp(user);
 }
+
+function doRegistro(){
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('reg-pass').value.trim();
+  const area  = document.getElementById('reg-area').value;
+  const err   = document.getElementById('reg-error');
+  const suc   = document.getElementById('reg-success');
+  err.classList.remove('show'); suc.classList.remove('show');
+  if(!name||!email||!pass||!area){ err.textContent='Completa todos los campos.'; err.classList.add('show'); return; }
+  if(pass.length<6){ err.textContent='La contraseña debe tener al menos 6 caracteres.'; err.classList.add('show'); return; }
+  const users = getUsers();
+  if(users.find(u=>u.email.toLowerCase()===email)){ err.textContent='Este correo ya está registrado.'; err.classList.add('show'); return; }
+  // Asignar rol sugerido según área seleccionada
+  const rolMap = {chef:'chef',barista:'barista',mesero:'mesero',limpieza:'limpieza',gerente:'gerente',otro:'mesero'};
+  const rol = rolMap[area]||'mesero';
+  const familia = FAMILIAS[rol];
+  users.push({id:'u'+Date.now(), name, email, pass, rol, cats:familia.cats, trans:familia.trans, active:false, status:'pending'});
+  saveUsers(users);
+  suc.innerHTML = '✅ Solicitud enviada. El administrador revisará tu cuenta y te notificará cuando esté activa.';
+  suc.classList.add('show');
+  document.getElementById('reg-name').value='';
+  document.getElementById('reg-email').value='';
+  document.getElementById('reg-pass').value='';
+  document.getElementById('reg-area').value='';
+}
+
 document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none') doLogin();
+  if(e.key==='Enter'&&document.getElementById('auth-screen').style.display!=='none') doLogin();
 });
 
+function launchApp(user){
+  CU = user;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  const initials = user.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('tb-avatar').textContent = initials;
+  document.getElementById('tb-name').textContent = user.name;
+  const rp = document.getElementById('tb-role');
+  const fam = FAMILIAS[user.rol]||FAMILIAS.mesero;
+  rp.textContent = fam.label;
+  rp.className = 'role-pill '+(fam.pill||'rp-mesero');
+  buildSidebar();
+  showHome();
+}
+
 function doLogout(){
-  currentUser=null;
-  document.getElementById('login-screen').style.display='flex';
+  CU=null;
+  document.getElementById('auth-screen').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('login-email').value='';
   document.getElementById('login-pass').value='';
+  document.getElementById('login-error').classList.remove('show');
 }
 
-function hasAccess(areaId){
-  if(!currentUser)return false;
-  return currentUser.areas.includes(areaId);
-}
+/* Acceso */
+function canCat(catId){ if(!CU) return false; const f=FAMILIAS[CU.rol]; return f&&f.cats.includes(catId); }
+function canTrans(id){ if(!CU) return false; const f=FAMILIAS[CU.rol]; return f&&f.trans.includes(id); }
+function isAdmin(){ return CU&&CU.rol==='admin'; }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════
    SIDEBAR
-════════════════════════════════════════ */
+════════════════════════════════════ */
+let activeSub = null;
+
 function buildSidebar(){
-  const sb = document.getElementById('sidebar');
-  const isAdmin = currentUser.rol==='admin';
-  let html = '';
+  const sb = document.getElementById('sidebar-inner');
+  let html = `<div class="sidebar-section">Inicio</div>
+    <div class="nav-item active" id="nav-home" onclick="showHome()"><span style="margin-right:6px;">🏠</span>Inicio</div>
+    <div class="sidebar-section">Áreas Operativas</div>`;
 
-  html += `<div class="sidebar-section">General</div>`;
-  html += `<div class="nav-item active" onclick="showArea('home')" id="nav-home"><span class="nav-icon">🏠</span>Inicio</div>`;
-
-  html += `<div class="sidebar-section">Áreas Operativas</div>`;
-  const operAreas = AREAS.filter(a=>a.id!=='admin');
-  operAreas.forEach(a=>{
-    const access = hasAccess(a.id);
-    html += `<div class="nav-item${access?'':' locked'}" 
-      onclick="${access?`showArea('${a.id}')`:'showAccessDenied()'}"
-      id="nav-${a.id}">
-      <span class="nav-icon">${a.icon}</span>${a.name}
-      ${access?'':`<span class="nav-lock">🔒</span>`}
+  ESTRUCTURA.forEach(cat=>{
+    const access = canCat(cat.id);
+    html += `<div class="cat-${cat.css}">
+      <div class="cat-header${access?'':' locked'}" id="cat-h-${cat.id}" onclick="${access?`toggleCat('${cat.id}')`:''}">
+        <span class="cat-icon">${cat.icon}</span>
+        <span class="cat-name">${cat.name}</span>
+        ${access?`<span class="cat-chevron">›</span>`:`<span class="cat-lock">🔒</span>`}
+      </div>
+      <div class="subcats" id="cat-s-${cat.id}">
+        ${cat.subs.map(sub=>`
+          <div class="subcat-item${access?'':' locked'}" id="sub-${sub.id}"
+            onclick="${access?`showSub('${cat.id}','${sub.id}')`:''}">
+            <div class="subcat-dot" style="background:${cat.color}"></div>
+            ${sub.name}
+          </div>`).join('')}
+      </div>
     </div>`;
   });
 
-  if(isAdmin||currentUser.rol==='propietario'||currentUser.rol==='gerente'){
-    html += `<div class="sidebar-section">Control</div>`;
-    if(isAdmin){
-      html += `<div class="nav-item" onclick="showArea('admin')" id="nav-admin"><span class="nav-icon">⚙️</span>Usuarios & Roles</div>`;
-    }
+  if(canTrans('supervisor')||canTrans('alertas')||isAdmin()){
+    html += `<div class="sidebar-section">Transversal</div>`;
+    if(canTrans('supervisor')||isAdmin())
+      html += `<div class="nav-item" id="nav-supervisor" onclick="showSupervisor()"><span style="margin-right:6px;">👁</span>Supervisor</div>`;
+    if(canTrans('alertas')||isAdmin())
+      html += `<div class="nav-item" id="nav-alertas" onclick="showAlerts()"><span style="margin-right:6px;">🔔</span>Alertas & Reportes</div>`;
+    if(isAdmin())
+      html += `<div class="nav-item" id="nav-admin" onclick="showAdmin()"><span style="margin-right:6px;">⚙️</span>Usuarios & Roles</div>`;
   }
 
   sb.innerHTML = html;
 }
 
-function setNavActive(areaId){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const el = document.getElementById('nav-'+areaId);
+function toggleCat(catId){
+  const subs = document.getElementById('cat-s-'+catId);
+  const head = document.getElementById('cat-h-'+catId);
+  const isOpen = subs.classList.contains('open');
+  // Cerrar todos
+  document.querySelectorAll('.subcats').forEach(s=>s.classList.remove('open'));
+  document.querySelectorAll('.cat-header').forEach(h=>h.classList.remove('open'));
+  if(!isOpen){ subs.classList.add('open'); head.classList.add('open'); }
+}
+
+function setNavActive(id){
+  document.querySelectorAll('.nav-item,.subcat-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-home')&&document.getElementById('nav-home').classList.remove('active');
+  const el = document.getElementById(id);
   if(el) el.classList.add('active');
 }
 
-/* ════════════════════════════════════════
-   VISTAS POR ÁREA
-════════════════════════════════════════ */
-function showArea(areaId){
+/* ════════════════════════════════════
+   HOME
+════════════════════════════════════ */
+function showHome(){
+  setNavActive('nav-home');
+  document.getElementById('nav-home').classList.add('active');
   const mc = document.getElementById('main-content');
-  if(areaId!=='home') setNavActive(areaId);
-  else setNavActive('home');
+  const accesibles = ESTRUCTURA.filter(c=>canCat(c.id));
+  const bloqueadas = ESTRUCTURA.filter(c=>!canCat(c.id));
+  const nombre = CU.name.split(' ')[0];
 
-  if(areaId==='home')    { renderHome(mc); return; }
-  if(areaId==='admin')   { if(hasAccess('admin'))renderAdmin(mc); else renderAccessDenied(mc); return; }
-  if(!hasAccess(areaId)) { renderAccessDenied(mc); return; }
-
-  switch(areaId){
-    case 'barra':      renderBarra(mc); break;
-    case 'salon':      renderSalon(mc); break;
-    case 'banos':      renderBanos(mc); break;
-    case 'cocina':     renderCocina(mc); break;
-    case 'produccion': renderProduccion(mc); break;
-    case 'inventario': renderInventario(mc); break;
-    case 'inocuidad':  renderInocuidad(mc); break;
-    case 'supervisor': renderSupervisor(mc); break;
-    default:           renderComingSoon(mc, areaId);
-  }
-}
-
-function showAccessDenied(){
-  renderAccessDenied(document.getElementById('main-content'));
-}
-
-/* ────── HOME ────── */
-function renderHome(el){
-  const areas = AREAS.filter(a=>a.id!=='admin');
-  const accessible = areas.filter(a=>hasAccess(a.id));
-  const locked = areas.filter(a=>!hasAccess(a.id));
-  const isAdmin = currentUser.rol==='admin';
-
-  let adminBanner = isAdmin ? `
-    <div class="admin-strip">
-      <span class="admin-badge">Admin</span>
-      Sesión con acceso total. El cliente no ve este banner ni la sección de usuarios.
-    </div>` : '';
-
-  let cards = areas.map(a=>{
-    const access = hasAccess(a.id);
-    return `<div class="area-card${access?'':' area-locked'} fade-in" onclick="${access?`showArea('${a.id}')`:''}">
-      <span class="area-icon">${a.icon}</span>
-      <div class="area-name">${a.name}</div>
-      <div class="area-desc">${a.desc}</div>
-      ${access?'':`<div class="area-lock-overlay">🔒</div>`}
-    </div>`;
-  }).join('');
-
-  el.innerHTML = `
-    ${adminBanner}
-    <div class="welcome-header fade-in">
-      <div class="welcome-title">Hola, ${currentUser.name.split(' ')[0]} 👋</div>
-      <div class="welcome-sub">Tienes acceso a <strong>${accessible.length}</strong> de ${areas.length} áreas operativas. 
-      ${locked.length>0?`${locked.length} área${locked.length>1?'s':''} requiere${locked.length>1?'n':''} autorización adicional.`:''}</div>
+  mc.innerHTML = `
+    <div class="home-greeting fade-in">
+      <h2>Hola, ${nombre} 👋</h2>
+      <p>Tienes acceso a <strong>${accesibles.length}</strong> de 6 áreas operativas — <strong>${accesibles.reduce((s,c)=>s+c.subs.length,0)}</strong> módulos disponibles.</p>
     </div>
-    <div class="areas-grid">${cards}</div>
+    <div class="cats-grid">
+      ${ESTRUCTURA.map(cat=>{
+        const access = canCat(cat.id);
+        return `<div class="cat-card${access?'':' cat-card-locked'}" onclick="${access?`toggleCat('${cat.id}');showSub('${cat.id}','${cat.subs[0].id}')`:''}"
+          style="${access?`border-color:${cat.color}30;`:''}">
+          ${access?`<span class="cat-card-count">${cat.subs.length} módulos</span>`:`<span class="cat-card-lock">🔒</span>`}
+          <span class="cat-card-icon">${cat.icon}</span>
+          <div class="cat-card-name" style="color:${access?cat.color:'var(--muted)'}">${cat.name}</div>
+          <div class="cat-card-subs">${cat.subs.slice(0,3).map(s=>s.name).join(' · ')}${cat.subs.length>3?'...':''}</div>
+        </div>`;
+      }).join('')}
+    </div>
   `;
   triggerFades();
 }
 
-/* ────── ACCESS DENIED ────── */
-function renderAccessDenied(el){
-  el.innerHTML = `
-    <div class="access-denied fade-in">
-      <div class="ad-icon">🔒</div>
-      <div class="ad-title">Área restringida</div>
-      <div class="ad-sub">No tienes acceso a esta área.<br>Contacta a tu supervisor o al propietario para solicitar acceso.</div>
-    </div>`;
-  triggerFades();
+/* ════════════════════════════════════
+   RENDERIZADOR POR SUBCATEGORÍA
+════════════════════════════════════ */
+function showSub(catId, subId){
+  if(!canCat(catId)){ renderDenied(); return; }
+  activeSub = subId;
+  setNavActive('sub-'+subId);
+  // Asegurar que el cat esté abierto
+  const subs = document.getElementById('cat-s-'+catId);
+  const head = document.getElementById('cat-h-'+catId);
+  if(subs&&!subs.classList.contains('open')){ subs.classList.add('open'); head&&head.classList.add('open'); }
+  const cat = ESTRUCTURA.find(c=>c.id===catId);
+  const sub = cat?.subs.find(s=>s.id===subId);
+  const mc = document.getElementById('main-content');
+  // Dispatch por subcategoría
+  const renders = {
+    'cocina-checklist':   ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','cocina',[
+      {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Encender equipos: hornos, refrigeradores, congeladores.','Verificar temperaturas (bitácora inocuidad).','Revisar mise en place del día.','Sanitizar superficies y área de trabajo.','Colocar bolsas de basura.']},
+      {sec:'Durante Operación',items:['Registrar temperatura de alimentos.','Verificar PEPS en refrigeradores.','Controlar gramajes según receta.','Documentar merma en formato.'],dark:true},
+      {sec:'Cierre de Cocina',items:['Enfriamiento rápido de alimentos preparados.','Etiquetar con fecha y hora todos los recipientes.','Limpiar y desinfectar equipos y superficies.','Guardar insumos en refrigeración o almacén seco.','Cerrar gas y apagar equipos.','Firmar bitácora de inocuidad del día.'],dark:true},
+    ]),
+    'cocina-temperatura': ()=>renderChecklist(mc,cat,sub,'Registro de temperaturas y equipos','cocina',[
+      {sec:'Temperaturas AM',items:['Refrigerador 1 — temp: ___ °C · Rango: 1–4 °C','Refrigerador 2 — temp: ___ °C · Rango: 1–4 °C','Congelador — temp: ___ °C · Rango: -18 a -22 °C','Área fría de preparación: ___ °C','Baño María / área caliente: ___ °C']},
+      {sec:'Verificación de Alimentos',items:['Pollo crudo separado de cocidos: ✓','Etiquetado PEPS vigente — verificar fechas: ✓','Sin alimentos caducados en refrigeración: ✓','Tablas de corte limpias y sanitizadas: ✓']},
+      {sec:'Temperaturas PM / Cierre',items:['Refrigerador 1 cierre — temp: ___ °C','Refrigerador 2 cierre — temp: ___ °C','Congelador cierre — temp: ___ °C','Alimentos preparados etiquetados con fecha: ✓'],dark:true},
+    ]),
+    'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
+    'cocina-merma':       ()=>renderMerma(mc,cat,sub),
+    'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
+      {sec:'Verificación PEPS',items:['Revisar fechas de caducidad en todos los productos.','Colocar productos más viejos al frente.','Retirar y registrar productos caducados.','Verificar etiquetas con fecha de elaboración y caducidad.']},
+      {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
+      {sec:'Control de Plagas',items:['Inspección visual de zona de almacenamiento.','Sin evidencia de plagas en cocina.','Trampas de monitoreo revisadas.','Reportar cualquier hallazgo inmediatamente.'],dark:true},
+    ]),
+    'cocina-recetas':     ()=>renderComingSoon(mc,cat,sub),
+    'barra-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','barra',[
+      {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Prender máquina de espresso.','Prender molino y rellenarlo.','Abrir paso del molino.','Armar área: montar tapetes, revisar cerámica.','Barrer y trapear.','Colocar bolsa de basura.']},
+      {sec:'Insumos & Equipos',items:['Checar insumos (85 y 86).','Rellenar teteras y encenderlas.','Confirmar báscula cargada.']},
+      {sec:'Calibración Espresso',items:['Calibración espresso y llenado de formato.','1. Tasted — 2. Ajuste si no ideal — 3. Ajuste II.']},
+      {sec:'Cambio de Turno',items:['Operación continua — revisión muertos, limpieza e insumos.','Rellenar insumos: té, tisana, molino, leche, hielo.','Lavar y ordenar losa restante.','Limpiar área y vaciar gabacera.','Revisar basura. Limpiar grupos y maneral.'],dark:true},
+      {sec:'Cierre Final',items:['Cerrar paso tolva molino (1 hr antes).','Limpiar máquina con rinzar / cafiza.','Desmontar tolva — guardar café restante.','Limpiar exterior del molino.','Barrer y trapear. Sacar basura. Apagar equipos.'],dark:true},
+    ]),
+    'barra-calibracion':  ()=>renderCalibration(mc,cat,sub),
+    'barra-merma':        ()=>renderMerma(mc,cat,sub),
+    'barra-espresso':     ()=>renderComingSoon(mc,cat,sub),
+    'barra-frias':        ()=>renderComingSoon(mc,cat,sub),
+    'barra-insumos':      ()=>renderChecklist(mc,cat,sub,'Control de Insumos de Barra','barra',[
+      {sec:'Stock AM',items:['Leche entera: ___ lt · Mínimo 5 lt','Leche de avena: ___ lt · Mínimo 2 lt','Café en grano: ___ kg · Mínimo 0.5 kg','Matcha en polvo: ___ gr · Mínimo 100 gr','Jarabes y azúcares: stock completo ✓','Hielo: hielera llena ✓']},
+      {sec:'Stock PM / Reposición',items:['Leche entera: ___ lt','Leche de avena: ___ lt','Café en grano: ___ kg','Solicitud de reposición enviada a almacén: ✓'],dark:true},
+    ]),
+    'almacen-inventario': ()=>renderInventarioGeneral(mc,cat,sub),
+    'almacen-entradas':   ()=>renderEntradas(mc,cat,sub),
+    'almacen-salidas':    ()=>renderChecklist(mc,cat,sub,'Salidas y Requisiciones','almacen',[
+      {sec:'Requisición del Día',items:['Área solicitante: ___','Producto solicitado y cantidad: ___','Verificar stock disponible antes de surtir.','Firma de quien recibe: ___','Actualizar registro de inventario inmediatamente.']},
+    ]),
+    'almacen-peps':       ()=>renderChecklist(mc,cat,sub,'PEPS / Caducidades','almacen',[
+      {sec:'Revisión Diaria',items:['Verificar fecha de todos los productos refrigerados.','Retirar y documentar productos próximos a caducar.','Rotar productos — los más antiguos al frente.','Etiquetar todos los productos con fecha de entrada.','Reportar merma por caducidad en bitácora.']},
+    ]),
+    'almacen-proveedores':()=>renderComingSoon(mc,cat,sub),
+    'almacen-conteo':     ()=>renderInventarioGeneral(mc,cat,sub),
+    'salon-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','salon',[
+      {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Habilitar luces del salón y mostrador.','Sacar bancas a la entrada.','Barrer y trapear salón completo.','Habilitar punto de venta — limpiar pantalla.','Prueba de terminales bancarias.']},
+      {sec:'Baños & Servicio',items:['Habilitar baños — papel, jabón, bolsa.','Habilitar área de servicio (cubiertos, servilletas, popotes).','Checar stock completo en estaciones.']},
+      {sec:'Cierre',items:['Cerrar puertas del establecimiento.','Guardar bancas del exterior.','Barrer y trapear salón y mostrador.','Limpiar mesas y sillas.','Sacar basura. Cierre en sistema. Apagar luces.'],dark:true},
+    ]),
+    'salon-banos':        ()=>renderBanos(mc,cat,sub),
+    'salon-limpieza':     ()=>renderChecklist(mc,cat,sub,'Limpieza de Salón','salon',[
+      {sec:'Limpieza Diaria',items:['Barrer y trapear todo el salón.','Limpiar y desinfectar todas las mesas.','Limpiar sillas (estructura y asiento).','Limpiar mostrador y área de servicio.','Desinfectar picaportes y superficies de contacto frecuente.']},
+      {sec:'Limpieza Profunda Semanal',items:['Limpiar lámparas y ventiladores.','Limpiar paredes y rodapiés.','Desinfectar profundamente baños (incluye azulejos y juntas).','Limpiar vitrinas y exhibidores.','Revisar estado de plantas y elementos decorativos.'],dark:true},
+    ]),
+    'salon-montaje':      ()=>renderChecklist(mc,cat,sub,'Montaje y Mise en Place','salon',[
+      {sec:'Montaje de Mesas',items:['Mesas alineadas y con distancia adecuada.','Individuales limpios y bien colocados.','Servilletas dobladas en su lugar.','Saleros y pimenteros completos y limpios.','Menús limpios y sin páginas dañadas.']},
+      {sec:'Estaciones de Servicio',items:['Cubiertos surtidos y organizados.','Popotes y agitadores disponibles.','Servilletas de respaldo en estación.','Bandejas limpias y en su lugar.']},
+    ]),
+    'salon-mesas':        ()=>renderComingSoon(mc,cat,sub),
+    'salon-supervisor':   ()=>renderSupervisor(mc,cat,sub),
+    'servicio-protocolo': ()=>renderChecklist(mc,cat,sub,'Protocolo de Atención al Cliente','servicio',[
+      {sec:'Bienvenida',items:['Recibir al cliente en máximo 30 segundos de su llegada.','Saludo cordial con mirada y nombre si es cliente frecuente.','Acompañar a la mesa disponible de su elección.','Presentar menú y especificar producto del día.','Ofrecer agua de cortesía inmediatamente.']},
+      {sec:'Durante el Servicio',items:['Confirmar pedido repitiendo los ítems.','Informar tiempo de espera estimado.','Estar disponible sin ser intrusivo.','Preguntar satisfacción al entregar el pedido.']},
+      {sec:'Despedida',items:['Agradecer visita al momento del pago.','Invitar a regresar con sinceridad.','Registrar cualquier incidencia o comentario.'],dark:true},
+    ]),
+    'servicio-tiempos':   ()=>renderComingSoon(mc,cat,sub),
+    'servicio-satisfaccion':()=>renderComingSoon(mc,cat,sub),
+    'servicio-comandas':  ()=>renderComingSoon(mc,cat,sub),
+    'servicio-venta':     ()=>renderChecklist(mc,cat,sub,'Venta Sugerida','servicio',[
+      {sec:'Técnicas de Sugerencia',items:['Conocer el menú completo — precios, ingredientes, alérgenos.','Sugerir el producto del día al inicio del servicio.','Ofrecer maridaje entre bebida y platillo.','Mencionar postres antes del cierre de cuenta.','Sugerir para llevar si el cliente menciona que le gustó algo.']},
+    ]),
+    'servicio-incidencias':()=>renderComingSoon(mc,cat,sub),
+    'vitrinas-exhibicion':()=>renderChecklist(mc,cat,sub,'Exhibición y Montaje de Vitrina','vitrinas',[
+      {sec:'Montaje AM',items:['Limpiar vitrina por dentro antes de colocar producto.','Colocar producto con etiqueta de precio visible.','Productos más llamativos al nivel de los ojos.','Respetar temperatura de vitrina refrigerada: 4–8 °C.','Colocar carteles de ingredientes y alérgenos.']},
+      {sec:'Durante el Día',items:['Reponer producto cuando quede menos del 30% de stock.','Retirar producto que pierda presentación.','Limpiar vidrios cada 2 horas o cuando sea necesario.','Verificar etiquetas de precio vigentes.']},
+    ]),
+    'vitrinas-conteo':    ()=>renderConteoVitrinas(mc,cat,sub),
+    'vitrinas-rotacion':  ()=>renderChecklist(mc,cat,sub,'Rotación y Caducidades de Vitrina','vitrinas',[
+      {sec:'Revisión de Caducidades',items:['Revisar fecha de elaboración de todos los productos.','Retirar productos que superen el tiempo de vida útil.','Registrar productos retirados en bitácora de merma.','Los productos más recientes van atrás de la vitrina.','Nunca mezclar productos de diferentes fechas sin identificar.']},
+    ]),
+    'vitrinas-limpieza':  ()=>renderChecklist(mc,cat,sub,'Limpieza de Vitrina','vitrinas',[
+      {sec:'Limpieza Diaria',items:['Retirar todo el producto con guantes.','Limpiar vidrios internos con alcohol al 70%.','Limpiar bandejas y soportes internos.','Revisar y limpiar el sello de la puerta.','Reponer producto limpio con etiqueta.','Limpiar vidrio exterior con líquido antigrasa.']},
+    ]),
+    'vitrinas-sobrantes': ()=>renderSobrantesVitrinas(mc,cat,sub),
+    'vitrinas-temperatura':()=>renderChecklist(mc,cat,sub,'Control de Temperatura de Vitrina','vitrinas',[
+      {sec:'Registro de Temperaturas',items:['Vitrina refrigerada 1: ___ °C · Rango: 4–8 °C','Vitrina refrigerada 2: ___ °C · Rango: 4–8 °C','Vitrina seca (pan): ___ °C · Temperatura ambiente','Registrar temperatura cada 2 horas.','Reportar desviación inmediatamente al supervisor.']},
+    ]),
+  };
+  const renderFn = renders[subId];
+  if(renderFn) renderFn();
+  else renderComingSoon(mc,cat,sub);
 }
 
-/* ────── CHECKLIST ENGINE ────── */
-function makeSection(title, items, dark=false){
-  const id='s'+Math.random().toString(36).slice(2,6);
-  let rows=items.map((_,i)=>`<tr class="cl-row">
-    <td class="td-num">${i+1}</td>
-    <td><input class="td-input" type="text" value="${items[i].replace(/"/g,'&quot;')}" placeholder="Descripción..."></td>
-    <td class="td-chk"><input type="checkbox"></td>
-  </tr>`).join('');
-  setTimeout(()=>{
-    const tb=document.getElementById(id+'_tb');
-    if(!tb)return;
-    renumber(id+'_tb');
-  },10);
-  return `
-  <div class="cl-section-ban" style="background:${dark?'var(--spirulina)':'var(--kale)'};">
-    <span>${title}</span>
-    <button class="btn btn-ghost btn-sm" style="color:white;border-color:rgba(255,255,255,.3);font-size:10px;" onclick="addRow('${id}_tb')">+ fila</button>
-  </div>
-  <table class="cl-table">
-    <thead><tr>
-      <th style="width:32px;">No.</th><th>Tarea</th>
-      <th style="width:36px;text-align:center;">✓</th>
-    </tr></thead>
-    <tbody id="${id}_tb">${rows}</tbody>
-  </table>`;
-}
-function addRow(tbId){
-  const tb=document.getElementById(tbId);if(!tb)return;
-  const n=tb.children.length+1;
-  const tr=document.createElement('tr');tr.className='cl-row';
-  tr.innerHTML=`<td class="td-num">${n}</td><td><input class="td-input" type="text" placeholder="Descripción..."></td><td class="td-chk"><input type="checkbox"></td>`;
-  tb.appendChild(tr);tr.querySelector('input[type=text]').focus();
-  renumber(tbId);
-}
-function renumber(tbId){
-  const tb=document.getElementById(tbId);if(!tb)return;
-  tb.querySelectorAll('tr').forEach((r,i)=>{const c=r.querySelector('.td-num');if(c)c.textContent=i+1;});
-}
-function clWrap(title,sub,cols,content){
-  return `<div class="form-panel fade-in">
-    <div class="form-panel-header">
-      <div><div class="fp-title">${title}</div><div class="fp-sub">${sub}</div></div>
-      <div class="fp-actions">
-        <button class="btn btn-ghost btn-sm" onclick="document.querySelectorAll('.cl-table input[type=checkbox]').forEach(c=>c.checked=false)">Limpiar</button>
-        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
+/* ════════════════════════════════════
+   RENDERS ESPECIALES
+════════════════════════════════════ */
+function renderChecklist(el,cat,sub,subtitle,cls,secciones){
+  const hdr = `<div class="fp fade-in">
+    <div class="fp-head ${cls}">
+      <div><div class="fp-title">${cat.icon} ${sub.name}</div><div class="fp-sub">${subtitle}</div></div>
+      <div class="fp-acts">
+        <button class="btn btn-ghost btn-sm" onclick="limpiarChecks()">Limpiar</button>
+        <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button>
       </div>
     </div>
-    <div style="padding:12px 16px 20px;${cols?'display:grid;grid-template-columns:1fr 1fr;gap:0 24px;':''}">
-      ${content}
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Supervisor</label><input type="text" placeholder="Nombre"></div>
+      </div>`;
+  const cuerpo = secciones.map(s=>`
+    <div class="cl-ban" style="background:${s.dark?'var(--spirulina)':cat.color}">
+      <span>${s.sec}</span>
+      <button class="btn btn-ghost btn-sm" style="color:white;border-color:rgba(255,255,255,.3);font-size:9px;" onclick="addClRow(this)">+ fila</button>
+    </div>
+    <table class="cl-table">
+      <thead><tr><th style="width:30px;">No.</th><th>Tarea</th><th style="width:30px;text-align:center;">✓</th><th style="width:28px;"></th></tr></thead>
+      <tbody>${s.items.map((item,i)=>`<tr class="cl-row">
+        <td class="cl-num">${i+1}</td>
+        <td><input class="cl-inp" type="text" value="${item.replace(/"/g,'&quot;')}" placeholder="Tarea..."></td>
+        <td class="cl-chk"><input type="checkbox"></td>
+        <td class="cl-del"><button onclick="this.closest('tr').remove();renumCl(this)">✕</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`).join('');
+  el.innerHTML = hdr+cuerpo+`</div></div>`;
+  triggerFades();
+}
+
+function addClRow(btn){
+  const tbody = btn.closest('.fp-body').querySelector('tbody:last-of-type')||btn.parentElement.nextElementSibling?.querySelector('tbody');
+  // Encontrar el tbody correcto (el que sigue al banner que contiene el botón)
+  const ban = btn.closest('.cl-ban');
+  const table = ban?.nextElementSibling;
+  const tb = table?.querySelector('tbody');
+  if(!tb) return;
+  const n = tb.children.length+1;
+  const tr = document.createElement('tr');
+  tr.className='cl-row';
+  tr.innerHTML=`<td class="cl-num">${n}</td><td><input class="cl-inp" type="text" placeholder="Nueva tarea..."></td><td class="cl-chk"><input type="checkbox"></td><td class="cl-del"><button onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);
+  tr.querySelector('input[type=text]').focus();
+}
+function renumCl(btn){/* renumerar si se quiere */}
+function limpiarChecks(){ document.querySelectorAll('.cl-chk input').forEach(c=>c.checked=false); }
+
+function renderProduccion(el,cat,sub){
+  const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+  const ths=`<th style="text-align:left;padding-left:8px;width:160px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);letter-spacing:1px;padding:7px;">Producto</th>${dias.map(d=>`<th style="width:52px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">${d}</th>`).join('')}<th style="width:58px;background:var(--spirulina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">TOTAL</th>`;
+  const makeRow=p=>`<tr>${['','','','','','','',''].map((_,i)=>i===0?`<td style="border:1px solid var(--border2);padding:0 8px;font-size:13px;height:25px;"><input style="width:100%;border:none;background:transparent;font-size:13px;height:25px;" type="text" value="${p||''}" placeholder="Producto..."></td>`:`<td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;" type="text" placeholder=""></td>`).join('')}<td style="border:1px solid var(--border2);background:var(--cocina-bg);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;font-weight:700;color:var(--cocina);" type="text" placeholder="0"></td></tr>`;
+  const makeBlock=(titulo,prods,tId)=>`
+    <div class="cl-ban" style="background:var(--cocina);margin-top:12px;">${titulo}</div>
+    <table class="inv-table"><thead><tr>${ths}</tr></thead>
+    <tbody id="${tId}">${prods.map(p=>makeRow(p)).join('')}</tbody></table>
+    <button class="add-btn" onclick="addProdRow('${tId}')">+ Agregar producto</button>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head cocina">
+      <div><div class="fp-title">🍳 ${sub.name}</div><div class="fp-sub">Matriz de Producción y Entrega</div></div>
+      <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Semana del</label><input type="date"></div>
+        <div class="meta-f"><label>Al</label><input type="date"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Validación</label><input type="text" placeholder="Firma salida"></div>
+      </div>
+      ${makeBlock('I. Pan Salado y Corteza',['Hogaza (Pre-fermento)','Ciabatta','Baguette'],'pb-pan')}
+      ${makeBlock('II. Pan Dulce — Viennoiserie',['Croissant Clásico','Chocolatín','Croissant Almendra','Roll de Canela'],'pb-vien')}
+      ${makeBlock('III. Postres y Pastelería',['Bowl de Proteína','Panqué de Plátano (Reb.)','Panqué de Plátano (Loaf)','Parfait Granola & Fruta','Tarta Limón','Galletas'],'pb-post')}
     </div>
   </div>`;
-}
-
-/* ────── ÁREAS ────── */
-function renderBarra(el){
-  el.innerHTML = clWrap('Checklist · Barra de Café','Apertura · Cambio de Turno · Cierre',true,`
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--kale);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">APERTURA</div>
-      ${makeSection('General',['Marcar entrada y uniformarse.','Prender la máquina de espresso.','Prender molino y rellenarlo.','Abrir paso del molino.','Armar área: montar tapetes, revisar cerámica.','Barrer y trapear.','Acomodo de utensilios.','Colocar bolsa de basura.'])}
-      ${makeSection('Insumos & Equipos',['Checar insumos (85 y 86).','Rellenar teteras y encenderlas.','Confirmar báscula cargada.'])}
-      ${makeSection('Calibración Espresso',['Calibración espresso y llenado de formato.','1. Tasted — 2. Ajuste si no ideal — 3. Ajuste II.'])}
-      ${makeSection('Cambio de Turno',['Operación continua — revisión muertos, limpieza e insumos.','Rellenar insumos: té, tisana, molino, leche, hielo.','Lavar y ordenar losa restante.','Limpiar área y vaciar gabacera.','Confirmar báscula. Rellenar teteras.','Revisar basura. Limpiar grupos y maneral.'])}
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--spirulina);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">CIERRE</div>
-      ${makeSection('Inicio Cierre',['Cerrar paso de tolva del molino (1 hr antes).','Lavar utensilios / ordenar.','Lavar losa y cristalería restante.','Rellenar losa y cristalería.'],true)}
-      ${makeSection('Máquina Espresso',['Rellenar insumos.','Limpiar máquina con rinzar / cafiza.','Limpiar exterior: rejilla, trapear exterior, maneral, canastilla.'],true)}
-      ${makeSection('Molino',['Desmontar tolva del molino.','Guardar café restante en la bolsa.','Vaciar café restante del molino.','Limpiar exterior del molino.','Volver a colocar tolva vacía y limpia.'],true)}
-      ${makeSection('Cierre Final',['Sacar y exprimir trapos AM. Lavar y secar trapos PM.','Barrer y trapear.','Sacar la basura.','Apagar equipos.'],true)}
-    </div>
-  `);
   triggerFades();
 }
-
-function renderSalon(el){
-  el.innerHTML = clWrap('Checklist · Salón & Mostrador','Apertura · Cambio de Turno · Cierre',true,`
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--kale);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">APERTURA</div>
-      ${makeSection('General',['Marcar entrada y uniformarse.','Habilitar luces del salón y mostrador.','Sacar bancas a la entrada.','Barrer y trapear salón.'])}
-      ${makeSection('Punto de Venta',['Habilitar punto de venta — limpiar pantalla.','Prueba de terminales bancarias.','Confirmar Wi-Fi funcionando.'])}
-      ${makeSection('Baños & Servicio',['Habilitar baños — papel, jabón, bolsa.','Habilitar área de servicio (cubiertos, servilletas, popotes).','Checar stock completo.'])}
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--spirulina);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">CIERRE</div>
-      ${makeSection('Salón & Exterior',['Cerrar puertas del establecimiento.','Guardar bancas del exterior.','Barrer y trapear salón y mostrador.','Limpiar mesas y sillas.'],true)}
-      ${makeSection('Vitrina & Producto',['Guardar producto de vitrinas en refrigeración.','Limpiar migajas y residuos de vitrina.','Anotar piezas vendidas y sobrantes.'],true)}
-      ${makeSection('Cierre Final',['Sacar basura de salón, servicio y baños.','Cierre de turno en sistema y terminal.','Apagar luces y verificar instalaciones.'],true)}
-    </div>
-  `);
-  triggerFades();
+function addProdRow(tbId){
+  const tb=document.getElementById(tbId);if(!tb)return;
+  const dias=7;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="border:1px solid var(--border2);padding:0;"><input style="width:100%;border:none;background:transparent;padding:0 8px;font-size:13px;height:25px;" type="text" placeholder="Producto..."></td>${Array(dias).fill(0).map(()=>`<td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;" type="text" placeholder=""></td>`).join('')}<td style="border:1px solid var(--border2);background:var(--cocina-bg);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;font-weight:700;color:var(--cocina);" type="text" placeholder="0"></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
 }
 
-function renderBanos(el){
-  const horas=['7:00 a.m.','8:00 a.m.','9:00 a.m.','10:00 a.m.','11:00 a.m.','12:00 p.m.','1:00 p.m.','2:00 p.m.','3:00 p.m.','4:00 p.m.','5:00 p.m.','6:00 p.m.','7:00 p.m.','8:00 p.m.'];
-  const checks=['Papel Baño','WC','Jabonera','Bote Basura','Papel Manos','Barrer','Espejo'];
-  const ths=checks.map(c=>`<th style="width:68px;text-align:center;background:var(--kale);color:var(--lemon);font-size:10px;">${c}</th>`).join('');
-  const makeRow=(hora,deep=false)=>`<tr${deep?' style="background:rgba(20,107,79,.06);"':''}>
-    <td style="font-family:var(--mono);font-size:12px;padding:0 10px;height:26px;border:1px solid var(--border-soft);${deep?'background:var(--spirulina);color:var(--lemon);font-size:10px;':''}">${hora}</td>
-    ${checks.map(()=>`<td style="text-align:center;vertical-align:middle;border:1px solid var(--border-soft);"><input type="checkbox" style="width:14px;height:14px;accent-color:var(--kale);"></td>`).join('')}
-    <td style="border:1px solid var(--border-soft);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;" type="text" placeholder=""></td>
-    <td style="border:1px solid var(--border-soft);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;" type="text" placeholder=""></td>
-  </tr>`;
-  const rows=horas.map(h=>makeRow(h)).join('')+makeRow('8:30 PM · LIMPIEZA PROFUNDA',true)+makeRow('9:00 p.m.');
-  el.innerHTML=`<div class="form-panel fade-in">
-    <div class="form-panel-header">
-      <div><div class="fp-title">Bitácora · Limpieza de Baño</div><div class="fp-sub">16 franjas horarias + limpieza profunda 8:30pm</div></div>
-      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
+function renderMerma(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head ${cat.id}" style="border-color:${cat.color}">
+      <div><div class="fp-title" style="color:${cat.color}">${cat.icon} ${sub.name}</div><div class="fp-sub">Registro de merma y producto no conforme</div></div>
+      <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button>
     </div>
-    <div style="padding:12px 16px 20px;overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;min-width:760px;">
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+      </div>
+      <table class="inv-table">
         <thead><tr>
-          <th style="text-align:left;padding:6px 10px;background:var(--kale);color:var(--lemon);font-size:10px;width:100px;">Hora</th>
-          ${ths}
-          <th style="background:var(--kale);color:var(--lemon);font-size:10px;width:100px;text-align:center;">Responsable</th>
-          <th style="background:var(--kale);color:var(--lemon);font-size:10px;text-align:left;padding:6px 8px;">Observaciones</th>
+          <th style="text-align:left;padding-left:8px;background:${cat.color};width:180px;">Producto</th>
+          <th style="background:${cat.color};width:80px;">Cantidad</th>
+          <th style="background:${cat.color};width:90px;">Unidad</th>
+          <th style="background:${cat.color};width:120px;">Causa</th>
+          <th style="background:${cat.color};">Observaciones</th>
+          <th style="background:var(--spirulina);width:28px;"></th>
         </tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody id="merma-tb">
+          ${[1,2,3,4,5].map(i=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>kg</option><option>lt</option><option>pz</option><option>gr</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>Caducidad</option><option>Error prep.</option><option>Accidente</option><option>Devolución</option><option>Otro</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Notas..."></td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button class="cl-del" style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <button class="add-btn" onclick="addMermaRow()">+ Agregar ítem</button>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addMermaRow(){
+  const tb=document.getElementById('merma-tb');if(!tb)return;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>Caducidad</option><option>Error prep.</option><option>Accidente</option><option>Devolución</option><option>Otro</option></select></td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Notas..."></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderCalibration(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head barra"><div><div class="fp-title">☕ ${sub.name}</div><div class="fp-sub">Registro de calibración de espresso</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Barista</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Café / Lote</label><input type="text" placeholder="Origen / lote"></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="background:var(--barra);color:white;font-size:9px;width:60px;font-family:var(--mono);">Prueba</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Dosis (gr)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Rendimiento (gr)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Tiempo (seg)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Temperatura (°C)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Resultado</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Ajuste realizado</th>
+        </tr></thead>
+        <tbody>
+          ${['1','2','3'].map(n=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:12px;height:28px;">${n}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="18"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="36"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="27"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="93"></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:28px;font-family:var(--font);">
+                <option>✓ Ideal</option><option>↑ Sobreextraído</option><option>↓ Subextraído</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Molido +2 clics..."></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="info-card" style="margin-top:14px;">
+        <h4>Parámetros ideales</h4>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Dosis: 18–20 gr · Rendimiento: 36–40 gr (ratio 1:2) · Tiempo: 25–30 seg · Temperatura: 92–94 °C</p>
+      </div>
+    </div>
+  </div>`;
+  triggerFades();
+}
+
+function renderInventarioGeneral(el,cat,sub){
+  const items=['Harina de trigo (kg)','Mantequilla (kg)','Huevo (pz)','Azúcar (kg)','Sal (kg)','Levadura (gr)','Leche entera (lt)','Crema (lt)','Café en grano (kg)','Matcha (gr)','Leche de avena (lt)','Chocolate (kg)','Vainilla (ml)','Papel encerado (rollos)','Bolsas para llevar','Vasos desechables'];
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head ${cat.id}" style="border-color:${cat.color}">
+      <div><div class="fp-title" style="color:${cat.color}">${cat.icon} ${sub.name}</div><div class="fp-sub">Equipo mayor y menor · Registro quincenal</div></div>
+      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="addInvRow()">+ Ítem</button><button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button></div>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Quincena</label><select><option>Q1 (1–15)</option><option>Q2 (16–31)</option></select></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="width:28px;text-align:center;background:${cat.color};">No.</th>
+          <th style="text-align:left;padding-left:8px;background:${cat.color};">Descripción</th>
+          <th style="width:60px;background:${cat.color};">Inicial</th>
+          <th style="width:60px;background:${cat.color};">Q1</th>
+          <th style="width:60px;background:${cat.color};">Q2</th>
+          <th style="width:100px;background:${cat.color};">Unidad</th>
+          <th style="width:28px;background:var(--spirulina);"></th>
+        </tr></thead>
+        <tbody id="inv-tb">
+          ${items.map((it,i)=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${i+1}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" value="${it}"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>kg</option><option>lt</option><option>pz</option><option>gr</option><option>ml</option><option>rollos</option><option>cajas</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addInvRow(){
+  const tb=document.getElementById('inv-tb');if(!tb)return;
+  const n=tb.children.length+1;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Descripción..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option><option>ml</option></select></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderEntradas(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head almacen"><div><div class="fp-title">📦 ${sub.name}</div><div class="fp-sub">Registro de entradas de mercancía</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Proveedor</label><input type="text" placeholder="Nombre del proveedor"></div>
+        <div class="meta-f"><label>Factura / Remisión</label><input type="text" placeholder="No. de documento"></div>
+        <div class="meta-f"><label>Recibió</label><input type="text" placeholder="Nombre"></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:28px;font-family:var(--mono);">No.</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;text-align:left;padding-left:8px;font-family:var(--mono);">Producto</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:70px;font-family:var(--mono);">Cantidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:80px;font-family:var(--mono);">Unidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:100px;font-family:var(--mono);">Caducidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:70px;font-family:var(--mono);">Temp. recep.</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:60px;font-family:var(--mono);">Estado</th>
+          <th style="background:var(--spirulina);width:28px;"></th>
+        </tr></thead>
+        <tbody id="ent-tb">
+          ${[1,2,3,4,5].map((n,i)=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td>
+            <td style="border:1px solid var(--border2);"><input type="date" style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--mono);"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="___ °C"></td>
+            <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>✓ OK</option><option>⚠ Obs.</option><option>✗ Rechaz.</option></select></td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <button class="add-btn" onclick="addEntradaRow()">+ Agregar producto</button>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addEntradaRow(){
+  const tb=document.getElementById('ent-tb');if(!tb)return;
+  const n=tb.children.length+1;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><input type="date" style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="___ °C"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"><option>✓ OK</option><option>⚠ Obs.</option><option>✗ Rechaz.</option></select></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderBanos(el,cat,sub){
+  const horas=['7:00 a.m.','8:00 a.m.','9:00 a.m.','10:00 a.m.','11:00 a.m.','12:00 p.m.','1:00 p.m.','2:00 p.m.','3:00 p.m.','4:00 p.m.','5:00 p.m.','6:00 p.m.','7:00 p.m.','8:00 p.m.'];
+  const cols=['Papel Baño','WC','Jabonera','Bote Basura','Papel Manos','Barrer','Espejo'];
+  const ths=cols.map(c=>`<th style="width:68px;text-align:center;background:var(--salon);color:white;font-size:9px;font-family:var(--mono);">${c}</th>`).join('');
+  const makeRow=(h,deep=false)=>`<tr class="${deep?'':'cl-row'}">
+    <td style="font-family:var(--mono);font-size:12px;padding:0 10px;height:26px;border:1px solid var(--border2);${deep?'background:var(--spirulina);color:white;font-size:10px;':''}">${h}</td>
+    ${cols.map(()=>`<td style="text-align:center;vertical-align:middle;border:1px solid var(--border2);${deep?'background:rgba(0,80,86,.04);':''}"><input type="checkbox" style="width:14px;height:14px;accent-color:var(--kale);"></td>`).join('')}
+    <td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;font-family:var(--font);" type="text" placeholder=""></td>
+    <td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;font-family:var(--font);" type="text" placeholder=""></td>
+  </tr>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head salon"><div><div class="fp-title">🍽 ${sub.name}</div><div class="fp-sub">16 franjas horarias + limpieza profunda 8:30pm</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button></div>
+    <div class="fp-body" style="overflow-x:auto;">
+      <div class="meta-row"><div class="meta-f"><label>Fecha</label><input type="date"></div><div class="meta-f"><label>Baño</label><select><option>Damas</option><option>Caballeros</option><option>Universal</option></select></div><div class="meta-f"><label>Elaboró</label><input type="text" placeholder="Nombre"></div><div class="meta-f"><label>Supervisó</label><input type="text" placeholder="Nombre"></div></div>
+      <table style="width:100%;border-collapse:collapse;min-width:780px;">
+        <thead><tr>
+          <th style="text-align:left;padding:6px 10px;background:var(--salon);color:white;font-size:9px;width:100px;">Hora</th>
+          ${ths}
+          <th style="background:var(--salon);color:white;font-size:9px;width:100px;text-align:center;">Responsable</th>
+          <th style="background:var(--salon);color:white;font-size:9px;text-align:left;padding:6px 8px;">Observaciones</th>
+        </tr></thead>
+        <tbody>${horas.map(h=>makeRow(h)).join('')}${makeRow('8:30 PM · LIMPIEZA PROFUNDA',true)}${makeRow('9:00 p.m.')}</tbody>
       </table>
     </div>
   </div>`;
   triggerFades();
 }
 
-function renderCocina(el){
-  el.innerHTML = clWrap('Checklist · Cocina & Producción','Apertura · Inocuidad · Cierre',false,`
-    ${makeSection('Apertura Cocina',['Marcar entrada y uniformarse.','Encender equipos: hornos, refrigeradores, congeladores.','Verificar temperaturas de equipos (bitácora inocuidad).','Revisar mise en place del día.','Barrer y limpiar área de trabajo.','Colocar bolsas de basura y sanitizar superficies.'])}
-    ${makeSection('Durante Operación',['Registrar temperatura de alimentos en bitácora.','Verificar PEPS en refrigeradores y almacén.','Controlar gramajes según receta.','Documentar merma en formato correspondiente.','Mantener área limpia y libre de contaminación cruzada.'])}
-    ${makeSection('Cierre Cocina',['Enfriamiento rápido de alimentos preparados.','Etiquetado con fecha y hora de todos los recipientes.','Limpieza y desinfección de equipos y superficies.','Guardar insumos en refrigeración o almacén seco.','Cerrar gas y apagar equipos.','Firmar bitácora de inocuidad del día.'],true)}
-  `);
-  triggerFades();
+function renderSupervisor(el,cat,sub){
+  const mc = document.getElementById('main-content');
+  renderChecklist(mc,{id:'supervisor',icon:'👁',name:'Supervisor',color:'var(--kale)'},{name:'Supervisión de Turno'},'Verificación cruzada · Todas las áreas','cocina',[
+    {sec:'Cocina',items:['Temperaturas verificadas y dentro de rango.','PEPS aplicado correctamente.','Mise en place completo para el turno.','Área limpia y equipos funcionando.']},
+    {sec:'Barra',items:['Calibración espresso realizada y documentada.','Insumos completos para el turno.','Área de trabajo limpia y organizada.','Tiempos de entrega adecuados.']},
+    {sec:'Salón',items:['Mesas montadas correctamente.','Estaciones de servicio completas.','Personal con uniforme y actitud de servicio.','Baños habilitados y limpios.']},
+    {sec:'Cierre',items:['Corte de caja realizado y cuadrado.','Merma del día registrada en todas las áreas.','Bitácoras de inocuidad firmadas.','Incidencias reportadas y documentadas.'],dark:true},
+  ]);
 }
 
-function renderProduccion(el){
-  const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
-  const thStyle=`background:var(--kale);color:white;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:6px 4px;border:1px solid var(--spirulina);text-align:center;`;
-  const makeRow=p=>`<tr>
-    <td style="padding:0 8px;font-size:13px;height:24px;border:1px solid var(--border-soft);">${p}</td>
-    ${dias.map(()=>`<td style="border:1px solid var(--border-soft);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:24px;" type="text" placeholder=""></td>`).join('')}
-    <td style="background:rgba(20,107,79,.05);border:1px solid var(--border-soft);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:24px;font-weight:700;color:var(--kale);" type="text" placeholder="0"></td>
-  </tr>`;
-  const makeBlock=(titulo,prods)=>`
-    <div style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--coconut);background:var(--kale);padding:5px 10px;margin:14px 0 0;border-radius:4px;">${titulo}</div>
-    <table style="width:100%;border-collapse:collapse;margin-top:1px;">
-      <thead><tr>
-        <th style="${thStyle}text-align:left;padding-left:8px;width:175px;">Producto</th>
-        ${dias.map(d=>`<th style="${thStyle}width:56px;">${d}</th>`).join('')}
-        <th style="${thStyle}width:60px;background:var(--spirulina);">TOTAL</th>
-      </tr></thead>
-      <tbody>${prods.map(p=>makeRow(p)).join('')}</tbody>
-    </table>`;
-  el.innerHTML=`<div class="form-panel fade-in">
-    <div class="form-panel-header">
-      <div><div class="fp-title">Control Semanal de Producción</div><div class="fp-sub">Matriz de Producción y Entrega</div></div>
-      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
-    </div>
-    <div style="padding:12px 16px 20px;">
-      ${makeBlock('I. Pan Salado y Corteza',['Hogaza (Pre-fermento)','Ciabatta','Baguette'])}
-      ${makeBlock('II. Pan Dulce — Viennoiserie',['Croissant Clásico','Chocolatín','Croissant Almendra','Roll de Canela'])}
-      ${makeBlock('III. Postres y Pastelería',['Bowl de Proteína','Panqué de Plátano (Reb.)','Panqué de Plátano (Loaf)','Parfait Granola & Fruta','Tarta Limón','Galletas'])}
+function renderConteoVitrinas(el,cat,sub){
+  const productos=['Croissant Clásico','Chocolatín','Croissant Almendra','Roll de Canela','Panqué Plátano (Reb.)','Panqué Plátano (Loaf)','Tarta Limón','Galletas','Bowl de Proteína'];
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head vitrinas"><div><div class="fp-title">🥐 ${sub.name}</div><div class="fp-sub">Registro de producto en vitrina</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()">🖨 Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row"><div class="meta-f"><label>Fecha</label><input type="date"></div><div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div><div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div><div class="meta-f"><label>Vitrina</label><select><option>Vitrina 1 — Refrigerada</option><option>Vitrina 2 — Seca</option><option>Mostrador</option></select></div></div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="text-align:left;padding-left:8px;background:var(--vitrinas);color:white;font-size:9px;">Producto</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Inicial AM</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Conteo 12pm</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Final PM</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Vendidos</th>
+          <th style="background:var(--spirulina);color:white;font-size:9px;width:80px;">Sobrante</th>
+        </tr></thead>
+        <tbody>${productos.map((p,i)=>`<tr class="cl-row">
+          <td style="border:1px solid var(--border2);padding:0 8px;font-size:13px;height:26px;">${p}</td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);background:var(--vitrinas-bg);"><input class="inv-inp" type="text" placeholder="0" style="color:var(--vitrinas);font-weight:700;"></td>
+        </tr>`).join('')}</tbody>
+      </table>
     </div>
   </div>`;
   triggerFades();
 }
 
-function renderInventario(el){
-  el.innerHTML=`<div class="form-panel fade-in">
-    <div class="form-panel-header">
-      <div><div class="fp-title">Inventario de Equipo</div><div class="fp-sub">Mayor y Menor · Registro Quincenal</div></div>
-      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Imprimir</button>
-    </div>
-    <div style="padding:16px;font-size:13px;color:var(--muted);">
-      Selecciona el área de inventario para registrar:
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px;">
-        ${['Bebidas','Panadería','Repostería','Salón','Caja & Vitrinas'].map(a=>`
-          <div style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .2s;" 
-            onmouseover="this.style.borderColor='var(--juice)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="font-size:14px;font-weight:700;color:var(--kale);">${a}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:3px;">Registro quincenal</div>
-          </div>`).join('')}
+function renderSobrantesVitrinas(el,cat,sub){
+  renderConteoVitrinas(el,cat,sub);
+}
+
+function renderComingSoon(el,cat,sub){
+  const phrases = {
+    cocina:'Este módulo de cocina está germinando — nutriéndose con los estándares de alimentos reales para brotar pronto.',
+    barra:'Este módulo de barra está echando raíces — cada bebida perfecta tiene su proceso. Florecerá pronto.',
+    almacen:'El almacén está tomando forma — cada entrada, cada salida, trazabilidad real. En proceso.',
+    salon:'El salón está listo para crecer — cada detalle del servicio consciente está por venir.',
+    servicio:'El protocolo de servicio está fermentando — se sirve con energía e intención. Próximamente.',
+    vitrinas:'La vitrina está floreciendo — cada pieza exhibida con propósito. En proceso.',
+  };
+  el.innerHTML=`<div class="denied fade-in">
+    <div class="denied-icon">${cat.icon}</div>
+    <div class="denied-title">${sub.name} — En proceso</div>
+    <div class="denied-sub">${phrases[cat.id]||'Este módulo está germinando. Regresa pronto.'}</div>
+  </div>`;
+  triggerFades();
+}
+
+function renderDenied(){
+  document.getElementById('main-content').innerHTML=`<div class="denied fade-in"><div class="denied-icon">🔒</div><div class="denied-title">Área restringida</div><div class="denied-sub">No tienes acceso a esta área. Contacta a tu supervisor.</div></div>`;
+  triggerFades();
+}
+
+/* ════════════════════════════════════
+   TRANSVERSALES
+════════════════════════════════════ */
+function showSupervisor(){
+  setNavActive('nav-supervisor');
+  const mc=document.getElementById('main-content');
+  const cat={id:'supervisor',icon:'👁',name:'Supervisor',color:'var(--kale)'};
+  const sub={name:'Verificación Cruzada'};
+  renderChecklist(mc,cat,sub,'Verificación cruzada · Todas las áreas','cocina',[
+    {sec:'Cocina',items:['Temperaturas verificadas y dentro de rango.','PEPS aplicado correctamente.','Mise en place completo para el turno.','Área limpia y equipos funcionando.']},
+    {sec:'Barra',items:['Calibración espresso realizada y documentada.','Insumos completos para el turno.','Área de trabajo limpia y organizada.','Tiempos de entrega adecuados.']},
+    {sec:'Salón',items:['Mesas montadas correctamente.','Estaciones de servicio completas.','Personal con uniforme y actitud de servicio.','Baños habilitados y limpios.']},
+    {sec:'Cierre General',items:['Corte de caja realizado y cuadrado.','Merma del día registrada en todas las áreas.','Bitácoras de inocuidad firmadas.','Incidencias reportadas.'],dark:true},
+  ]);
+}
+
+function showAlerts(){
+  setNavActive('nav-alertas');
+  document.getElementById('main-content').innerHTML=`<div class="fade-in">
+    <div class="fp"><div class="fp-head cocina"><div><div class="fp-title">🔔 Alertas & Reportes</div><div class="fp-sub">Resumen del día · Estado operativo</div></div></div>
+    <div class="fp-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="info-card"><h4>Estado del día</h4>
+          <div class="status-row"><span class="status-label">Cocina</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Barra</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Salón</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Vitrinas</span><span class="status-val warn">⚠ Revisar temp.</span></div>
+        </div>
+        <div class="info-card"><h4>Bitácoras del día</h4>
+          <div class="status-row"><span class="status-label">Inocuidad AM</span><span class="status-val ok">✓ Firmada</span></div>
+          <div class="status-row"><span class="status-label">Calibración barra</span><span class="status-val ok">✓ Firmada</span></div>
+          <div class="status-row"><span class="status-label">Baños (última rev.)</span><span class="status-val">12:00 p.m.</span></div>
+          <div class="status-row"><span class="status-label">Corte de caja</span><span class="status-val warn">⏳ Pendiente</span></div>
+        </div>
       </div>
-    </div>
+      <div class="info-card" style="margin-top:14px;"><h4>Módulo en desarrollo</h4><p>Las alertas automáticas por WhatsApp y el dashboard en tiempo real están en proceso de implementación — Semana 9–10 del roadmap.</p></div>
+    </div></div>
   </div>`;
   triggerFades();
 }
 
-function renderInocuidad(el){
-  el.innerHTML=clWrap('Bitácora de Inocuidad & Termometría','Registro de temperaturas por área',false,`
-    ${makeSection('Temperaturas AM',['Refrigerador 1 — temp. real: ___ °C · Rango: 1–4 °C','Refrigerador 2 — temp. real: ___ °C · Rango: 1–4 °C','Congelador — temp. real: ___ °C · Rango: -18 a -22 °C','Área de preparación fría: ___ °C','Baño María / área caliente: ___ °C'])}
-    ${makeSection('Verificación de Alimentos',['Pollo crudo almacenado separado de cocidos: ✓','Etiquetado PEPS vigente — verificar fechas: ✓','Sin alimentos caducados en refrigeración: ✓','Tabla de corte de carnes limpia y sanitizada: ✓'])}
-    ${makeSection('Temperaturas PM / Cierre',['Refrigerador 1 cierre — temp. real: ___ °C','Refrigerador 2 cierre — temp. real: ___ °C','Congelador cierre — temp. real: ___ °C','Alimentos preparados etiquetados con fecha y hora: ✓'],true)}
-  `);
-  triggerFades();
-}
+/* ════════════════════════════════════
+   ADMIN — USUARIOS & ROLES
+════════════════════════════════════ */
+let editUID = null;
 
-function renderSupervisor(el){
-  el.innerHTML=clWrap('Checklist · Supervisor','Verificación Cruzada · Todas las Áreas',true,`
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--kale);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">APERTURA & SERVICIO</div>
-      ${makeSection('Salón / Piso',['Mesas limpias, alineadas y montadas.','Área general barrida y ordenada.','Estaciones de servicio completas.','Personal informado de productos y 86s.','Uniforme limpio y actitud de servicio.'])}
-      ${makeSection('Mostrador & Caja',['Caja inicial verificada y fondeo correcto.','Terminales bancarias funcionando.','Área limpia y producto etiquetado.','Cambio suficiente disponible.'])}
-      ${makeSection('Barra',['Tiempos de entrega adecuados.','Bebidas con presentación y temperatura correcta.','Limpieza constante durante servicio.','Control de merma registrado.'])}
-    </div>
-    <div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--coconut);background:var(--spirulina);padding:6px 10px;text-align:center;border-radius:4px;margin-bottom:4px;">CIERRE</div>
-      ${makeSection('Barra',['Barra limpia y desinfectada.','Utensilios lavados, secos y en su lugar.','Refrigeradores cerrados.'],true)}
-      ${makeSection('Salón / Piso',['Mesas y sillas limpias.','Piso barrido y trapeado.','Baños limpios y abastecidos.','Basura retirada.'],true)}
-      ${makeSection('Caja & Reportes',['Corte de caja realizado y cuadrado.','Efectivo verificado y resguardado.','Terminales cerradas correctamente.','Reporte de incidencias completado.'],true)}
-    </div>
-  `);
-  triggerFades();
-}
-
-function renderComingSoon(el, areaId){
-  const area = AREAS.find(a=>a.id===areaId)||{name:areaId,icon:'🌱'};
-  el.innerHTML=`<div class="access-denied fade-in">
-    <div class="ad-icon">${area.icon}</div>
-    <div class="ad-title">${area.name} — En proceso</div>
-    <div class="ad-sub">Este módulo está germinando.<br>Nutriéndose con los estándares de alimentos reales para brotar pronto.</div>
-  </div>`;
-  triggerFades();
-}
-
-/* ════════════════════════════════════════
-   ADMIN — GESTIÓN DE USUARIOS
-════════════════════════════════════════ */
-function renderAdmin(el){
+function showAdmin(){
+  if(!isAdmin()){ renderDenied(); return; }
+  setNavActive('nav-admin');
   const users = getUsers().filter(u=>!u.hidden);
-  let rows = users.map(u=>`
-    <tr>
-      <td><strong>${u.name}</strong><br><span style="font-size:11px;font-family:var(--mono);color:var(--muted);">${u.email}</span></td>
-      <td><span class="role-pill ${ROLES[u.rol]?.pill||'rp-op'}">${ROLES[u.rol]?.label||u.rol}</span></td>
-      <td style="font-size:12px;color:var(--muted);">${u.areas.join(', ')}</td>
-      <td>
-        ${u.status==='pending'
-          ? '<span style="color:var(--warn,#b07d20);font-size:12px;font-weight:700;background:rgba(176,125,32,.08);padding:3px 8px;border-radius:6px;">⏳ Pendiente</span>'
-          : u.active
-            ? '<span style="color:var(--juice);font-size:12px;font-weight:700;">● Activo</span>'
-            : '<span style="color:var(--danger);font-size:12px;font-weight:700;">○ Inactivo</span>'
-        }
-      </td>
-      <td>
-        <button class="edit-btn" onclick="openEditModal('${u.id}')">Editar</button>
-        <button class="edit-btn" style="margin-left:5px;color:${u.active?'var(--danger)':'var(--juice)'};" 
-          onclick="toggleUser('${u.id}')">${u.active?'Desactivar':'Activar'}</button>
-      </td>
-    </tr>`).join('');
-
-  el.innerHTML=`
-    <div class="admin-strip fade-in"><span class="admin-badge">Admin · LiTa</span>Gestión de usuarios y roles. Solo visible en sesión de control absoluto.</div>
-    <div class="form-panel fade-in">
-      <div class="form-panel-header">
-        <div><div class="fp-title">Usuarios & Roles</div><div class="fp-sub">Accesos por área · Vitality Kitchen</div></div>
-        <button class="btn btn-primary btn-sm" onclick="openNewModal()">+ Nuevo usuario</button>
+  const mc = document.getElementById('main-content');
+  mc.innerHTML=`
+    <div class="admin-bar fade-in"><span class="admin-badge-sm">Admin · Control Absoluto</span>Gestión de usuarios, roles y áreas de acceso. Solo visible en sesión admin.</div>
+    <div class="fp fade-in">
+      <div class="fp-head cocina">
+        <div><div class="fp-title">⚙️ Usuarios & Roles</div><div class="fp-sub">Vitality Kitchen · Portal Operativo</div></div>
+        <button class="btn btn-kale btn-sm" onclick="openNewUser()">+ Nuevo usuario</button>
       </div>
-      <div style="padding:0 0 4px;">
+      <div style="overflow-x:auto;">
         <table class="user-table">
-          <thead><tr><th>Usuario</th><th>Rol</th><th>Áreas de acceso</th><th>Estado</th><th>Acciones</th></tr></thead>
-          <tbody>${rows}</tbody>
+          <thead><tr><th>Usuario</th><th>Familia</th><th>Áreas</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            ${users.map(u=>`<tr>
+              <td>
+                <strong>${u.name}</strong><br>
+                <span style="font-size:11px;font-family:var(--mono);color:var(--muted);">${u.email}</span>
+              </td>
+              <td><span class="role-pill ${FAMILIAS[u.rol]?.pill||'rp-mesero'}">${FAMILIAS[u.rol]?.label||u.rol}</span></td>
+              <td style="font-size:11px;color:var(--muted);max-width:180px;">${(u.cats||[]).join(', ')||'—'}</td>
+              <td>
+                ${u.status==='pending'
+                  ? '<span style="color:var(--warn);font-size:12px;font-weight:700;background:rgba(176,125,32,.08);padding:3px 8px;border-radius:6px;">⏳ Pendiente</span>'
+                  : u.active
+                    ? '<span style="color:var(--juice);font-size:12px;font-weight:700;">● Activo</span>'
+                    : '<span style="color:var(--danger);font-size:12px;font-weight:700;">○ Inactivo</span>'
+                }
+              </td>
+              <td style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="act-btn" onclick="openEditUser('${u.id}')">Editar</button>
+                <button class="act-btn" style="color:${u.status==='pending'?'var(--juice)':u.active?'var(--danger)':'var(--juice)'};" 
+                  onclick="toggleUser('${u.id}')">${u.status==='pending'?'✓ Activar':u.active?'Desactivar':'Activar'}</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
         </table>
       </div>
     </div>`;
   triggerFades();
 }
 
-/* MODAL */
-function updateAreaCheckboxes(){
-  const rol = document.getElementById('modal-rol').value;
-  const defaultAreas = ROLES[rol]?.areas||[];
-  document.getElementById('area-checkboxes').innerHTML = AREAS.filter(a=>a.id!=='admin').map(a=>`
-    <label class="area-check-item">
-      <input type="checkbox" name="area" value="${a.id}" ${defaultAreas.includes(a.id)?'checked':''}>
-      ${a.icon} ${a.name}
-    </label>`).join('');
-}
-
-let editingUserId = null;
-function openNewModal(){
-  editingUserId = null;
+function openNewUser(){
+  editUID=null;
   document.getElementById('modal-title').textContent='Nuevo usuario';
-  document.getElementById('modal-name').value='';
-  document.getElementById('modal-email').value='';
-  document.getElementById('modal-pass').value='';
-  document.getElementById('modal-rol').value='operador';
-  updateAreaCheckboxes();
+  document.getElementById('m-name').value='';
+  document.getElementById('m-email').value='';
+  document.getElementById('m-pass').value='';
+  document.getElementById('m-rol').value='chef';
+  updateModalAreas();
   document.getElementById('user-modal').style.display='flex';
 }
-function openEditModal(uid){
+function openEditUser(uid){
   const users=getUsers();
-  const user=users.find(u=>u.id===uid);
-  if(!user)return;
-  editingUserId=uid;
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  editUID=uid;
   document.getElementById('modal-title').textContent='Editar usuario';
-  document.getElementById('modal-name').value=user.name;
-  document.getElementById('modal-email').value=user.email;
-  document.getElementById('modal-pass').value=user.pass;
-  document.getElementById('modal-rol').value=user.rol;
-  updateAreaCheckboxes();
-  // Marcar áreas del usuario
-  document.querySelectorAll('#area-checkboxes input[type=checkbox]').forEach(cb=>{
-    cb.checked=user.areas.includes(cb.value);
+  document.getElementById('m-name').value=u.name;
+  document.getElementById('m-email').value=u.email;
+  document.getElementById('m-pass').value=u.pass;
+  document.getElementById('m-rol').value=u.rol;
+  updateModalAreas();
+  document.querySelectorAll('#modal-areas input[type=checkbox]').forEach(cb=>{
+    cb.checked=(u.cats||[]).includes(cb.value);
   });
   document.getElementById('user-modal').style.display='flex';
 }
-function closeModal(){document.getElementById('user-modal').style.display='none';}
+function updateModalAreas(){
+  const rol=document.getElementById('m-rol').value;
+  const def=FAMILIAS[rol]?.cats||[];
+  document.getElementById('modal-areas').innerHTML=ESTRUCTURA.map(cat=>`
+    <label class="area-chk">
+      <input type="checkbox" value="${cat.id}" ${def.includes(cat.id)?'checked':''}>
+      ${cat.icon} ${cat.name}
+    </label>`).join('');
+}
+function closeModal(){ document.getElementById('user-modal').style.display='none'; }
 function saveUser(){
-  const name=document.getElementById('modal-name').value.trim();
-  const email=document.getElementById('modal-email').value.trim().toLowerCase();
-  const pass=document.getElementById('modal-pass').value.trim();
-  const rol=document.getElementById('modal-rol').value;
-  const areas=[...document.querySelectorAll('#area-checkboxes input:checked')].map(c=>c.value);
+  const name=document.getElementById('m-name').value.trim();
+  const email=document.getElementById('m-email').value.trim().toLowerCase();
+  const pass=document.getElementById('m-pass').value.trim();
+  const rol=document.getElementById('m-rol').value;
+  const cats=[...document.querySelectorAll('#modal-areas input:checked')].map(c=>c.value);
   if(!name||!email||!pass){alert('Completa todos los campos.');return;}
   const users=getUsers();
-  if(editingUserId){
-    const idx=users.findIndex(u=>u.id===editingUserId);
-    if(idx>=0){users[idx]={...users[idx],name,email,pass,rol,areas};}
+  if(editUID){
+    const idx=users.findIndex(u=>u.id===editUID);
+    if(idx>=0) users[idx]={...users[idx],name,email,pass,rol,cats,status:undefined};
   }else{
-    // Nuevos usuarios quedan en 'pending' hasta que el admin los active
-    users.push({id:'u'+Date.now(),name,email,pass,rol,areas,active:false,status:'pending'});
+    users.push({id:'u'+Date.now(),name,email,pass,rol,cats,trans:FAMILIAS[rol]?.trans||[],active:false,status:'pending'});
   }
   saveUsers(users);
   closeModal();
-  renderAdmin(document.getElementById('main-content'));
+  showAdmin();
 }
 function toggleUser(uid){
   const users=getUsers();
   const idx=users.findIndex(u=>u.id===uid);
   if(idx>=0){
-    if(users[idx].status==='pending'){
-      // Activar desde pending
-      users[idx].active=true;
-      delete users[idx].status;
-    } else {
-      users[idx].active=!users[idx].active;
-    }
+    if(users[idx].status==='pending'){ users[idx].active=true; delete users[idx].status; }
+    else users[idx].active=!users[idx].active;
   }
   saveUsers(users);
-  renderAdmin(document.getElementById('main-content'));
+  showAdmin();
 }
 
-/* ════════════════════════════════════════
+/* ════════════════════════════════════
    UTILS
-════════════════════════════════════════ */
+════════════════════════════════════ */
 function triggerFades(){
-  setTimeout(()=>{
+  requestAnimationFrame(()=>{
     document.querySelectorAll('.fade-in').forEach(el=>{
       el.classList.remove('show');
-      setTimeout(()=>el.classList.add('show'),30);
+      requestAnimationFrame(()=>el.classList.add('show'));
     });
-  },30);
-}
-
-// Inicializar usuarios si no existen
-// Inicializar — siempre asegurar que los admins DMZ existen
-(function(){
-  let users = [];
-  try{ users = JSON.parse(localStorage.getItem('vk_users')||'[]'); }catch(e){}
-  // Asegurar admins DMZ siempre presentes
-  DMZ_ADMINS.forEach(admin=>{
-    if(!users.find(u=>u.id===admin.id)) users.unshift(admin);
-    else {
-      const idx=users.findIndex(u=>u.id===admin.id);
-      users[idx]={...admin}; // siempre actualizar admins DMZ
-    }
   });
-  saveUsers(users);
-})();
+}
 </script>
 </body>
 </html>
