@@ -102,9 +102,94 @@
   font-size:12px;color:#aaa;line-height:1.5;
 }
 .bv-footer a{color:var(--kale);}
+
+/* ── BANNER PAGO PENDIENTE ── */
+#pago-banner{
+  position:fixed;inset:0;z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(26,46,31,.7);backdrop-filter:blur(6px);
+  padding:20px;
+}
+#pago-banner.oculto{display:none;}
+.pb-card{
+  background:var(--co,#FEFEFC);border-radius:18px;
+  width:100%;max-width:460px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.2);
+  animation:fadeUp .4s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+.pb-header{
+  background:linear-gradient(135deg,#c0392b 0%,#e05555 100%);
+  padding:24px 28px 20px;text-align:center;
+}
+.pb-icon{
+  width:52px;height:52px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
+}
+.pb-icon svg{width:24px;height:24px;stroke:white;fill:none;stroke-width:2;stroke-linecap:round;}
+.pb-header h2{font-size:18px;font-weight:700;color:white;margin-bottom:6px;letter-spacing:-.2px;}
+.pb-header p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.5;}
+.pb-body{padding:22px 28px 26px;}
+.pb-monto{
+  text-align:center;margin-bottom:18px;
+  padding:14px;background:#fff5f5;border-radius:10px;border:1px solid #ffd0d0;
+}
+.pb-monto .amount{font-size:28px;font-weight:700;color:#c0392b;font-family:var(--mono,'DM Mono',monospace);letter-spacing:-1px;}
+.pb-monto .label{font-size:11px;color:#999;margin-top:3px;letter-spacing:1px;text-transform:uppercase;}
+.pb-mensaje{
+  font-size:13px;color:#6B8A72;line-height:1.7;margin-bottom:20px;
+  padding:12px 14px;background:#f8fdf8;border-radius:8px;border-left:3px solid #8BB839;
+}
+.pb-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;background:#146B4F;color:#E0ED30;border:none;border-radius:40px;
+  padding:14px;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:var(--font,'DM Sans',sans-serif);letter-spacing:.3px;
+  text-decoration:none;transition:all .2s;
+}
+.pb-btn:hover{background:#005056;transform:translateY(-1px);box-shadow:0 6px 20px rgba(20,107,79,.2);}
+.pb-footer{
+  text-align:center;margin-top:14px;font-size:11px;color:#aaa;line-height:1.6;
+}
+.pb-footer a{color:#146B4F;}
+
 </style>
 </head>
 <body>
+
+
+<!-- ── BANNER PAGO PENDIENTE ── -->
+<div id="pago-banner" class="oculto">
+  <div class="pb-card">
+    <div class="pb-header">
+      <div class="pb-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h2>Pago de junio pendiente</h2>
+      <p>El cobro automático de este mes no pudo procesarse. Tu información está segura.</p>
+    </div>
+    <div class="pb-body">
+      <div class="pb-monto">
+        <div class="amount">$2,950 MXN</div>
+        <div class="label">Suscripción mensual · Junio 2026</div>
+      </div>
+      <div class="pb-mensaje">
+        Esto puede ocurrir por un cambio de tarjeta o un bloqueo temporal del banco. 
+        Es fácil de resolver — solo necesitas completar el pago para que tu equipo 
+        siga operando sin interrupciones.
+      </div>
+      <a href="https://buy.stripe.com/6oU00ifur4et1Mb6lhfEk00" class="pb-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Regularizar pago · Stripe seguro
+      </a>
+      <div class="pb-footer">
+        Tu ecosistema necesita tu energía para seguir nutriendo tu operación.<br>
+        ¿Necesitas ayuda? <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ BIENVENIDA POST-PAGO ══ -->
 <div id="bienvenida-overlay">
@@ -218,6 +303,19 @@
 
 <div class="foot">Vitality Kitchen Control · Powered by LiTa Support · 2026</div>
 <script>
+
+  // ── BANNER PAGO PENDIENTE ──
+  // Activar con ?pago=pendiente en URL o flag en localStorage
+  var pagoPendiente = true; // ACTIVO: pago junio 2026 pendiente
+    // Desactivar cuando se confirme el pago: cambiar true por false
+  
+  var pb = document.getElementById('pago-banner');
+  if(pb && pagoPendiente){
+    pb.classList.remove('oculto');
+    // Evitar que también aparezca la bienvenida
+    sessionStorage.setItem('vk_bienvenida_vista','1');
+  }
+
 (function(){
   var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   var now=new Date();
