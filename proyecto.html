@@ -161,10 +161,97 @@
 }
 .pb-footer a{color:#8B6914;}
 
+
+/* ── BANNER ACTUALIZACION ── */
+#act-banner{
+  position:fixed;top:0;left:0;right:0;z-index:600;
+  background:linear-gradient(135deg,var(--kale) 0%,var(--sp) 100%);
+  padding:0;
+  animation:slideDown .5s ease;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);
+}
+@keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+#act-banner.oculto{display:none;}
+.ab-inner{
+  max-width:960px;margin:0 auto;
+  padding:0 20px;
+  display:flex;align-items:stretch;
+  min-height:52px;
+}
+.ab-icon{
+  display:flex;align-items:center;padding:0 14px 0 0;
+  flex-shrink:0;
+}
+.ab-icon svg{width:20px;height:20px;}
+.ab-content{
+  flex:1;display:flex;align-items:center;
+  gap:20px;padding:10px 0;flex-wrap:wrap;
+}
+.ab-title{
+  font-size:13px;font-weight:700;color:var(--co);
+  letter-spacing:.3px;white-space:nowrap;
+}
+.ab-sep{color:rgba(254,254,252,.25);font-size:13px;}
+.ab-items{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.ab-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:rgba(254,254,252,.75);
+  white-space:nowrap;
+}
+.ab-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.ab-item .dot.green{background:var(--juice);}
+.ab-item .dot.amber{background:var(--lemon);}
+.ab-item .dot.gray{background:rgba(254,254,252,.3);}
+.ab-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:10px 0;}
+.ab-btn{
+  background:var(--lemon);color:var(--sp);
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  padding:6px 14px;border-radius:20px;text-decoration:none;
+  white-space:nowrap;transition:background .15s;
+}
+.ab-btn:hover{background:var(--cu);}
+.ab-close{
+  background:none;border:none;cursor:pointer;
+  color:rgba(254,254,252,.4);font-size:18px;line-height:1;
+  padding:0 0 0 10px;transition:color .15s;
+  display:flex;align-items:center;
+}
+.ab-close:hover{color:var(--co);}
+/* Compensar el header cuando el banner está visible */
+body.banner-visible .hdr{margin-top:52px;}
+
 </style>
 <!-- deploy: 1782316735.1545956 -->
 </head>
 <body>
+
+<!-- ── BANNER ACTUALIZACIÓN 10 DÍAS ── -->
+<div id="act-banner" class="oculto">
+  <div class="ab-inner">
+    <div class="ab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+    </div>
+    <div class="ab-content">
+      <span class="ab-title">Actualización del proyecto</span>
+      <span class="ab-sep">·</span>
+      <div class="ab-items">
+        <div class="ab-item"><div class="dot green"></div>Fase 1 completada al 100%</div>
+        <div class="ab-item"><div class="dot amber"></div>Fase 2 en desarrollo · 10%</div>
+        <div class="ab-item"><div class="dot amber"></div>Pago julio pendiente · límite día 10</div>
+        <div class="ab-item"><div class="dot gray"></div>Nueva entrega estimada: Octubre 2026</div>
+      </div>
+    </div>
+    <div class="ab-actions">
+      <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="ab-btn">Pagar julio →</a>
+      <button class="ab-close" onclick="cerrarActBanner()" title="Cerrar">✕</button>
+    </div>
+  </div>
+</div>
+
 
 
 <!-- ── BANNER PAGO PENDIENTE ── -->
@@ -367,6 +454,28 @@
     else { ov.classList.add('oculto'); }
   }
 })();
+
+
+// ── BANNER ACTUALIZACIÓN — visible 10 días desde el 10 julio 2026 ──
+(function(){
+  var KEY = 'vk_act_banner_cerrado';
+  var INICIO = new Date('2026-07-10T00:00:00');
+  var EXPIRA = new Date(INICIO.getTime() + 10 * 24 * 60 * 60 * 1000); // +10 días
+  var ahora  = new Date();
+  var cerrado = localStorage.getItem(KEY);
+  var banner = document.getElementById('act-banner');
+  if(!banner) return;
+  if(!cerrado && ahora >= INICIO && ahora <= EXPIRA){
+    banner.classList.remove('oculto');
+    document.body.classList.add('banner-visible');
+  }
+})();
+
+function cerrarActBanner(){
+  document.getElementById('act-banner').classList.add('oculto');
+  document.body.classList.remove('banner-visible');
+  localStorage.setItem('vk_act_banner_cerrado','1');
+}
 
 function cerrarBanner(){
   document.getElementById('pago-banner').classList.add('oculto');
