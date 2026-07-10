@@ -18,7 +18,7 @@ html{scroll-behavior:smooth;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
 
 /* ── BANNER SUPERIOR ── */
-#act-banner{position:fixed;top:0;left:0;right:0;z-index:600;background:linear-gradient(135deg,var(--kale) 0%,var(--spirulina) 100%);box-shadow:0 2px 12px rgba(0,0,0,.15);}
+#act-banner{position:fixed;top:0;left:0;right:0;z-index:600;background:linear-gradient(135deg,var(--kale) 0%,var(--spirulina) 100%);box-shadow:0 2px 12px rgba(0,0,0,.15);height:48px;overflow:hidden;}
 #act-banner.oculto{display:none;}
 .ab-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;min-height:48px;gap:12px;}
 .ab-icon svg{width:16px;height:16px;flex-shrink:0;}
@@ -203,7 +203,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <!-- BANNER SUPERIOR -->
 <div id="act-banner">
   <div class="ab-inner">
-    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round" width="16" height="16"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     <span class="ab-title">Actualización del proyecto</span>
     <span class="ab-sep">·</span>
     <div class="ab-items">
