@@ -3,437 +3,467 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>Vitality Kitchen Control — Tu proyecto</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--kale:#146B4F;--juice:#8BB839;--cw:#DFF6A6;--lemon:#E0ED30;--sp:#005056;--bb:#97B9FF;--co:#FEFEFC;--cu:#C9956B;--danger:#E24B4A;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font);background:#f5f5f0;color:#1a1a1a;min-height:100vh}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.fade{animation:fadeUp .6s ease backwards}
-.hdr{margin-top:52px;margin-top:52px;background:var(--sp);padding:20px 24px 24px}.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.hdr-logo{display:flex;align-items:center;gap:10px}.hdr-logo span{font-size:15px;font-weight:500;color:var(--co)}.hdr-logo small{display:block;font-size:14px;color:var(--juice);letter-spacing:1.5px;margin-top:1px}.hdr-badge{display:flex;align-items:center;gap:5px;font-size:14px;color:var(--co);opacity:.5}.hdr-badge .dot{width:6px;height:6px;border-radius:3px;background:var(--juice)}.hdr-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.hdr-card{background:rgba(254,254,252,.06);border-radius:10px;padding:10px 12px}.hdr-card label{font-size:14px;color:var(--cw);opacity:.5;display:block;margin-bottom:2px}.hdr-card .val{font-size:18px;font-weight:500;color:var(--lemon)}.hdr-card .val.wh{color:var(--co)}
-.ct{padding:20px 20px 32px}.card{background:#fff;border-radius:14px;padding:18px 20px;margin-bottom:14px;border:1px solid rgba(0,80,86,.06)}.card h2{font-size:18px;font-weight:500;color:var(--sp);margin-bottom:4px}.card h3{font-size:16px;font-weight:500;color:var(--sp);margin-bottom:10px}.card p{font-size:15px;color:#666;line-height:1.5}
-.timeline{position:relative;padding-left:28px}.timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:rgba(0,80,86,.06);border-radius:1px}.t-phase{position:relative;margin-bottom:18px}.t-dot{position:absolute;left:-28px;top:2px;width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;z-index:1}.t-dot.active{background:var(--lemon);animation:pulse 2s infinite}.t-dot.locked{background:rgba(0,80,86,.08)}.t-card{background:#fff;border-radius:12px;padding:16px 18px;border:1px solid rgba(0,80,86,.06)}.t-card.ac{border-color:rgba(224,237,48,.3);background:rgba(224,237,48,.02)}.t-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}.t-lbl{font-size:14px;font-weight:500;letter-spacing:2px;font-family:var(--mono);margin-bottom:3px}.t-title{font-size:15px;font-weight:500;color:var(--sp)}.t-dates{font-size:14px;color:#999;font-family:var(--mono)}.t-st{font-size:14px;padding:3px 9px;border-radius:12px;font-weight:500;white-space:nowrap}.t-desc{font-size:14px;color:#777;line-height:1.5;margin-bottom:12px}.t-items{display:flex;flex-direction:column;gap:4px}.t-item{display:flex;align-items:center;gap:8px;font-size:14px;padding:6px 10px;border-radius:6px;background:rgba(0,80,86,.015)}.t-item .ck{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.t-item .ck.on{background:rgba(139,184,57,.1)}.t-item .ck.off{background:rgba(0,80,86,.04)}.t-item .ck.prog{background:rgba(224,237,48,.15)}.t-item span{color:#555;flex:1}.t-item .tag{font-size:14px;padding:1px 6px;border-radius:8px;font-weight:500;white-space:nowrap}.t-prog{margin-top:10px;display:flex;align-items:center;gap:8px}.t-bar{flex:1;height:4px;border-radius:2px;background:rgba(0,80,86,.06)}.t-bar-f{height:4px;border-radius:2px}.t-pct{font-size:13px;font-weight:500;font-family:var(--mono);min-width:30px}
-.dunning{border:1px solid rgba(226,75,74,.15);border-radius:14px;padding:18px 20px;background:rgba(226,75,74,.02);margin-bottom:14px}.dunning h3{font-size:16px;font-weight:500;color:var(--danger);margin-bottom:8px;display:flex;align-items:center;gap:6px}.dunning .rule{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(226,75,74,.06);font-size:14px}.dunning .rule:last-child{border:none}.dunning .day{min-width:55px;font-weight:500;font-family:var(--mono);font-size:13px;color:var(--danger)}.dunning .act{color:#666;line-height:1.4}
-.prem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.prem-card{border:1px solid rgba(201,149,107,.15);border-radius:12px;padding:16px;background:rgba(201,149,107,.02);transition:all .2s;position:relative;overflow:hidden}.prem-card:hover{border-color:rgba(201,149,107,.3);background:rgba(201,149,107,.04)}.prem-card .ptag{position:absolute;top:10px;right:10px;font-size:14px;font-weight:600;padding:3px 8px;border-radius:8px;background:rgba(201,149,107,.1);color:var(--cu);font-family:var(--mono)}.prem-card .iw{width:36px;height:36px;border-radius:10px;background:rgba(201,149,107,.06);display:flex;align-items:center;justify-content:center;margin-bottom:8px}.prem-card h4{font-size:15px;font-weight:500;color:var(--sp);margin-bottom:3px;padding-right:65px}.prem-card p{font-size:13px;color:#888;line-height:1.4}.prem-card .pi{margin-top:8px;display:flex;flex-direction:column;gap:3px}.prem-card .pit{font-size:14px;color:#999;display:flex;align-items:center;gap:5px}.prem-card .pit::before{content:'';width:4px;height:4px;border-radius:2px;background:var(--cu);flex-shrink:0}
-.inv-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,80,86,.04);font-size:14px}.inv-row:last-child{border:none}.inv-row .lbl{color:#888}.inv-row .vl{font-weight:500;color:var(--sp)}.inv-row .vl.paid{color:var(--juice)}
-.contact{background:var(--sp);border-radius:14px;padding:20px;text-align:center;margin-top:6px}.contact h3{font-size:16px;font-weight:500;color:var(--co);margin-bottom:4px}.contact p{font-size:14px;color:rgba(254,254,252,.4);margin-bottom:14px}.contact-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(139,184,57,.12);color:var(--cw);font-size:15px;font-weight:500;border:none;cursor:pointer;font-family:var(--font);transition:all .2s}.contact-btn:hover{background:rgba(139,184,57,.2)}
-.foot{text-align:center;padding:20px;font-size:14px;color:#ccc}
-@media(max-width:600px){.hdr-cards{grid-template-columns:1fr 1fr}.hdr-cards>:last-child{grid-column:1/-1}.prem-grid{grid-template-columns:1fr}}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kale:#146B4F;--juice:#8BB839;--cucumber:#DFF6A6;--lemon:#E0ED30;
+  --spirulina:#005056;--coconut:#FEFEFC;--muted:#6B8A72;
+  --bg:#F4F7EF;--text:#1A2E1F;--border:rgba(20,107,79,.1);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
 
-/* ── BIENVENIDA OVERLAY ── */
-#bienvenida-overlay{
-  position:fixed;inset:0;z-index:1000;
-  background:var(--kale);
-  display:flex;align-items:center;justify-content:center;
-  padding:24px;
-  animation:none;
+/* ── BANNER SUPERIOR ── */
+#act-banner{position:fixed;top:0;left:0;right:0;z-index:600;background:linear-gradient(135deg,var(--kale) 0%,var(--spirulina) 100%);box-shadow:0 2px 12px rgba(0,0,0,.15);}
+#act-banner.oculto{display:none;}
+.ab-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;min-height:48px;gap:12px;}
+.ab-icon svg{width:16px;height:16px;flex-shrink:0;}
+.ab-title{font-size:12px;font-weight:700;color:var(--coconut);white-space:nowrap;flex-shrink:0;}
+.ab-sep{color:rgba(254,254,252,.25);flex-shrink:0;}
+.ab-items{display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:1;}
+.ab-item{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(254,254,252,.75);white-space:nowrap;}
+.ab-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.ab-dot.g{background:var(--juice);}
+.ab-dot.a{background:var(--lemon);}
+.ab-dot.gr{background:rgba(254,254,252,.3);}
+.ab-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ab-btn{background:var(--lemon);color:var(--spirulina);font-size:11px;font-weight:700;letter-spacing:.5px;padding:5px 12px;border-radius:20px;text-decoration:none;white-space:nowrap;}
+.ab-close{background:none;border:none;cursor:pointer;color:rgba(254,254,252,.4);font-size:16px;line-height:1;padding:0 0 0 6px;display:flex;align-items:center;}
+.ab-close:hover{color:var(--coconut);}
+
+/* ── WRAPPER ── */
+.wrapper{max-width:680px;margin:0 auto;padding:80px 20px 60px;}
+
+/* ── CARD BASE ── */
+.card{background:white;border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+
+/* ── HEADER CARD ── */
+.hero-card{background:var(--kale);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+.hero-top{padding:36px 32px 28px;text-align:center;}
+.hero-mark{
+  width:52px;height:52px;border-radius:12px;
+  background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
 }
+.hero-eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(224,237,48,.7);margin-bottom:10px;}
+.hero-title{font-size:28px;font-weight:700;color:var(--coconut);letter-spacing:-.5px;line-height:1.15;margin-bottom:8px;}
+.hero-sub{font-size:13px;color:rgba(254,254,252,.5);}
+
+/* KPI STRIP */
+.kpi-strip{background:#0D5A3F;display:grid;grid-template-columns:1fr 1fr 1fr;}
+.kpi-item{padding:18px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.08);}
+.kpi-item:last-child{border-right:none;}
+.kpi-num{font-size:30px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;}
+.kpi-num.yellow{color:var(--lemon);}
+.kpi-num.white{color:var(--coconut);}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(254,254,252,.4);margin-top:4px;}
+
+/* ── BODY CARD ── */
+.card-body{padding:24px 28px;}
+.body-intro{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:0;}
+.body-intro strong{color:var(--text);}
+
+/* ── RETRASO NOTICE ── */
+.notice{border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.notice-bar{height:4px;background:linear-gradient(90deg,#D4A017,#E8C547);}
+.notice-inner{background:#FFFBF0;border:1.5px solid rgba(212,160,23,.2);border-top:none;border-radius:0 0 12px 12px;padding:18px 22px;}
+.notice-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#8B6010;margin-bottom:10px;}
+.notice-text{font-size:13px;color:#5A3A00;line-height:1.75;}
+.notice-text strong{color:#3A2000;}
+
+/* ── PROGRESO ── */
+.prog-wrap{margin-bottom:16px;}
+.prog-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.prog-bar-bg{height:8px;background:#E8F0E9;border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.prog-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--kale),var(--juice));}
+.prog-sub{font-size:12px;color:var(--muted);}
+
+/* ── FASES ── */
+.fase-card{border-radius:14px;overflow:hidden;margin-bottom:12px;}
+
+/* Fase completa */
+.fase-done{background:#F0FAF0;border:1.5px solid rgba(139,184,57,.25);}
+.fase-done .fase-head{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+.fase-badge-done{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--juice);margin-bottom:4px;}
+.fase-title{font-size:15px;font-weight:700;color:var(--kale);}
+.fase-dates{font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono);}
+.fase-status{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.st-done{background:rgba(139,184,57,.12);color:var(--kale);}
+.st-active{background:rgba(224,237,48,.15);color:#7A6A00;}
+.st-locked{background:rgba(0,0,0,.05);color:#aaa;}
+
+/* barra de fase */
+.fase-prog{height:4px;background:#E8F0E9;}
+.fase-prog-fill{height:100%;}
+
+/* items de fase */
+.fase-items{padding:0 20px 16px;}
+.fase-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px;}
+.fase-item:last-child{border-bottom:none;}
+.fi-left{display:flex;align-items:center;gap:10px;color:var(--text);}
+.fi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fi-dot.done{background:var(--juice);}
+.fi-dot.prog{background:var(--lemon);}
+.fi-dot.pend{background:#D0D8D4;}
+.fi-tag{font-size:10px;font-weight:700;letter-spacing:1px;white-space:nowrap;padding:2px 8px;border-radius:8px;}
+.ft-done{background:rgba(139,184,57,.1);color:var(--kale);}
+.ft-prog{background:rgba(224,237,48,.12);color:#7A6A00;}
+.ft-pend{background:rgba(0,0,0,.04);color:#aaa;}
+
+/* Fase activa */
+.fase-active{background:white;border:2px solid rgba(20,107,79,.15);}
+.fase-active .fase-head{background:rgba(20,107,79,.03);}
+
+/* Fase bloqueada */
+.fase-locked{background:#F8FAF8;border:1.5px solid #E8EEE8;opacity:.6;}
+
+/* ── SIGUIENTE PASO ── */
+.next-card{background:var(--kale);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+.next-top{padding:24px 28px 20px;}
+.next-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--cucumber);margin-bottom:8px;}
+.next-title{font-size:22px;font-weight:700;color:var(--coconut);letter-spacing:-.3px;margin-bottom:12px;}
+.next-desc{font-size:13px;color:rgba(254,254,252,.6);line-height:1.7;margin-bottom:20px;}
+.next-steps{display:flex;flex-direction:column;gap:12px;}
+.next-step{display:flex;align-items:flex-start;gap:12px;}
+.ns-num{width:24px;height:24px;border-radius:50%;background:rgba(224,237,48,.12);border:1px solid rgba(224,237,48,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--lemon);}
+.ns-text{font-size:13px;color:rgba(254,254,252,.65);line-height:1.55;}
+.ns-text strong{color:var(--coconut);}
+.next-cta{padding:0 28px 24px;}
+.next-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--lemon);color:var(--spirulina);font-size:14px;font-weight:700;padding:14px;border-radius:40px;text-decoration:none;letter-spacing:.3px;}
+.next-btn:hover{background:var(--cucumber);}
+
+/* ── PAGO CARD ── */
+.pago-card{background:#FFF8F0;border:1.5px solid rgba(224,160,32,.25);border-radius:16px;padding:22px 26px;margin-bottom:16px;}
+.pago-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#8B6010;margin-bottom:8px;}
+.pago-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.pago-amount{font-size:32px;font-weight:700;color:#5A3A00;font-family:var(--mono);letter-spacing:-1px;}
+.pago-detail{font-size:11px;color:#8B6A20;text-align:right;line-height:1.4;}
+.pago-msg{font-size:13px;color:#8B6A20;line-height:1.6;margin-bottom:16px;}
+.pago-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--kale);color:var(--lemon);font-size:14px;font-weight:700;padding:14px;border-radius:40px;text-decoration:none;letter-spacing:.3px;}
+.pago-btn:hover{background:var(--spirulina);}
+
+/* ── FOOTER ── */
+.foot{background:var(--text);border-radius:16px;padding:24px 28px;text-align:center;margin-bottom:0;}
+.foot-text{font-size:12px;color:rgba(254,254,252,.4);line-height:1.7;}
+.foot-text a{color:var(--juice);}
+
+/* ── PAGO PENDIENTE BANNER (esquina) ── */
+#pago-banner{position:fixed;bottom:24px;right:24px;z-index:500;width:300px;}
+#pago-banner.oculto{display:none;}
+.pb-card{background:var(--coconut);border-radius:14px;border:1.5px solid rgba(176,125,32,.25);box-shadow:0 4px 20px rgba(0,0,0,.08);overflow:hidden;}
+.pb-header{background:rgba(176,125,32,.06);padding:12px 16px 10px;border-bottom:1px solid rgba(176,125,32,.12);display:flex;align-items:flex-start;justify-content:space-between;}
+.pb-header-left{display:flex;align-items:center;gap:10px;}
+.pb-icon{width:28px;height:28px;border-radius:7px;background:rgba(176,125,32,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pb-icon svg{width:14px;height:14px;stroke:#8B6914;fill:none;stroke-width:2;stroke-linecap:round;}
+.pb-header h2{font-size:12px;font-weight:600;color:#3d2e00;margin-bottom:1px;}
+.pb-header p{font-size:10px;color:#8B6914;line-height:1.3;}
+.pb-close{background:none;border:none;cursor:pointer;color:#aaa;font-size:14px;line-height:1;padding:0;flex-shrink:0;}
+.pb-body{padding:12px 16px 14px;}
+.pb-monto{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:8px 10px;background:rgba(176,125,32,.05);border-radius:7px;}
+.pb-monto .amount{font-size:16px;font-weight:700;color:#5a3a00;font-family:var(--mono);}
+.pb-monto .label{font-size:9px;color:#aaa;letter-spacing:.5px;text-transform:uppercase;text-align:right;}
+.pb-mensaje{font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:12px;}
+.pb-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--kale);color:var(--lemon);border:none;border-radius:30px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);text-decoration:none;transition:background .2s;}
+.pb-btn:hover{background:var(--spirulina);}
+.pb-footer{text-align:center;margin-top:8px;font-size:10px;color:#bbb;}
+.pb-footer a{color:#8B6914;}
+
+/* ── BIENVENIDA ── */
+#bienvenida-overlay{position:fixed;inset:0;z-index:1000;background:var(--kale);display:flex;align-items:center;justify-content:center;padding:20px;}
 #bienvenida-overlay.oculto{display:none;}
-.bv-card{
-  background:var(--co);border-radius:20px;
-  width:100%;max-width:480px;
-  overflow:hidden;
-  animation:fadeUp .5s ease;
-}
-.bv-header{
-  background:var(--kale);padding:28px 28px 24px;
-  text-align:center;position:relative;
-}
-.bv-sun{
-  width:56px;height:56px;border-radius:50%;
-  background:rgba(224,237,48,.12);border:2px solid rgba(224,237,48,.25);
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 16px;
-  animation:pulse 2s ease-in-out infinite;
-}
-.bv-header h1{
-  font-size:22px;font-weight:700;color:var(--co);
-  letter-spacing:-.3px;line-height:1.2;margin-bottom:6px;
-}
-.bv-header p{font-size:14px;color:rgba(254,254,252,.55);line-height:1.5;}
-.bv-body{padding:24px 28px;}
-.bv-phrase{
-  font-size:14px;font-style:italic;color:var(--kale);
-  text-align:center;margin-bottom:20px;line-height:1.6;
-  padding:14px 18px;background:rgba(139,184,57,.08);
-  border-radius:10px;border-left:3px solid var(--juice);
-}
-.bv-resumen{margin-bottom:20px;}
-.bv-resumen-title{
-  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#999;margin-bottom:10px;font-family:var(--mono);
-}
-.bv-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:8px 0;border-bottom:1px solid rgba(0,80,86,.06);font-size:14px;
-}
-.bv-row:last-child{border:none;}
+.bv-card{background:var(--coconut);border-radius:20px;width:100%;max-width:460px;overflow:hidden;}
+.bv-header{background:var(--kale);padding:28px 28px 22px;text-align:center;}
+.bv-sun{width:52px;height:52px;border-radius:50%;background:rgba(224,237,48,.1);border:2px solid rgba(224,237,48,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.bv-header h1{font-size:20px;font-weight:700;color:var(--coconut);margin-bottom:5px;}
+.bv-header p{font-size:13px;color:rgba(254,254,252,.5);}
+.bv-body{padding:22px 26px 24px;}
+.bv-phrase{font-size:13px;font-style:italic;color:var(--kale);text-align:center;margin-bottom:18px;padding:12px 16px;background:rgba(139,184,57,.06);border-radius:10px;border-left:3px solid var(--juice);line-height:1.6;}
+.bv-resumen-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin-bottom:10px;font-family:var(--mono);}
+.bv-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.bv-row:last-child{border-bottom:none;}
 .bv-row .lbl{color:#888;}
 .bv-row .val{font-weight:600;color:var(--kale);font-family:var(--mono);}
 .bv-row .val.green{color:var(--juice);}
-.bv-row .val.lemon{color:#7a6a00;}
-.bv-roadmap{margin-bottom:20px;}
-.bv-roadmap-title{
-  font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#999;margin-bottom:10px;font-family:var(--mono);
-}
-.bv-week{
-  display:flex;gap:10px;align-items:flex-start;
-  padding:7px 0;border-bottom:1px solid rgba(0,80,86,.04);
-}
-.bv-week:last-child{border:none;}
-.bv-week-num{
-  font-size:11px;font-family:var(--mono);font-weight:600;
-  color:var(--juice);min-width:72px;flex-shrink:0;margin-top:1px;
-}
-.bv-week-txt{font-size:13px;color:#666;line-height:1.4;}
-.bv-cta{
-  width:100%;background:var(--kale);color:var(--lemon);
-  border:none;border-radius:40px;padding:15px;
-  font-size:15px;font-weight:700;cursor:pointer;
-  font-family:var(--font);letter-spacing:.3px;
-  transition:background .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.bv-cta:hover{background:var(--sp);}
-.bv-footer{
-  text-align:center;padding:14px 28px 20px;
-  font-size:12px;color:#aaa;line-height:1.5;
-}
+.bv-cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--kale);color:var(--lemon);border:none;border-radius:40px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);letter-spacing:.3px;margin-top:18px;transition:background .2s;}
+.bv-cta:hover{background:var(--spirulina);}
+.bv-footer{text-align:center;padding:12px 26px 18px;font-size:11px;color:#aaa;}
 .bv-footer a{color:var(--kale);}
 
-/* ── BANNER PAGO PENDIENTE ── */
-#pago-banner{
-  position:fixed;bottom:24px;right:24px;z-index:500;
-  width:320px;
-  animation:slideIn .4s ease;
-}
-#pago-banner.oculto{display:none;}
-@keyframes slideIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
-.pb-card{
-  background:#FEFEFC;border-radius:14px;
-  border:1.5px solid rgba(176,125,32,.25);
-  box-shadow:0 4px 24px rgba(0,0,0,.08);
-  overflow:hidden;
-}
-.pb-header{
-  background:rgba(176,125,32,.06);
-  padding:14px 16px 12px;
-  display:flex;align-items:flex-start;justify-content:space-between;
-  border-bottom:1px solid rgba(176,125,32,.12);
-}
-.pb-header-left{display:flex;align-items:center;gap:10px;}
-.pb-icon{
-  width:32px;height:32px;border-radius:8px;flex-shrink:0;
-  background:rgba(176,125,32,.1);
-  display:flex;align-items:center;justify-content:center;
-}
-.pb-icon svg{width:16px;height:16px;stroke:#8B6914;fill:none;stroke-width:2;stroke-linecap:round;}
-.pb-header h2{font-size:13px;font-weight:600;color:#3d2e00;margin-bottom:2px;}
-.pb-header p{font-size:11px;color:#8B6914;line-height:1.4;}
-.pb-close{
-  background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;
-  padding:0;line-height:1;margin-left:8px;flex-shrink:0;transition:color .15s;
-}
-.pb-close:hover{color:#666;}
-.pb-body{padding:14px 16px 16px;}
-.pb-monto{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:12px;padding:10px 12px;
-  background:rgba(176,125,32,.05);border-radius:8px;border:1px solid rgba(176,125,32,.1);
-}
-.pb-monto .amount{font-size:18px;font-weight:700;color:#5a3a00;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
-.pb-monto .label{font-size:10px;color:#aaa;letter-spacing:.5px;text-transform:uppercase;text-align:right;}
-.pb-mensaje{
-  font-size:12px;color:#6B8A72;line-height:1.6;margin-bottom:14px;
-}
-.pb-btn{
-  display:flex;align-items:center;justify-content:center;gap:7px;
-  width:100%;background:#146B4F;color:#E0ED30;border:none;border-radius:40px;
-  padding:11px;font-size:13px;font-weight:700;cursor:pointer;
-  font-family:'DM Sans',sans-serif;letter-spacing:.3px;
-  text-decoration:none;transition:all .2s;
-}
-.pb-btn:hover{background:#005056;}
-.pb-footer{
-  text-align:center;margin-top:10px;font-size:10px;color:#bbb;line-height:1.5;
-}
-.pb-footer a{color:#8B6914;}
-
-
-#act-banner{position:fixed;top:0;left:0;right:0;z-index:600;background:linear-gradient(135deg,#146B4F 0%,#005056 100%);box-shadow:0 2px 12px rgba(0,0,0,.15);animation:slideDown .5s ease;}
-@keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0);}}
-#act-banner.oculto{display:none;}
-.ab-inner{max-width:960px;margin:0 auto;padding:0 20px;display:flex;align-items:center;min-height:52px;gap:12px;}
-.ab-icon{display:flex;align-items:center;flex-shrink:0;}
-.ab-icon svg{width:18px;height:18px;}
-.ab-title{font-size:13px;font-weight:700;color:#FEFEFC;letter-spacing:.3px;white-space:nowrap;flex-shrink:0;}
-.ab-sep{color:rgba(254,254,252,.25);font-size:13px;flex-shrink:0;}
-.ab-items{display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:1;}
-.ab-item{display:flex;align-items:center;gap:5px;font-size:12px;color:rgba(254,254,252,.75);white-space:nowrap;}
-.ab-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.ab-dot.g{background:#8BB839;}
-.ab-dot.a{background:#E0ED30;}
-.ab-dot.gr{background:rgba(254,254,252,.3);}
-.ab-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.ab-btn{background:#E0ED30;color:#005056;font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 14px;border-radius:20px;text-decoration:none;white-space:nowrap;}
-.ab-btn:hover{background:#DFF6A6;}
-.ab-close{background:none;border:none;cursor:pointer;color:rgba(254,254,252,.4);font-size:18px;line-height:1;padding:0 0 0 6px;display:flex;align-items:center;}
-.ab-close:hover{color:#FEFEFC;}
-
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+.card,.hero-card,.notice,.next-card,.pago-card,.foot{animation:fadeIn .5s ease both;}
 </style>
-<!-- deploy: 1782316735.1545956 -->
 </head>
 <body>
 
-<!-- ── BANNER ACTUALIZACIÓN ── -->
+<!-- BANNER SUPERIOR -->
 <div id="act-banner">
   <div class="ab-inner">
-    <div class="ab-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    </div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
     <span class="ab-title">Actualización del proyecto</span>
     <span class="ab-sep">·</span>
     <div class="ab-items">
-      <div class="ab-item"><div class="ab-dot g"></div>Fase 1 completada al 100%</div>
-      <div class="ab-item"><div class="ab-dot a"></div>Fase 2 en desarrollo · 80%</div>
-      <div class="ab-item"><div class="ab-dot a"></div>Pago julio pendiente · límite día 10</div>
-      <div class="ab-item"><div class="ab-dot gr"></div>Nueva entrega: Octubre 2026</div>
+      <div class="ab-item"><div class="ab-dot g"></div>Fase 1 completa · 100%</div>
+      <div class="ab-item"><div class="ab-dot a"></div>Fase 2 activa · 80%</div>
+      <div class="ab-item"><div class="ab-dot a"></div>Pago julio · límite día 10</div>
+      <div class="ab-item"><div class="ab-dot gr"></div>Entrega: Octubre 2026</div>
     </div>
     <div class="ab-actions">
       <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="ab-btn">Pagar julio →</a>
-      <button class="ab-close" onclick="cerrarActBanner()" title="Cerrar">✕</button>
+      <button class="ab-close" onclick="cerrarActBanner()">✕</button>
     </div>
   </div>
 </div>
 
-
-
-<!-- ── BANNER PAGO PENDIENTE ── -->
-<div id="pago-banner" class="oculto">
-  <div class="pb-card">
-    <div class="pb-header">
-      <div class="pb-header-left">
-        <div class="pb-icon">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
-        <div>
-          <h2>Pago de julio pendiente</h2>
-          <p>Tu suscripción de julio por $2,950 MXN está pendiente. Tienes hasta el 10 de julio para realizarla.</p>
-        </div>
-      </div>
-      <button class="pb-close" onclick="cerrarBanner()" title="Cerrar">✕</button>
-    </div>
-    <div class="pb-body">
-      <div class="pb-monto">
-        <div class="amount">$2,950 MXN</div>
-        <div class="label">Suscripción mensual · Julio 2026</div>
-      </div>
-      <div class="pb-mensaje">
-        Tienes hasta el 10 de julio para realizar tu pago. Continúa usando el portal con normalidad.
-      </div>
-      <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="pb-btn">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Pagar $2,950 MXN · Julio 2026
-      </a>
-      <div class="pb-footer">
-        ¿Necesitas ayuda? <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ BIENVENIDA POST-PAGO ══ -->
+<!-- BIENVENIDA POST-PAGO -->
 <div id="bienvenida-overlay">
   <div class="bv-card">
     <div class="bv-header">
       <div class="bv-sun">
-        <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
-          <g transform="translate(16,16)">
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/>
-            <line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/>
-            <circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.2"/>
-          </g>
-        </svg>
+        <svg viewBox="0 0 32 32" fill="none" width="26" height="26"><g transform="translate(16,16)"><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-9" x2="0" y2="-5.5" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/><circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.2"/></g></svg>
       </div>
       <h1>¡Bienvenido, Vitality Kitchen!</h1>
       <p>Tu ecosistema está activo. Pago recibido con éxito.</p>
     </div>
-
     <div class="bv-body">
-      <div class="bv-phrase">
-        "A partir de hoy, tu operación tiene raíces más profundas.<br>
-        Alimentos reales, energía natural y hábitos conscientes —<br>
-        ahora también en cada turno de tu cocina."
-      </div>
-
-      <div class="bv-resumen">
-        <div class="bv-resumen-title">Resumen de tu activación</div>
-        <div class="bv-row"><span class="lbl">Licencia de activación</span><span class="val green">$8,000 MXN ✓</span></div>
-        <div class="bv-row"><span class="lbl">Primer mes</span><span class="val green">$2,950 MXN ✓</span></div>
-        <div class="bv-row"><span class="lbl">Total cobrado</span><span class="val lemon">$10,950 MXN</span></div>
-        <div class="bv-row"><span class="lbl">Próximo cobro</span><span class="val" id="bv-next-date">1 de junio, 2026</span></div>
-        <div class="bv-row"><span class="lbl">Invoice</span><span class="val">Automático al correo</span></div>
-        <div class="bv-row"><span class="lbl">Soporte</span><span class="val">lita@litasupport.mx</span></div>
-      </div>
-
-      <div class="bv-roadmap">
-        <div class="bv-roadmap-title">Tu roadmap — 14 semanas</div>
-        <div class="bv-week"><span class="bv-week-num">Sem 1–2</span><span class="bv-week-txt">Configuración inicial, acceso al portal y roles de usuario</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 3–4</span><span class="bv-week-txt">Termometría digital y bitácoras de inocuidad</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 5–6</span><span class="bv-week-txt">Checklists operativos: barra, salón y supervisor</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 7–8</span><span class="bv-week-txt">Control semanal de producción e inventarios</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 9–10</span><span class="bv-week-txt">Alertas WhatsApp, reportes de cierre y audit trail</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 11–12</span><span class="bv-week-txt">Ajustes operativos y capacitación avanzada de equipo</span></div>
-        <div class="bv-week"><span class="bv-week-num">Sem 13–14</span><span class="bv-week-txt">Entrega final, validación de módulos y revisión 360°</span></div>
-      </div>
-
-      <button class="bv-cta" onclick="cerrarBienvenida()">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Ir a mi portal de proyecto
-      </button>
+      <div class="bv-phrase">"A partir de hoy, tu operación tiene raíces más profundas. Alimentos reales, energía natural y hábitos conscientes — ahora también en cada turno."</div>
+      <div class="bv-resumen-title">Resumen de tu activación</div>
+      <div class="bv-row"><span class="lbl">Licencia de activación</span><span class="val green">$8,000 MXN ✓</span></div>
+      <div class="bv-row"><span class="lbl">Primer mes</span><span class="val green">$2,950 MXN ✓</span></div>
+      <div class="bv-row"><span class="lbl">Total cobrado</span><span class="val">$10,950 MXN</span></div>
+      <div class="bv-row"><span class="lbl">Próximo cobro</span><span class="val" id="bv-next-date">—</span></div>
+      <div class="bv-row"><span class="lbl">Soporte</span><span class="val">lita@litasupport.mx</span></div>
+      <button class="bv-cta" onclick="cerrarBienvenida()">→ Ir a mi portal de proyecto</button>
     </div>
-
-    <div class="bv-footer">
-      Powered by LiTa Support · <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a><br>
-      Tu invoice oficial llega por separado vía Stripe al correo registrado.
-    </div>
+    <div class="bv-footer">Powered by LiTa Support · <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a></div>
   </div>
 </div>
-<div class="hdr"><div class="hdr-top"><div class="hdr-logo"><svg width="26" height="26" viewBox="0 0 48 48"><g transform="translate(24,24)"><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(30)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(60)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(120)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(150)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(210)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(240)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(300)"/><line x1="0" y1="-13" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2.2" stroke-linecap="round" transform="rotate(330)"/><circle cx="0" cy="0" r="2.5" fill="none" stroke="#E0ED30" stroke-width="1.3"/></g></svg><div><span>vitality kitchen</span><small>panel de proyecto</small></div></div><div class="hdr-badge"><div class="dot"></div> Licencia activa</div></div><div class="hdr-cards"><div class="hdr-card"><label>Fase actual</label><div class="val" style="font-size:16px;">Fase 2 de 3</div></div><div class="hdr-card"><label>Progreso global</label><div class="val">60%</div></div><div class="hdr-card"><label>Entrega estimada</label><div class="val wh" style="font-size:16px;">Octubre 2026</div></div></div></div>
 
-<div class="ct">
-
-
-
-<div class="rule"><div class="day">Día 3</div><div class="act">Si el pago no se procesa, se envía recordatorio vía WhatsApp y correo: <em>"Tu ecosistema necesita tu energía para seguir nutriendo tu operación."</em></div></div><div class="rule"><div class="day">Día 5</div><div class="act">Último aviso: <em>"Tu acceso se pausará mañana. Renueva para que tu equipo siga creciendo."</em></div></div><div class="rule"><div class="day">Día 6</div><div class="act"><strong style="color:#A32D2D;">El acceso se bloquea completamente.</strong> Operadores, gerentes y propietario no pueden ingresar. Los datos se preservan pero quedan inaccesibles.</div></div><div class="rule"><div class="day">Día 30</div><div class="act">Aviso de cancelación definitiva. Los datos se mantienen 60 días adicionales antes de eliminarse permanentemente.</div></div></div>
-
-
-<div class="card fade" style="animation-delay:.18s;border-left:3px solid #E0A020;background:rgba(224,160,32,.04);">
-  <div style="display:flex;align-items:flex-start;gap:12px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;">
-      <path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#B07A10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <div>
-      <div style="font-size:14px;font-weight:600;color:#7A5500;margin-bottom:6px;">Aviso de retraso — 4 semanas</div>
-      <p style="font-size:13px;color:#8B6A20;line-height:1.65;margin:0;">
-        Durante el proceso de implementación se registró un periodo de inactividad de <strong>4 semanas</strong> derivado de un retraso en el pago mensual. Este tiempo implicó la suspensión temporal del entorno de trabajo y la necesidad de restablecer configuraciones y valores de la plataforma.<br><br>
-        La entrega estimada original era <strong>agosto 2026</strong> — la nueva fecha estimada es <strong>octubre 2026</strong>.<br><br>
-        Para mantener el ritmo del proyecto y evitar nuevos retrasos, el pago mensual debe realizarse puntualmente. La plataforma está en fase activa de construcción y cada semana cuenta.
-      </p>
+<!-- PAGO PENDIENTE (esquina) -->
+<div id="pago-banner" class="oculto">
+  <div class="pb-card">
+    <div class="pb-header">
+      <div class="pb-header-left">
+        <div class="pb-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div><h2>Pago de julio pendiente</h2><p>Tu suscripción mensual no pudo cargarse.</p></div>
+      </div>
+      <button class="pb-close" onclick="cerrarBanner()">✕</button>
+    </div>
+    <div class="pb-body">
+      <div class="pb-monto">
+        <div class="amount">$2,950 MXN</div>
+        <div class="label">Julio 2026</div>
+      </div>
+      <div class="pb-mensaje">Tienes hasta el 10 de julio para realizar tu pago. Continúa usando el portal con normalidad.</div>
+      <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="pb-btn">Pagar $2,950 MXN · Julio 2026</a>
+      <div class="pb-footer">¿Necesitas ayuda? <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a></div>
     </div>
   </div>
 </div>
 
-<div style="font-size:16px;font-weight:500;color:var(--sp);margin-bottom:14px;display:flex;align-items:center;gap:6px;" class="fade" style="animation-delay:.25s"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Roadmap operativo — 12 semanas</div>
+<!-- ═══════ CONTENIDO PRINCIPAL ═══════ -->
+<div class="wrapper">
 
-<div class="timeline">
-
-<div class="t-phase fade" style="animation-delay:.3s"><div class="t-dot done" style="background:rgba(139,184,57,.15);border-color:var(--juice);"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#8BB839;">FASE 1</div><div class="t-title">Fundamentos + Inocuidad + Cocina</div><div class="t-dates">Mayo — Junio 2026 · Semanas 1 a 4</div></div><div class="t-st" style="background:rgba(139,184,57,.12);color:#146B4F;">Completada ✓</div></div><div class="t-desc">Infraestructura, acceso seguro, y los primeros módulos que tocan la cocina diaria: inocuidad, termometría, producción y checklists.</div><div class="t-items"><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Gatekeeper / Login MFA + seguridad base</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Diseño de marca + paleta Vitality Kitchen</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Hub operativo + panel propietario</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Inocuidad / Termometría (3 bitácoras + alertas)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Cocina / Producción (líneas, gramajes, pre-fermentos)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio turno + cierre (Cocina)</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Sistema de fotos con sello GPS + Voice-to-text</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Alertas WhatsApp al propietario</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:100%;background:var(--juice);"></div></div><div class="t-pct" style="color:#146B4F;">100%</div></div></div></div>
-
-<div class="t-phase fade" style="animation-delay:.4s"><div class="t-dot active"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#005056"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#B8A040;">FASE 2</div><div class="t-title">Barra + Salón + Servicio + Limpieza</div><div class="t-dates">Junio — Julio 2026 · Semanas 5 a 8</div></div><div class="t-st" style="background:rgba(224,237,48,.12);color:#8B7F20;">En desarrollo</div></div><div class="t-desc">Áreas de atención al comensal: barra, salón, terrazas, protocolo de servicio y roles de limpieza profunda.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Barra / Bebidas (recetas, merma líquidos, destrucción envases)</span></div><div class="t-item"><div class="ck off"></div><span>Salón principal (montaje, iluminación, temperatura ambiente)</span></div><div class="t-item"><div class="ck off"></div><span>Terraza 1 + Terraza 2 (checklists por zona)</span></div><div class="t-item"><div class="ck off"></div><span>Protocolo de servicio (pasos, tiempos, estándares)</span></div><div class="t-item"><div class="ck off"></div><span>Rol de limpieza por área (diaria, semanal, profunda)</span></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio + cierre (Barra, Salón, Terrazas)</span></div><div class="t-item"><div class="ck off"></div><span>SOPs contextuales (Manual 5S, Higiene, Glosario)</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:80%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#8B7F20;">80%</div></div></div></div>
-
-<div class="t-phase fade" style="animation-delay:.5s"><div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div><div class="t-card"><div class="t-header"><div><div class="t-lbl" style="color:#999;">FASE 3</div><div class="t-title">RRHH + Gerencia + App móvil + Lanzamiento</div><div class="t-dates">Julio — Agosto 2026 · Semanas 9 a 12</div></div><div class="t-st" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div></div><div class="t-desc">Cierre del programa: gestión de personal, vistas por rol, dashboard gerencia, app móvil nativa y capacitación.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Recursos Humanos (turnos, habilidades, asistencia)</span></div><div class="t-item"><div class="ck off"></div><span>Matriz de habilidades por colaborador</span></div><div class="t-item"><div class="ck off"></div><span>Gerencia (dashboard ejecutivo, mapas de calor, audit trail)</span></div><div class="t-item"><div class="ck off"></div><span>Vistas por rol: Propietario, Gerente, Operador</span></div><div class="t-item"><div class="ck off"></div><span>App móvil nativa (modo quiosco, offline, sello real)</span></div><div class="t-item"><div class="ck off"></div><span>Capacitación de equipo + entrega oficial</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:80%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div></div></div>
-
-</div>
-
-<!-- PREMIUM MODULES -->
-
-<div class="card fade" style="animation-delay:.52s;border-left:3px solid var(--kale);background:rgba(20,107,79,.04);">
-  <div style="display:flex;align-items:flex-start;gap:12px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:2px;"><path d="M9 11l3 3L22 4" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <div>
-      <div style="font-size:14px;font-weight:600;color:var(--kale);margin-bottom:8px;">Lo que sigue — acción requerida de tu parte</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <div style="width:22px;height:22px;border-radius:50%;background:var(--cucumber);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--kale);">1</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.55;"><strong style="color:var(--text);">Comparte tus formatos operativos</strong> — recetas, gramajes, checklists propios, procesos internos y cualquier documento que uses hoy en tu operación diaria.</div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <div style="width:22px;height:22px;border-radius:50%;background:var(--cucumber);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--kale);">2</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.55;">Con esa base configuramos las <strong style="color:var(--text);">interfaces para tu equipo</strong> — cada área operativa con sus formatos exactos, listas y flujos de trabajo.</div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <div style="width:22px;height:22px;border-radius:50%;background:var(--cucumber);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;color:var(--kale);">3</div>
-          <div style="font-size:13px;color:var(--muted);line-height:1.55;">Envía tus archivos a <a href="mailto:lita@litasupport.mx" style="color:var(--kale);font-weight:600;">lita@litasupport.mx</a> — tiempo de respuesta máximo 24 horas hábiles.</div>
-        </div>
+  <!-- HERO -->
+  <div class="hero-card">
+    <div class="hero-top">
+      <div class="hero-mark">
+        <svg viewBox="0 0 40 40" fill="none" width="32" height="32"><g transform="translate(20,20)"><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(45)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(90)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(135)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(180)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(225)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(270)"/><line x1="0" y1="-11" x2="0" y2="-7" stroke="#E0ED30" stroke-width="2" stroke-linecap="round" transform="rotate(315)"/><circle cx="0" cy="0" r="3" fill="none" stroke="#E0ED30" stroke-width="1.5"/></g></svg>
+      </div>
+      <div class="hero-eyebrow">Vitality Kitchen</div>
+      <div class="hero-title">Actualización de tu<br>ecosistema operativo</div>
+      <div class="hero-sub">Julio 2026 · Powered by LiTa Support</div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi-item">
+        <div class="kpi-num yellow">60%</div>
+        <div class="kpi-label">Avance global</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num yellow">Fase 2</div>
+        <div class="kpi-label">Fase activa</div>
+      </div>
+      <div class="kpi-item">
+        <div class="kpi-num white">Oct 26</div>
+        <div class="kpi-label">Nueva entrega</div>
       </div>
     </div>
   </div>
+
+  <!-- INTRO -->
+  <div class="card">
+    <div class="card-body">
+      <p class="body-intro">Hola <strong>Vitality Kitchen</strong>,<br><br>Te compartimos una actualización importante sobre el avance de tu ecosistema operativo y los pasos que siguen para continuar el desarrollo.</p>
+    </div>
+  </div>
+
+  <!-- RETRASO -->
+  <div class="notice">
+    <div class="notice-bar"></div>
+    <div class="notice-inner">
+      <div class="notice-label">Aviso · Registro de retraso</div>
+      <div class="notice-text">
+        Durante la implementación se registró un periodo de inactividad de <strong>4 semanas</strong> derivado de un retraso en el pago mensual. Esto implicó la suspensión temporal del entorno y la necesidad de <strong>restablecer configuraciones y valores</strong> de la plataforma.<br><br>
+        La entrega original era <strong>agosto 2026</strong> — la nueva fecha estimada es <strong>octubre 2026</strong>.<br><br>
+        El pago puntual es fundamental en la fase de creación. Cada semana perdida impacta directamente los tiempos de entrega y la configuración del sistema.
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESO -->
+  <div class="card">
+    <div class="card-body">
+      <div class="prog-label">Progreso del proyecto</div>
+      <div class="prog-bar-bg">
+        <div class="prog-bar-fill" style="width:60%"></div>
+      </div>
+      <div class="prog-sub">60% completado globalmente · Fase 1 al 100%</div>
+    </div>
+  </div>
+
+  <!-- FASE 1 — COMPLETA -->
+  <div class="fase-card fase-done">
+    <div class="fase-head">
+      <div>
+        <div class="fase-badge-done">FASE 1 · Completada ✓</div>
+        <div class="fase-title">Fundamentos + Inocuidad + Cocina</div>
+        <div class="fase-dates">Mayo — Julio 2026 · Semanas 1 a 4</div>
+      </div>
+      <span class="fase-status st-done">100% ✓</span>
+    </div>
+    <div class="fase-prog"><div class="fase-prog-fill" style="width:100%;background:var(--juice);height:4px;"></div></div>
+    <div class="fase-items">
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot done"></div>Login seguro + acceso por roles</div><span class="fi-tag ft-done">completado</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot done"></div>Diseño de marca + paleta Vitality Kitchen</div><span class="fi-tag ft-done">completado</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot done"></div>Hub operativo + 6 áreas + 36 módulos</div><span class="fi-tag ft-done">completado</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot done"></div>Inocuidad / Termometría</div><span class="fi-tag ft-done">completado</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot done"></div>Cocina / Producción</div><span class="fi-tag ft-done">completado</span></div>
+    </div>
+  </div>
+
+  <!-- FASE 2 — ACTIVA -->
+  <div class="fase-card fase-active">
+    <div class="fase-head">
+      <div>
+        <div class="fase-badge-done" style="color:#B8A040;">FASE 2 · En desarrollo</div>
+        <div class="fase-title">Barra + Salón + Servicio + Limpieza</div>
+        <div class="fase-dates">Julio — Agosto 2026 · Semanas 5 a 8</div>
+      </div>
+      <span class="fase-status st-active">80% ↑</span>
+    </div>
+    <div class="fase-prog"><div class="fase-prog-fill" style="width:80%;background:var(--lemon);height:4px;"></div></div>
+    <div class="fase-items">
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot prog"></div>Barra / Bebidas — en configuración</div><span class="fi-tag ft-prog">en progreso</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot pend"></div>Salón + Terrazas</div><span class="fi-tag ft-pend">pendiente</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot pend"></div>Protocolo de servicio</div><span class="fi-tag ft-pend">pendiente</span></div>
+      <div class="fase-item"><div class="fi-left"><div class="fi-dot pend"></div>Checklists apertura / cierre Barra y Salón</div><span class="fi-tag ft-pend">pendiente</span></div>
+    </div>
+  </div>
+
+  <!-- FASE 3 — BLOQUEADA -->
+  <div class="fase-card fase-locked">
+    <div class="fase-head">
+      <div>
+        <div class="fase-badge-done" style="color:#aaa;">FASE 3 · Bloqueado</div>
+        <div class="fase-title" style="color:#aaa;">RRHH + Gerencia + App móvil + Lanzamiento</div>
+        <div class="fase-dates">Septiembre — Octubre 2026 · Semanas 9 a 14</div>
+      </div>
+      <span class="fase-status st-locked">0%</span>
+    </div>
+    <div class="fase-prog"><div class="fase-prog-fill" style="width:0%;height:4px;background:#ddd;"></div></div>
+  </div>
+
+  <!-- SIGUIENTE PASO -->
+  <div class="next-card">
+    <div class="next-top">
+      <div class="next-label">Lo que sigue — acción requerida</div>
+      <div class="next-title">Comparte tus formatos operativos</div>
+      <div class="next-desc">Para avanzar necesitamos tus documentos de operación diaria: recetas, gramajes, checklists y procesos que tu equipo usa hoy.</div>
+      <div class="next-steps">
+        <div class="next-step">
+          <div class="ns-num">1</div>
+          <div class="ns-text"><strong>Reúne tus formatos</strong> — recetas, gramajes, checklists propios y procesos de cada área.</div>
+        </div>
+        <div class="next-step">
+          <div class="ns-num">2</div>
+          <div class="ns-text">Los <strong>integramos y configuramos</strong> dentro de cada área operativa de la plataforma.</div>
+        </div>
+        <div class="next-step">
+          <div class="ns-num">3</div>
+          <div class="ns-text"><strong>Envíalos aquí:</strong> lita@litasupport.mx — respuesta en máximo 24 horas hábiles.</div>
+        </div>
+      </div>
+    </div>
+    <div class="next-cta">
+      <a href="mailto:lita@litasupport.mx?subject=Formatos operativos Vitality Kitchen" class="next-btn">Enviar mis formatos →</a>
+    </div>
+  </div>
+
+  <!-- PAGO JULIO -->
+  <div class="pago-card">
+    <div class="pago-label">Pago pendiente · Julio 2026</div>
+    <div class="pago-row">
+      <div class="pago-amount">$2,950 MXN</div>
+      <div class="pago-detail">Suscripción mensual<br>Límite: 10 de julio</div>
+    </div>
+    <div class="pago-msg">Tienes del 1 al 10 de julio para realizar tu pago y mantener el acceso activo y el ritmo del proyecto.</div>
+    <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="pago-btn">Pagar $2,950 MXN · Stripe seguro</a>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="foot">
+    <div class="foot-text">
+      Vitality Kitchen Control · Puebla 2026<br>
+      <a href="mailto:lita@litasupport.mx">lita@litasupport.mx</a> · Powered by LiTa Support
+    </div>
+  </div>
+
 </div>
 
-
-<div class="foot">Vitality Kitchen Control · Powered by LiTa Support · 2026</div>
 <script>
-
-  // ── BANNER PAGO PENDIENTE ──
-  // Activar con ?pago=pendiente en URL o flag en localStorage
-  var pagoPendiente = true; // ACTIVO: pago julio 2026 pendiente — límite día 10
-    // Desactivar cuando se confirme el pago: cambiar true por false
-  
-  var pb = document.getElementById('pago-banner');
-  var bannerCerrado = sessionStorage.getItem('vk_banner_cerrado');
-  if(pb && pagoPendiente && !bannerCerrado){
-    pb.classList.remove('oculto');
-  }
-
+/* ─ Bienvenida post-pago ─ */
 (function(){
   var meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  var now=new Date();
-  var next=new Date(now.getFullYear(),now.getMonth()+1,1);
-  var txt='1 de '+meses[next.getMonth()]+', '+next.getFullYear();
+  var now=new Date(), next=new Date(now.getFullYear(),now.getMonth()+1,1);
+  var el=document.getElementById('bv-next-date');
+  if(el) el.textContent='1 de '+meses[next.getMonth()]+', '+next.getFullYear();
 
-  // Fecha en portal
-  var el=document.getElementById('next-charge');
-  if(el) el.textContent=txt;
-
-  // Fecha en bienvenida
-  var bv=document.getElementById('bv-next-date');
-  if(bv) bv.textContent=txt;
-
-  // Mostrar bienvenida: viene de Stripe o primera visita en esta sesión
   var yaVio=sessionStorage.getItem('vk_bienvenida_vista');
-  var desdeStripe=document.referrer.indexOf('stripe.com')>-1||
-                  document.referrer.indexOf('buy.stripe.com')>-1||
-                  window.location.search.indexOf('session_id')>-1||
-                  window.location.search.indexOf('payment')>-1;
+  var desdeStripe=document.referrer.indexOf('stripe.com')>-1||window.location.search.indexOf('session_id')>-1;
   var ov=document.getElementById('bienvenida-overlay');
-  if(ov){
-    if(!yaVio||desdeStripe){ ov.classList.remove('oculto'); }
-    else { ov.classList.add('oculto'); }
-  }
+  if(ov){ if(!yaVio||desdeStripe) ov.classList.remove('oculto'); else ov.classList.add('oculto'); }
 })();
-
-
-(function(){
-  var cerrado = localStorage.getItem('vk_act_v3');
-  if(!cerrado){
-    var b = document.getElementById('act-banner');
-    if(b) b.classList.remove('oculto');
-  }
-})();
-function cerrarActBanner(){
-  document.getElementById('act-banner').classList.add('oculto');
-  localStorage.setItem('vk_act_v3','1');
+function cerrarBienvenida(){
+  sessionStorage.setItem('vk_bienvenida_vista','1');
+  var ov=document.getElementById('bienvenida-overlay');
+  ov.style.opacity='0'; ov.style.transition='opacity .35s';
+  setTimeout(function(){ov.classList.add('oculto');ov.style.opacity='';},380);
 }
 
+/* ─ Banner pago pendiente ─ */
+var pagoPendiente = true; // julio 2026 — cambiar a false cuando paguen
+(function(){
+  var cerrado=sessionStorage.getItem('vk_banner_cerrado');
+  var pb=document.getElementById('pago-banner');
+  if(pb&&pagoPendiente&&!cerrado) pb.classList.remove('oculto');
+})();
 function cerrarBanner(){
   document.getElementById('pago-banner').classList.add('oculto');
   sessionStorage.setItem('vk_banner_cerrado','1');
 }
-function cerrarBienvenida(){
-  sessionStorage.setItem('vk_bienvenida_vista','1');
-  var ov=document.getElementById('bienvenida-overlay');
-  ov.style.opacity='0';
-  ov.style.transition='opacity .35s ease';
-  setTimeout(function(){ ov.classList.add('oculto'); ov.style.opacity=''; },380);
+
+/* ─ Banner actualización ─ */
+(function(){
+  var cerrado=localStorage.getItem('vk_act_v3');
+  if(!cerrado){ var b=document.getElementById('act-banner'); if(b) b.classList.remove('oculto'); }
+})();
+function cerrarActBanner(){
+  document.getElementById('act-banner').classList.add('oculto');
+  localStorage.setItem('vk_act_v3','1');
 }
 </script>
 </body>
