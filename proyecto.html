@@ -161,97 +161,10 @@
 }
 .pb-footer a{color:#8B6914;}
 
-
-/* ── BANNER ACTUALIZACION ── */
-#act-banner{
-  position:fixed;top:0;left:0;right:0;z-index:600;
-  background:linear-gradient(135deg,var(--kale) 0%,var(--sp) 100%);
-  padding:0;
-  animation:slideDown .5s ease;
-  box-shadow:0 2px 12px rgba(0,0,0,.15);
-}
-@keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0);}}
-#act-banner.oculto{display:none;}
-.ab-inner{
-  max-width:960px;margin:0 auto;
-  padding:0 20px;
-  display:flex;align-items:stretch;
-  min-height:52px;
-}
-.ab-icon{
-  display:flex;align-items:center;padding:0 14px 0 0;
-  flex-shrink:0;
-}
-.ab-icon svg{width:20px;height:20px;}
-.ab-content{
-  flex:1;display:flex;align-items:center;
-  gap:20px;padding:10px 0;flex-wrap:wrap;
-}
-.ab-title{
-  font-size:13px;font-weight:700;color:var(--co);
-  letter-spacing:.3px;white-space:nowrap;
-}
-.ab-sep{color:rgba(254,254,252,.25);font-size:13px;}
-.ab-items{
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
-}
-.ab-item{
-  display:flex;align-items:center;gap:6px;
-  font-size:12px;color:rgba(254,254,252,.75);
-  white-space:nowrap;
-}
-.ab-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.ab-item .dot.green{background:var(--juice);}
-.ab-item .dot.amber{background:var(--lemon);}
-.ab-item .dot.gray{background:rgba(254,254,252,.3);}
-.ab-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:10px 0;}
-.ab-btn{
-  background:var(--lemon);color:var(--sp);
-  font-size:11px;font-weight:700;letter-spacing:1px;
-  padding:6px 14px;border-radius:20px;text-decoration:none;
-  white-space:nowrap;transition:background .15s;
-}
-.ab-btn:hover{background:var(--cu);}
-.ab-close{
-  background:none;border:none;cursor:pointer;
-  color:rgba(254,254,252,.4);font-size:18px;line-height:1;
-  padding:0 0 0 10px;transition:color .15s;
-  display:flex;align-items:center;
-}
-.ab-close:hover{color:var(--co);}
-/* Compensar el header cuando el banner está visible */
-body.banner-visible .hdr{margin-top:52px;}
-
 </style>
 <!-- deploy: 1782316735.1545956 -->
 </head>
 <body>
-
-<!-- ── BANNER ACTUALIZACIÓN 10 DÍAS ── -->
-<div id="act-banner" class="oculto">
-  <div class="ab-inner">
-    <div class="ab-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(224,237,48,.8)" stroke-width="1.8" stroke-linecap="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-    </div>
-    <div class="ab-content">
-      <span class="ab-title">Actualización del proyecto</span>
-      <span class="ab-sep">·</span>
-      <div class="ab-items">
-        <div class="ab-item"><div class="dot green"></div>Fase 1 completada al 100%</div>
-        <div class="ab-item"><div class="dot amber"></div>Fase 2 en desarrollo · 10%</div>
-        <div class="ab-item"><div class="dot amber"></div>Pago julio pendiente · límite día 10</div>
-        <div class="ab-item"><div class="dot gray"></div>Nueva entrega estimada: Octubre 2026</div>
-      </div>
-    </div>
-    <div class="ab-actions">
-      <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="ab-btn">Pagar julio →</a>
-      <button class="ab-close" onclick="cerrarActBanner()" title="Cerrar">✕</button>
-    </div>
-  </div>
-</div>
-
 
 
 <!-- ── BANNER PAGO PENDIENTE ── -->
@@ -382,9 +295,9 @@ body.banner-visible .hdr{margin-top:52px;}
 
 <div class="t-phase fade" style="animation-delay:.3s"><div class="t-dot done" style="background:rgba(139,184,57,.15);border-color:var(--juice);"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#8BB839" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#8BB839;">FASE 1</div><div class="t-title">Fundamentos + Inocuidad + Cocina</div><div class="t-dates">Mayo — Junio 2026 · Semanas 1 a 4</div></div><div class="t-st" style="background:rgba(139,184,57,.12);color:#146B4F;">Completada ✓</div></div><div class="t-desc">Infraestructura, acceso seguro, y los primeros módulos que tocan la cocina diaria: inocuidad, termometría, producción y checklists.</div><div class="t-items"><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Gatekeeper / Login MFA + seguridad base</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Diseño de marca + paleta Vitality Kitchen</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck on"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="#146B4F" stroke-width="1.5" stroke-linecap="round"/></svg></div><span>Hub operativo + panel propietario</span><div class="tag" style="background:rgba(139,184,57,.08);color:#146B4F;">completado</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Inocuidad / Termometría (3 bitácoras + alertas)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck prog"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#B8A040"/></svg></div><span>Cocina / Producción (líneas, gramajes, pre-fermentos)</span><div class="tag" style="background:rgba(224,237,48,.1);color:#8B7F20;">en progreso</div></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio turno + cierre (Cocina)</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Sistema de fotos con sello GPS + Voice-to-text</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div><div class="t-item"><div class="ck off"></div><span>Alertas WhatsApp al propietario</span><div class="tag" style="background:rgba(0,80,86,.04);color:#999;">pendiente</div></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:100%;background:var(--juice);"></div></div><div class="t-pct" style="color:#146B4F;">100%</div></div></div></div>
 
-<div class="t-phase fade" style="animation-delay:.4s"><div class="t-dot active"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#005056"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#B8A040;">FASE 2</div><div class="t-title">Barra + Salón + Servicio + Limpieza</div><div class="t-dates">Junio — Julio 2026 · Semanas 5 a 8</div></div><div class="t-st" style="background:rgba(224,237,48,.12);color:#8B7F20;">En desarrollo</div></div><div class="t-desc">Áreas de atención al comensal: barra, salón, terrazas, protocolo de servicio y roles de limpieza profunda.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Barra / Bebidas (recetas, merma líquidos, destrucción envases)</span></div><div class="t-item"><div class="ck off"></div><span>Salón principal (montaje, iluminación, temperatura ambiente)</span></div><div class="t-item"><div class="ck off"></div><span>Terraza 1 + Terraza 2 (checklists por zona)</span></div><div class="t-item"><div class="ck off"></div><span>Protocolo de servicio (pasos, tiempos, estándares)</span></div><div class="t-item"><div class="ck off"></div><span>Rol de limpieza por área (diaria, semanal, profunda)</span></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio + cierre (Barra, Salón, Terrazas)</span></div><div class="t-item"><div class="ck off"></div><span>SOPs contextuales (Manual 5S, Higiene, Glosario)</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:10%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#8B7F20;">10%</div></div></div></div>
+<div class="t-phase fade" style="animation-delay:.4s"><div class="t-dot active"><svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="3" fill="#005056"/></svg></div><div class="t-card ac"><div class="t-header"><div><div class="t-lbl" style="color:#B8A040;">FASE 2</div><div class="t-title">Barra + Salón + Servicio + Limpieza</div><div class="t-dates">Junio — Julio 2026 · Semanas 5 a 8</div></div><div class="t-st" style="background:rgba(224,237,48,.12);color:#8B7F20;">En desarrollo</div></div><div class="t-desc">Áreas de atención al comensal: barra, salón, terrazas, protocolo de servicio y roles de limpieza profunda.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Barra / Bebidas (recetas, merma líquidos, destrucción envases)</span></div><div class="t-item"><div class="ck off"></div><span>Salón principal (montaje, iluminación, temperatura ambiente)</span></div><div class="t-item"><div class="ck off"></div><span>Terraza 1 + Terraza 2 (checklists por zona)</span></div><div class="t-item"><div class="ck off"></div><span>Protocolo de servicio (pasos, tiempos, estándares)</span></div><div class="t-item"><div class="ck off"></div><span>Rol de limpieza por área (diaria, semanal, profunda)</span></div><div class="t-item"><div class="ck off"></div><span>Checklists apertura + cambio + cierre (Barra, Salón, Terrazas)</span></div><div class="t-item"><div class="ck off"></div><span>SOPs contextuales (Manual 5S, Higiene, Glosario)</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:80%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#8B7F20;">80%</div></div></div></div>
 
-<div class="t-phase fade" style="animation-delay:.5s"><div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div><div class="t-card"><div class="t-header"><div><div class="t-lbl" style="color:#999;">FASE 3</div><div class="t-title">RRHH + Gerencia + App móvil + Lanzamiento</div><div class="t-dates">Julio — Agosto 2026 · Semanas 9 a 12</div></div><div class="t-st" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div></div><div class="t-desc">Cierre del programa: gestión de personal, vistas por rol, dashboard gerencia, app móvil nativa y capacitación.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Recursos Humanos (turnos, habilidades, asistencia)</span></div><div class="t-item"><div class="ck off"></div><span>Matriz de habilidades por colaborador</span></div><div class="t-item"><div class="ck off"></div><span>Gerencia (dashboard ejecutivo, mapas de calor, audit trail)</span></div><div class="t-item"><div class="ck off"></div><span>Vistas por rol: Propietario, Gerente, Operador</span></div><div class="t-item"><div class="ck off"></div><span>App móvil nativa (modo quiosco, offline, sello real)</span></div><div class="t-item"><div class="ck off"></div><span>Capacitación de equipo + entrega oficial</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:10%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div></div></div>
+<div class="t-phase fade" style="animation-delay:.5s"><div class="t-dot locked"><svg viewBox="0 0 12 12" fill="none"><rect x="3" y="5.5" width="6" height="4.5" rx="1" stroke="#999" stroke-width="1"/><path d="M4.5 5.5V4a1.5 1.5 0 013 0v1.5" stroke="#999" stroke-width="1"/></svg></div><div class="t-card"><div class="t-header"><div><div class="t-lbl" style="color:#999;">FASE 3</div><div class="t-title">RRHH + Gerencia + App móvil + Lanzamiento</div><div class="t-dates">Julio — Agosto 2026 · Semanas 9 a 12</div></div><div class="t-st" style="background:rgba(0,80,86,.04);color:#999;">Bloqueado</div></div><div class="t-desc">Cierre del programa: gestión de personal, vistas por rol, dashboard gerencia, app móvil nativa y capacitación.</div><div class="t-items"><div class="t-item"><div class="ck off"></div><span>Recursos Humanos (turnos, habilidades, asistencia)</span></div><div class="t-item"><div class="ck off"></div><span>Matriz de habilidades por colaborador</span></div><div class="t-item"><div class="ck off"></div><span>Gerencia (dashboard ejecutivo, mapas de calor, audit trail)</span></div><div class="t-item"><div class="ck off"></div><span>Vistas por rol: Propietario, Gerente, Operador</span></div><div class="t-item"><div class="ck off"></div><span>App móvil nativa (modo quiosco, offline, sello real)</span></div><div class="t-item"><div class="ck off"></div><span>Capacitación de equipo + entrega oficial</span></div></div><div class="t-prog"><div class="t-bar"><div class="t-bar-f" style="width:80%;background:var(--lemon);"></div></div><div class="t-pct" style="color:#ccc;">0%</div></div></div></div>
 
 </div>
 
@@ -454,28 +367,6 @@ body.banner-visible .hdr{margin-top:52px;}
     else { ov.classList.add('oculto'); }
   }
 })();
-
-
-// ── BANNER ACTUALIZACIÓN — visible 10 días desde el 10 julio 2026 ──
-(function(){
-  var KEY = 'vk_act_banner_cerrado';
-  var INICIO = new Date('2026-07-10T00:00:00');
-  var EXPIRA = new Date(INICIO.getTime() + 10 * 24 * 60 * 60 * 1000); // +10 días
-  var ahora  = new Date();
-  var cerrado = localStorage.getItem(KEY);
-  var banner = document.getElementById('act-banner');
-  if(!banner) return;
-  if(!cerrado && ahora >= INICIO && ahora <= EXPIRA){
-    banner.classList.remove('oculto');
-    document.body.classList.add('banner-visible');
-  }
-})();
-
-function cerrarActBanner(){
-  document.getElementById('act-banner').classList.add('oculto');
-  document.body.classList.remove('banner-visible');
-  localStorage.setItem('vk_act_banner_cerrado','1');
-}
 
 function cerrarBanner(){
   document.getElementById('pago-banner').classList.add('oculto');
