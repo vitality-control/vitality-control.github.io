@@ -137,10 +137,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .next-btn:hover{background:var(--cucumber);}
 
 /* ── PAGO CARD ── */
-.pago-card{background:#FFF8F0;border:1.5px solid rgba(224,160,32,.25);border-radius:16px;padding:22px 26px;margin-bottom:16px;}
-.pago-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#8B6010;margin-bottom:8px;}
+.pago-card{background:#F0FAF0;border:1.5px solid rgba(139,184,57,.25);border-radius:16px;padding:22px 26px;margin-bottom:16px;}
+.pago-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--juice);margin-bottom:8px;}
 .pago-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.pago-amount{font-size:32px;font-weight:700;color:#5A3A00;font-family:var(--mono);letter-spacing:-1px;}
+.pago-amount{font-size:32px;font-weight:700;color:var(--kale);font-family:var(--mono);letter-spacing:-1px;}
 .pago-detail{font-size:11px;color:#8B6A20;text-align:right;line-height:1.4;}
 .pago-msg{font-size:13px;color:#8B6A20;line-height:1.6;margin-bottom:16px;}
 .pago-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--kale);color:var(--lemon);font-size:14px;font-weight:700;padding:14px;border-radius:40px;text-decoration:none;letter-spacing:.3px;}
@@ -208,7 +208,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div class="ab-items">
       <div class="ab-item"><div class="ab-dot g"></div>Fase 1 completa · 100%</div>
       <div class="ab-item"><div class="ab-dot a"></div>Fase 2 activa · 80%</div>
-      <div class="ab-item"><div class="ab-dot a"></div>Pago julio · límite día 10</div>
+      <div class="ab-item"><div class="ab-dot g"></div>Pago julio · recibido ✓</div>
       <div class="ab-item"><div class="ab-dot gr"></div>Entrega: Octubre 2026</div>
     </div>
     <div class="ab-actions">
@@ -404,13 +404,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
   <!-- PAGO JULIO -->
   <div class="pago-card">
-    <div class="pago-label">Pago pendiente · Julio 2026</div>
+    <div class="pago-label" style="color:var(--juice);">Pago recibido · Julio 2026 ✓</div>
     <div class="pago-row">
       <div class="pago-amount">$2,950 MXN</div>
       <div class="pago-detail">Suscripción mensual<br>Límite: 10 de julio</div>
     </div>
-    <div class="pago-msg">Tienes del 1 al 10 de julio para realizar tu pago y mantener el acceso activo y el ritmo del proyecto.</div>
-    <a href="https://buy.stripe.com/8x25kCaa76mB2Qf251fEk01" class="pago-btn">Pagar $2,950 MXN · Stripe seguro</a>
+    <div class="pago-msg" style="color:var(--kale);font-weight:500;">✓ Pago procesado correctamente. Tu acceso está activo y el proyecto continúa sin interrupciones.</div>
   </div>
 
   <!-- FOOTER -->
@@ -444,7 +443,7 @@ function cerrarBienvenida(){
 }
 
 /* ─ Banner pago pendiente ─ */
-var pagoPendiente = true; // julio 2026 — cambiar a false cuando paguen
+var pagoPendiente = false; // Julio 2026 PAGADO ✓
 (function(){
   var cerrado=sessionStorage.getItem('vk_banner_cerrado');
   var pb=document.getElementById('pago-banner');
