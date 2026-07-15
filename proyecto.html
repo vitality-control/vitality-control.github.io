@@ -443,16 +443,63 @@ function cerrarBienvenida(){
 }
 
 /* ─ Banner pago pendiente ─ */
-var pagoPendiente = false; // Julio 2026 PAGADO ✓
-(function(){
-  var cerrado=sessionStorage.getItem('vk_banner_cerrado');
-  var pb=document.getElementById('pago-banner');
-  if(pb&&pagoPendiente&&!cerrado) pb.classList.remove('oculto');
-})();
+// pago_pendiente se lee desde Supabase via initFromSupabase()
 function cerrarBanner(){
   document.getElementById('pago-banner').classList.add('oculto');
   sessionStorage.setItem('vk_banner_cerrado','1');
 }
+
+
+/* ── SUPABASE CONFIG ── */
+const SUPA_URL = 'https://nivloptdmunxtokyddlj.supabase.co';
+const SUPA_KEY = 'sb_publishable_gfHUTjIcHPSnPFpQrVwh8w_Vrq1e3ll';
+
+async function getConfig() {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/vk_config?select=*', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    const rows = await res.json();
+    const cfg = {};
+    rows.forEach(r => cfg[r.key] = r.value);
+    return cfg;
+  } catch(e) { return null; }
+}
+
+async function initFromSupabase() {
+  const cfg = await getConfig();
+  if(!cfg) return; // fallback al valor hardcoded si falla
+
+  const pagoPend = cfg.pago_pendiente === 'true';
+  const pb = document.getElementById('pago-banner');
+  const cerrado = sessionStorage.getItem('vk_banner_cerrado');
+  if(pb) {
+    if(pagoPend && !cerrado) pb.classList.remove('oculto');
+    else pb.classList.add('oculto');
+  }
+
+  // Actualizar KPIs desde Supabase
+  if(cfg.progreso_global) {
+    document.querySelectorAll('.kpi-num').forEach((el, i) => {
+      if(i === 0) el.textContent = cfg.progreso_global + '%';
+      if(i === 1) el.textContent = 'Fase ' + cfg.fase_actual;
+    });
+  }
+
+  // Actualizar barra de progreso
+  const fill = document.querySelector('.prog-bar-fill');
+  if(fill && cfg.progreso_global) fill.style.width = cfg.progreso_global + '%';
+
+  // Actualizar texto de entrega
+  const kpiEntrega = document.querySelectorAll('.kpi-num')[2];
+  if(kpiEntrega && cfg.entrega_estimada) {
+    const partes = cfg.entrega_estimada.split(' ');
+    kpiEntrega.textContent = (partes[0]?.slice(0,3) || 'Oct') + ' ' + (partes[1]?.slice(2) || '26');
+  }
+}
+
+// Ejecutar al cargar
+document.addEventListener('DOMContentLoaded', initFromSupabase);
 
 /* ─ Banner actualización ─ */
 (function(){
