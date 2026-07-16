@@ -773,23 +773,15 @@ function showSub(catId, subId){
       {sec:'Durante Operación',items:['Registrar temperatura de alimentos.','Verificar PEPS en refrigeradores.','Controlar gramajes según receta.','Documentar merma en formato.'],dark:true},
       {sec:'Cierre de Cocina',items:['Enfriamiento rápido de alimentos preparados.','Etiquetar con fecha y hora todos los recipientes.','Limpiar y desinfectar equipos y superficies.','Guardar insumos en refrigeración o almacén seco.','Cerrar gas y apagar equipos.','Firmar bitácora de inocuidad del día.'],dark:true},
     ]),
-    'cocina-temperatura': ()=>renderChecklist(mc,cat,sub,'Registro de temperaturas y equipos','cocina',[
-      {sec:'Temperaturas AM',items:['Refrigerador 1 — temp: ___ °C · Rango: 1–4 °C','Refrigerador 2 — temp: ___ °C · Rango: 1–4 °C','Congelador — temp: ___ °C · Rango: -18 a -22 °C','Área fría de preparación: ___ °C','Baño María / área caliente: ___ °C']},
-      {sec:'Verificación de Alimentos',items:['Pollo crudo separado de cocidos: ✓','Etiquetado PEPS vigente — verificar fechas: ✓','Sin alimentos caducados en refrigeración: ✓','Tablas de corte limpias y sanitizadas: ✓']},
-      {sec:'Temperaturas PM / Cierre',items:['Refrigerador 1 cierre — temp: ___ °C','Refrigerador 2 cierre — temp: ___ °C','Congelador cierre — temp: ___ °C','Alimentos preparados etiquetados con fecha: ✓'],dark:true},
-    ]),
+    'cocina-temperatura': ()=>renderTempCocina(mc,cat,sub),
     'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
-    'cocina-merma':       ()=>renderMerma(mc,cat,sub),
+    'cocina-merma':       ()=>renderMermaCocina(mc,cat,sub),
     'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
       {sec:'Verificación PEPS',items:['Revisar fechas de caducidad en todos los productos.','Colocar productos más viejos al frente.','Retirar y registrar productos caducados.','Verificar etiquetas con fecha de elaboración y caducidad.']},
       {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
       {sec:'Control de Plagas',items:['Inspección visual de zona de almacenamiento.','Sin evidencia de plagas en cocina.','Trampas de monitoreo revisadas.','Reportar cualquier hallazgo inmediatamente.'],dark:true},
     ]),
-    'cocina-recetas': ()=>renderChecklist(mc,cat,sub,'Recetario Operativo — Cocina','cocina',[
-      {sec:'Desayunos & Bowls',items:['Bowl de proteína — pollo grillado, quinoa, verduras asadas, salsa verde.','Parfait granola — yogurt griego, granola artesanal, fruta fresca, miel.','Avena cocida — leche de avena, plátano, canela, nueces.','Tostadas de aguacate — pan artesanal, aguacate, hojuelas de chile, limón.']},
-      {sec:'Snacks & Ensaladas',items:['Ensalada verde — lechuga romana, pepino, betabel, vinagreta.','Bowl de fruta — mango, papaya, melón, jícama, limón y chile.','Wrap de pollo — tortilla integral, pollo, lechuga, jitomate, mostaza.','Guacamole con totopos — 3 aguacates, jitomate, cebolla, cilantro.']},
-      {sec:'Postres & Horneados',items:['Panqué de plátano — plátano macho, harina de avena, huevo, aceite de coco.','Galletas de avena — avena, mantequilla, azúcar moscabado, chips de chocolate.','Tarta limón — base de galleta, crema de limón, merengue italiano.'],dark:true},
-    ]),
+    'cocina-recetas': ()=>renderRecetasCocina(mc,cat,sub),
     'barra-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','barra',[
       {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Prender máquina de espresso.','Prender molino y rellenarlo.','Abrir paso del molino.','Armar área: montar tapetes, revisar cerámica.','Barrer y trapear.','Colocar bolsa de basura.']},
       {sec:'Insumos & Equipos',items:['Checar insumos (85 y 86).','Rellenar teteras y encenderlas.','Confirmar báscula cargada.']},
@@ -977,6 +969,799 @@ function addClRow(btn){
 }
 function renumCl(btn){/* renumerar si se quiere */}
 function limpiarChecks(){ vkClear(); }
+
+function renderTempCocina(el,cat,sub){
+  const equipos=[
+    {nombre:'Refrigerador 1',min:1,max:4},{nombre:'Refrigerador 2',min:1,max:4},
+    {nombre:'Congelador',min:-22,max:-18},{nombre:'Área fría prep.',min:1,max:8},
+    {nombre:'Baño María',min:60,max:90},{nombre:'Refrigerador 1 PM',min:1,max:4},
+    {nombre:'Refrigerador 2 PM',min:1,max:4},{nombre:'Congelador PM',min:-22,max:-18},
+  ];
+  const makeRow=(eq,i)=>`<tr class="cl-row"><td style="border:1px solid var(--border2);padding:0 10px;font-size:13px;height:32px;min-width:155px;">${eq.nombre}</td><td style="border:1px solid var(--border2);text-align:center;font-size:11px;font-family:var(--mono);color:var(--muted);">${eq.min} a ${eq.max} °C</td><td style="border:1px solid var(--border2);"><input type="number" step="0.1" placeholder="—" style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:14px;font-weight:700;height:32px;" class="temp-inp" data-min="${eq.min}" data-max="${eq.max}" data-row="${i}" oninput="validarTemp(this)"></td><td style="border:1px solid var(--border2);text-align:center;font-size:18px;" id="temp-ico-${i}">—</td><td style="border:1px solid var(--border2);"><input type="text" placeholder="Observaciones..." class="cl-inp" style="height:32px;"></td><td style="border:1px solid var(--border2);text-align:center;"><input type="checkbox" style="width:14px;height:14px;accent-color:var(--kale);" class="cl-chk"></td></tr>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-thermometer"></i> ${sub.name}</div><div class="fp-sub">Registro de temperaturas · Validación automática de rangos</div></div>
+      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button><button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Supervisor</label><input type="text" placeholder="Nombre"></div>
+      </div>
+      <div class="cl-ban" style="background:var(--cocina);">TEMPERATURAS AM</div>
+      <table class="cl-table"><thead><tr><th style="text-align:left;width:155px;">Equipo</th><th style="width:95px;">Rango °C</th><th style="width:90px;">Temp. °C</th><th style="width:40px;">Estado</th><th>Observaciones</th><th style="width:32px;">✓</th></tr></thead><tbody>${equipos.slice(0,5).map((e,i)=>makeRow(e,i)).join('')}</tbody></table>
+      <div class="cl-ban" style="background:var(--spirulina);margin-top:12px;">VERIFICACIÓN DE ALIMENTOS</div>
+      <table class="cl-table"><thead><tr><th style="width:30px;">No.</th><th>Verificación</th><th style="width:32px;">✓</th><th style="width:28px;"></th></tr></thead><tbody>
+        ${['Pollo crudo separado de cocidos — verificado','Etiquetado PEPS vigente en todos los productos','Sin alimentos caducados en refrigeración','Tablas de corte limpias y sanitizadas','Guantes disponibles y en uso correcto'].map((item,i)=>`<tr class="cl-row"><td class="cl-num">${i+1}</td><td><input class="cl-inp" type="text" value="${item}"></td><td class="cl-chk"><input type="checkbox"></td><td class="cl-del"><button onclick="this.closest('tr').remove()">✕</button></td></tr>`).join('')}
+      </tbody></table>
+      <div class="cl-ban" style="background:var(--spirulina);margin-top:12px;">TEMPERATURAS PM / CIERRE</div>
+      <table class="cl-table"><thead><tr><th style="text-align:left;width:155px;">Equipo</th><th style="width:95px;">Rango °C</th><th style="width:90px;">Temp. °C</th><th style="width:40px;">Estado</th><th>Observaciones</th><th style="width:32px;">✓</th></tr></thead><tbody>${equipos.slice(5).map((e,i)=>makeRow(e,i+5)).join('')}</tbody></table>
+      <div class="info-card" style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--juice);text-transform:uppercase;">Dentro de rango</div><div style="font-size:24px;font-weight:700;color:var(--juice);" id="temp-ok-count">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--danger);text-transform:uppercase;">Fuera de rango</div><div style="font-size:24px;font-weight:700;color:var(--danger);" id="temp-err-count">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;">Sin registrar</div><div style="font-size:24px;font-weight:700;color:var(--muted);" id="temp-nd-count">—</div></div>
+      </div>
+    </div>
+  </div>`;
+  triggerFades();
+  if(sub&&sub.id) setTimeout(()=>vkLoad(sub.id),50);
+}
+function validarTemp(inp){
+  const val=parseFloat(inp.value);const min=parseFloat(inp.dataset.min);const max=parseFloat(inp.dataset.max);const row=inp.dataset.row;
+  const ico=document.getElementById('temp-ico-'+row);const tr=inp.closest('tr');
+  if(isNaN(val)){if(ico)ico.textContent='—';if(tr){tr.style.background='';inp.style.color='var(--text)';}}
+  else if(val>=min&&val<=max){if(ico)ico.textContent='✅';if(tr){tr.style.background='rgba(139,184,57,.06)';inp.style.color='var(--juice)';}}
+  else{if(ico)ico.textContent='🚨';if(tr){tr.style.background='rgba(192,57,43,.06)';inp.style.color='var(--danger)';}}
+  const all=[...document.querySelectorAll('.temp-inp')];
+  const ok=all.filter(i=>{const v=parseFloat(i.value),mn=parseFloat(i.dataset.min),mx=parseFloat(i.dataset.max);return !isNaN(v)&&v>=mn&&v<=mx;}).length;
+  const err=all.filter(i=>{const v=parseFloat(i.value),mn=parseFloat(i.dataset.min),mx=parseFloat(i.dataset.max);return !isNaN(v)&&(v<mn||v>mx);}).length;
+  const nd=all.filter(i=>i.value==='').length;
+  const ok_el=document.getElementById('temp-ok-count');const err_el=document.getElementById('temp-err-count');const nd_el=document.getElementById('temp-nd-count');
+  if(ok_el)ok_el.textContent=ok;if(err_el)err_el.textContent=err;if(nd_el)nd_el.textContent=nd;
+  vkSave();
+}
+
+function renderRecetasCocina(el,cat,sub){
+  const recetas=[
+    {nombre:'Bowl de Proteína',cat:'Desayunos',porciones:1,tiempo:'12 min',fc:28,precio_menu:165,
+     ings:[{i:'Pollo grillado',gr:150,c:22},{i:'Quinoa cocida',gr:80,c:5},{i:'Mix verduras asadas',gr:100,c:8},{i:'Salsa verde',gr:40,c:3},{i:'Aceite de oliva',gr:10,c:2},{i:'Limón',gr:15,c:1}],
+     metodo:'1. Grillar pollo con sal, pimienta y ajo. 2. Cocer quinoa 1:2 agua, 15 min. 3. Asar verduras 200°C, 10 min. 4. Montar: quinoa → verduras → pollo laminado. 5. Salsear y servir inmediatamente.'},
+    {nombre:'Parfait Granola & Fruta',cat:'Desayunos',porciones:1,tiempo:'5 min',fc:22,precio_menu:95,
+     ings:[{i:'Yogurt griego',gr:150,c:12},{i:'Granola artesanal',gr:50,c:6},{i:'Fruta fresca mix',gr:100,c:8},{i:'Miel de agave',gr:15,c:2}],
+     metodo:'1. Yogurt en base del vaso. 2. Granola como segunda capa. 3. Fruta fresca cortada encima. 4. Hilo de miel al final. 5. Servir de inmediato — granola pierde textura con humedad.'},
+    {nombre:'Panqué de Plátano',cat:'Horneados',porciones:8,tiempo:'55 min',fc:18,precio_menu:55,
+     ings:[{i:'Plátano maduro',gr:300,c:9},{i:'Harina de avena',gr:200,c:8},{i:'Huevo',gr:120,c:10},{i:'Aceite de coco',gr:60,c:7},{i:'Azúcar moscabado',gr:80,c:4},{i:'Canela+polvo hornear',gr:8,c:1}],
+     metodo:'1. Triturar plátanos con tenedor, textura rústica. 2. Mezclar secos: harina, azúcar, canela, polvo de hornear. 3. Integrar huevos y aceite con plátano. 4. Unir húmedos con secos sin sobrebatir. 5. Hornear 180°C, 45-50 min. Prueba palillo.'},
+    {nombre:'Guacamole con Totopos',cat:'Snacks',porciones:2,tiempo:'8 min',fc:25,precio_menu:95,
+     ings:[{i:'Aguacate hass',gr:200,c:18},{i:'Jitomate',gr:60,c:4},{i:'Cebolla blanca',gr:30,c:2},{i:'Chile serrano',gr:10,c:1},{i:'Cilantro',gr:10,c:1},{i:'Limón',gr:20,c:1},{i:'Totopos',gr:80,c:5}],
+     metodo:'1. Machacar aguacate con tenedor — textura rústica. 2. Sal y limón inmediatamente para evitar oxidación. 3. Picar jitomate, cebolla y chile muy fino. 4. Integrar con movimientos envolventes. 5. Rectificar sal. 6. Servir inmediato con totopos.'},
+    {nombre:'Tarta Limón',cat:'Postres',porciones:6,tiempo:'40 min',fc:32,precio_menu:75,
+     ings:[{i:'Galleta triturada',gr:200,c:12},{i:'Mantequilla',gr:80,c:8},{i:'Jugo de limón',gr:120,c:6},{i:'Yema de huevo',gr:80,c:8},{i:'Leche condensada',gr:200,c:14},{i:'Crema',gr:100,c:8}],
+     metodo:'1. Base: galleta + mantequilla derretida. Prensar en molde. Refrigerar 20 min. 2. Relleno: batir yemas + leche condensada + limón, 3 min. Agregar crema. 3. Verter sobre base. 4. Hornear 160°C, 18 min. 5. Refrigerar 2 hrs mínimo antes de servir.'},
+  ];
+  const tarjeta=r=>{
+    const costoTotal=r.ings.reduce((s,i)=>s+i.c,0);
+    const margen=r.precio_menu>0?Math.round((1-costoTotal/r.precio_menu)*100):0;
+    return `<div style="background:white;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;">
+      <div style="background:var(--cocina-bg);border-bottom:2px solid var(--cocina);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--cocina);">${r.nombre}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">${r.cat} · ${r.porciones} porción${r.porciones>1?'es':''} · ⏱ ${r.tiempo}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div style="text-align:center;background:${r.fc<=30?'rgba(139,184,57,.12)':'rgba(176,125,32,.12)'};border-radius:8px;padding:6px 10px;">
+            <div style="font-size:15px;font-weight:700;color:${r.fc<=30?'var(--juice)':'var(--warn)'};">${r.fc}%</div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">FC%</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:6px 10px;">
+            <div style="font-size:15px;font-weight:700;color:var(--text);">${costoTotal}</div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Costo</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:6px 10px;">
+            <div style="font-size:15px;font-weight:700;color:var(--spirulina);">${r.precio_menu}</div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Precio menú</div>
+          </div>
+          <div style="text-align:center;background:rgba(0,80,86,.08);border-radius:8px;padding:6px 10px;">
+            <div style="font-size:15px;font-weight:700;color:var(--spirulina);">${margen}%</div>
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Margen</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:0;">
+        <div style="border-right:1px solid var(--border2);padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Ingredientes</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr>
+              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:left;border-bottom:1px solid var(--border2);">Ingrediente</th>
+              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:right;border-bottom:1px solid var(--border2);width:45px;">Gr</th>
+              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:right;border-bottom:1px solid var(--border2);width:35px;">$</th>
+            </tr></thead>
+            <tbody>${r.ings.map(i=>`<tr style="border-bottom:1px solid var(--border2);">
+              <td style="font-size:12px;padding:4px;">${i.i}</td>
+              <td style="font-size:11px;font-family:var(--mono);padding:4px;text-align:right;color:var(--muted);">${i.gr}</td>
+              <td style="font-size:11px;font-family:var(--mono);padding:4px;text-align:right;color:var(--muted);">${i.c}</td>
+            </tr>`).join('')}
+            <tr><td colspan="2" style="font-size:11px;font-weight:700;padding:5px 4px;border-top:2px solid var(--border);color:var(--text);">Total insumos</td>
+              <td style="font-size:11px;font-weight:700;padding:5px 4px;border-top:2px solid var(--border);text-align:right;color:var(--cocina);">${costoTotal}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Método</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.8;">${r.metodo}</div>
+        </div>
+      </div>
+    </div>`;
+  };
+  el.innerHTML=`<div class="fade-in">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div><div style="font-size:18px;font-weight:700;color:var(--cocina);">Recetario Técnico — Cocina VK</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Fichas con gramajes · FC% · Precio de menú · Margen</div></div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" placeholder="Buscar receta..." class="field-input" style="width:200px;padding:8px 12px;font-size:13px;" oninput="filtrarRecetas(this.value)">
+        <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
+      </div>
+    </div>
+    <div id="recetas-container">${recetas.map(r=>tarjeta(r)).join('')}</div>
+  </div>`;
+  window._recetasData=recetas; window._recetasTarjeta=tarjeta;
+  triggerFades();
+}
+function filtrarRecetas(q){
+  const c=document.getElementById('recetas-container');
+  if(!c||!window._recetasData)return;
+  const filtered=window._recetasData.filter(r=>r.nombre.toLowerCase().includes(q.toLowerCase())||r.cat.toLowerCase().includes(q.toLowerCase()));
+  c.innerHTML=filtered.map(r=>window._recetasTarjeta(r)).join('');
+}
+
+function renderMermaCocina(el,cat,sub){
+  const causas=[{cod:'VEN',label:'Vencimiento'},{cod:'DAN',label:'Daño físico'},{cod:'TEM',label:'Temperatura'},{cod:'ERR',label:'Error prep.'},{cod:'SOB',label:'Sobrante'},{cod:'TRA',label:'Traspaso'},{cod:'DEV',label:'Devolución'},{cod:'OTR',label:'Otro'}];
+  const makeRow=i=>`<tr class="cl-row merma-row">
+    <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..." oninput="vkSave()"></td>
+    <td style="border:1px solid var(--border2);"><input class="inv-inp merma-qty" type="number" step="0.01" min="0" placeholder="0" oninput="calcMermaTotal();vkSave()"></td>
+    <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" oninput="vkSave()"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td>
+    <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" onchange="calcMermaCausas();vkSave()">${causas.map(c=>`<option value="${c.cod}">${c.cod} — ${c.label}</option>`).join('')}</select></td>
+    <td style="border:1px solid var(--border2);"><input class="inv-inp" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcMermaTotal();vkSave()"></td>
+    <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Observación..." oninput="vkSave()"></td>
+    <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove();calcMermaTotal();">✕</button></td>
+  </tr>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head cocina"><div><div class="fp-title" style="color:var(--cocina);">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">Causas codificadas DMZ · Costo de merma · Resumen por causa</div></div>
+      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button><button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date" oninput="vkSave()"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM" oninput="vkSave()"></div>
+        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}" oninput="vkSave()"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre" oninput="vkSave()"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+        ${causas.map(c=>`<span style="font-size:10px;font-family:var(--mono);background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;"><strong>${c.cod}</strong> ${c.label}</span>`).join('')}
+      </div>
+      <table class="inv-table"><thead><tr>
+        <th style="text-align:left;background:var(--cocina);padding-left:8px;min-width:160px;">Producto</th>
+        <th style="background:var(--cocina);width:70px;">Cantidad</th>
+        <th style="background:var(--cocina);width:60px;">Unidad</th>
+        <th style="background:var(--cocina);width:125px;">Causa (DMZ)</th>
+        <th style="background:var(--cocina);width:80px;">Costo $</th>
+        <th style="background:var(--cocina);">Observación</th>
+        <th style="background:var(--spirulina);width:28px;"></th>
+      </tr></thead>
+      <tbody id="merma-cocina-tb">${[0,1,2,3,4].map(i=>makeRow(i)).join('')}</tbody></table>
+      <button class="add-btn" onclick="addMermaCocinaRow()">+ Agregar ítem</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
+        <div class="info-card"><h4>Resumen por causa</h4>
+          ${causas.map(c=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2);font-size:12px;">
+            <span style="font-family:var(--mono);font-weight:700;color:var(--muted);">${c.cod}</span>
+            <span style="color:var(--muted);">${c.label}</span>
+            <span style="font-family:var(--mono);" id="causa-cnt-${c.cod}">0</span>
+          </div>`).join('')}
+        </div>
+        <div class="info-card"><h4>Totales del turno</h4>
+          <div style="margin-top:12px;">
+            <div class="status-row"><span class="status-label">Ítems registrados</span><span class="status-val" id="merma-total-items">0</span></div>
+            <div class="status-row"><span class="status-label">Costo total merma</span><span class="status-val warn" id="merma-total-costo">$0.00</span></div>
+            <div class="status-row"><span class="status-label">Causa principal</span><span class="status-val" id="merma-causa-principal">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  triggerFades();
+  if(sub&&sub.id) setTimeout(()=>vkLoad(sub.id),50);
+}
+function addMermaCocinaRow(){
+  const tb=document.getElementById('merma-cocina-tb');if(!tb)return;
+  const causas=[{cod:'VEN'},{cod:'DAN'},{cod:'TEM'},{cod:'ERR'},{cod:'SOB'},{cod:'TRA'},{cod:'DEV'},{cod:'OTR'}];
+  const tr=document.createElement('tr');tr.className='cl-row merma-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..." oninput="vkSave()"></td><td style="border:1px solid var(--border2);"><input class="inv-inp merma-qty" type="number" step="0.01" min="0" placeholder="0" oninput="calcMermaTotal();vkSave()"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" oninput="vkSave()"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" onchange="calcMermaCausas();vkSave()">${causas.map(c=>`<option value="${c.cod}">${c.cod}</option>`).join('')}</select></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="number" step="0.01" placeholder="0.00" oninput="calcMermaTotal();vkSave()"></td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Observación..." oninput="vkSave()"></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove();calcMermaTotal();">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+function calcMermaTotal(){
+  const rows=[...document.querySelectorAll('.merma-row')];let items=0,costo=0;
+  rows.forEach(r=>{const qty=parseFloat(r.querySelector('.merma-qty')?.value)||0;const c=parseFloat(r.querySelectorAll('input[type=number]')[1]?.value)||0;if(qty>0){items++;costo+=c;}});
+  const ti=document.getElementById('merma-total-items');const tc=document.getElementById('merma-total-costo');
+  if(ti)ti.textContent=items;if(tc)tc.textContent='
+  const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+  const ths=`<th style="text-align:left;padding-left:8px;width:160px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);letter-spacing:1px;padding:7px;">Producto</th>${dias.map(d=>`<th style="width:52px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">${d}</th>`).join('')}<th style="width:58px;background:var(--spirulina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">TOTAL</th>`;
+  const makeRow=p=>`<tr>${['','','','','','','',''].map((_,i)=>i===0?`<td style="border:1px solid var(--border2);padding:0 8px;font-size:13px;height:25px;"><input style="width:100%;border:none;background:transparent;font-size:13px;height:25px;" type="text" value="${p||''}" placeholder="Producto..."></td>`:`<td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;" type="text" placeholder=""></td>`).join('')}<td style="border:1px solid var(--border2);background:var(--cocina-bg);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;font-weight:700;color:var(--cocina);" type="text" placeholder="0"></td></tr>`;
+  const makeBlock=(titulo,prods,tId)=>`
+    <div class="cl-ban" style="background:var(--cocina);margin-top:12px;">${titulo}</div>
+    <table class="inv-table"><thead><tr>${ths}</tr></thead>
+    <tbody id="${tId}">${prods.map(p=>makeRow(p)).join('')}</tbody></table>
+    <button class="add-btn" onclick="addProdRow('${tId}')">+ Agregar producto</button>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head cocina">
+      <div><div class="fp-title"><i class="ti ti-tools-kitchen-2"></i> ${sub.name}</div><div class="fp-sub">Matriz de Producción y Entrega</div></div>
+      <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Semana del</label><input type="date"></div>
+        <div class="meta-f"><label>Al</label><input type="date"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Validación</label><input type="text" placeholder="Firma salida"></div>
+      </div>
+      ${makeBlock('I. Pan Salado y Corteza',['Hogaza (Pre-fermento)','Ciabatta','Baguette'],'pb-pan')}
+      ${makeBlock('II. Pan Dulce — Viennoiserie',['Croissant Clásico','Chocolatín','Croissant Almendra','Roll de Canela'],'pb-vien')}
+      ${makeBlock('III. Postres y Pastelería',['Bowl de Proteína','Panqué de Plátano (Reb.)','Panqué de Plátano (Loaf)','Parfait Granola & Fruta','Tarta Limón','Galletas'],'pb-post')}
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addProdRow(tbId){
+  const tb=document.getElementById(tbId);if(!tb)return;
+  const dias=7;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td style="border:1px solid var(--border2);padding:0;"><input style="width:100%;border:none;background:transparent;padding:0 8px;font-size:13px;height:25px;" type="text" placeholder="Producto..."></td>${Array(dias).fill(0).map(()=>`<td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;" type="text" placeholder=""></td>`).join('')}<td style="border:1px solid var(--border2);background:var(--cocina-bg);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;font-weight:700;color:var(--cocina);" type="text" placeholder="0"></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderMerma(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head ${cat.id}" style="border-color:${cat.color}">
+      <div><div class="fp-title" style="color:${cat.color}">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">Registro de merma y producto no conforme</div></div>
+      <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="text-align:left;padding-left:8px;background:${cat.color};width:180px;">Producto</th>
+          <th style="background:${cat.color};width:80px;">Cantidad</th>
+          <th style="background:${cat.color};width:90px;">Unidad</th>
+          <th style="background:${cat.color};width:120px;">Causa</th>
+          <th style="background:${cat.color};">Observaciones</th>
+          <th style="background:var(--spirulina);width:28px;"></th>
+        </tr></thead>
+        <tbody id="merma-tb">
+          ${[1,2,3,4,5].map(i=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>kg</option><option>lt</option><option>pz</option><option>gr</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>Caducidad</option><option>Error prep.</option><option>Accidente</option><option>Devolución</option><option>Otro</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Notas..."></td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button class="cl-del" style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <button class="add-btn" onclick="addMermaRow()">+ Agregar ítem</button>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addMermaRow(){
+  const tb=document.getElementById('merma-tb');if(!tb)return;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>Caducidad</option><option>Error prep.</option><option>Accidente</option><option>Devolución</option><option>Otro</option></select></td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Notas..."></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderCalibration(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head barra"><div><div class="fp-title"><i class="ti ti-coffee"></i> ${sub.name}</div><div class="fp-sub">Registro de calibración de espresso</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
+        <div class="meta-f"><label>Barista</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Café / Lote</label><input type="text" placeholder="Origen / lote"></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="background:var(--barra);color:white;font-size:9px;width:60px;font-family:var(--mono);">Prueba</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Dosis (gr)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Rendimiento (gr)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Tiempo (seg)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Temperatura (°C)</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Resultado</th>
+          <th style="background:var(--barra);color:white;font-size:9px;font-family:var(--mono);">Ajuste realizado</th>
+        </tr></thead>
+        <tbody>
+          ${['1','2','3'].map(n=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:12px;height:28px;">${n}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="18"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="36"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="27"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="93"></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:28px;font-family:var(--font);">
+                <option>✓ Ideal</option><option>↑ Sobreextraído</option><option>↓ Subextraído</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Molido +2 clics..."></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="info-card" style="margin-top:14px;">
+        <h4>Parámetros ideales</h4>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Dosis: 18–20 gr · Rendimiento: 36–40 gr (ratio 1:2) · Tiempo: 25–30 seg · Temperatura: 92–94 °C</p>
+      </div>
+    </div>
+  </div>`;
+  triggerFades();
+}
+
+function renderInventarioGeneral(el,cat,sub){
+  const items=['Harina de trigo (kg)','Mantequilla (kg)','Huevo (pz)','Azúcar (kg)','Sal (kg)','Levadura (gr)','Leche entera (lt)','Crema (lt)','Café en grano (kg)','Matcha (gr)','Leche de avena (lt)','Chocolate (kg)','Vainilla (ml)','Papel encerado (rollos)','Bolsas para llevar','Vasos desechables'];
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head ${cat.id}" style="border-color:${cat.color}">
+      <div><div class="fp-title" style="color:${cat.color}">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">Equipo mayor y menor · Registro quincenal</div></div>
+      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="addInvRow()">+ Ítem</button><button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
+        <div class="meta-f"><label>Quincena</label><select><option>Q1 (1–15)</option><option>Q2 (16–31)</option></select></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="width:28px;text-align:center;background:${cat.color};">No.</th>
+          <th style="text-align:left;padding-left:8px;background:${cat.color};">Descripción</th>
+          <th style="width:60px;background:${cat.color};">Inicial</th>
+          <th style="width:60px;background:${cat.color};">Q1</th>
+          <th style="width:60px;background:${cat.color};">Q2</th>
+          <th style="width:100px;background:${cat.color};">Unidad</th>
+          <th style="width:28px;background:var(--spirulina);"></th>
+        </tr></thead>
+        <tbody id="inv-tb">
+          ${items.map((it,i)=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${i+1}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" value="${it}"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td>
+            <td style="border:1px solid var(--border2);">
+              <select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);">
+                <option>kg</option><option>lt</option><option>pz</option><option>gr</option><option>ml</option><option>rollos</option><option>cajas</option>
+              </select>
+            </td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addInvRow(){
+  const tb=document.getElementById('inv-tb');if(!tb)return;
+  const n=tb.children.length+1;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Descripción..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder=""></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option><option>ml</option></select></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderEntradas(el,cat,sub){
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head almacen"><div><div class="fp-title"><i class="ti ti-package"></i> ${sub.name}</div><div class="fp-sub">Registro de entradas de mercancía</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date"></div>
+        <div class="meta-f"><label>Proveedor</label><input type="text" placeholder="Nombre del proveedor"></div>
+        <div class="meta-f"><label>Factura / Remisión</label><input type="text" placeholder="No. de documento"></div>
+        <div class="meta-f"><label>Recibió</label><input type="text" placeholder="Nombre"></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:28px;font-family:var(--mono);">No.</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;text-align:left;padding-left:8px;font-family:var(--mono);">Producto</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:70px;font-family:var(--mono);">Cantidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:80px;font-family:var(--mono);">Unidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:100px;font-family:var(--mono);">Caducidad</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:70px;font-family:var(--mono);">Temp. recep.</th>
+          <th style="background:var(--almacen);color:white;font-size:9px;width:60px;font-family:var(--mono);">Estado</th>
+          <th style="background:var(--spirulina);width:28px;"></th>
+        </tr></thead>
+        <tbody id="ent-tb">
+          ${[1,2,3,4,5].map((n,i)=>`<tr class="cl-row">
+            <td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+            <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td>
+            <td style="border:1px solid var(--border2);"><input type="date" style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--mono);"></td>
+            <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="___ °C"></td>
+            <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);"><option>✓ OK</option><option><i class="ti ti-alert-triangle"></i> Obs.</option><option>✗ Rechaz.</option></select></td>
+            <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <button class="add-btn" onclick="addEntradaRow()">+ Agregar producto</button>
+    </div>
+  </div>`;
+  triggerFades();
+}
+function addEntradaRow(){
+  const tb=document.getElementById('ent-tb');if(!tb)return;
+  const n=tb.children.length+1;
+  const tr=document.createElement('tr');tr.className='cl-row';
+  tr.innerHTML=`<td style="border:1px solid var(--border2);text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted);">${n}</td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..."></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><input type="date" style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="___ °C"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;"><option>✓ OK</option><option><i class="ti ti-alert-triangle"></i> Obs.</option><option>✗ Rechaz.</option></select></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;" onclick="this.closest('tr').remove()">✕</button></td>`;
+  tb.appendChild(tr);tr.querySelector('input').focus();
+}
+
+function renderBanos(el,cat,sub){
+  const horas=['7:00 a.m.','8:00 a.m.','9:00 a.m.','10:00 a.m.','11:00 a.m.','12:00 p.m.','1:00 p.m.','2:00 p.m.','3:00 p.m.','4:00 p.m.','5:00 p.m.','6:00 p.m.','7:00 p.m.','8:00 p.m.'];
+  const cols=['Papel Baño','WC','Jabonera','Bote Basura','Papel Manos','Barrer','Espejo'];
+  const ths=cols.map(c=>`<th style="width:68px;text-align:center;background:var(--salon);color:white;font-size:9px;font-family:var(--mono);">${c}</th>`).join('');
+  const makeRow=(h,deep=false)=>`<tr class="${deep?'':'cl-row'}">
+    <td style="font-family:var(--mono);font-size:12px;padding:0 10px;height:26px;border:1px solid var(--border2);${deep?'background:var(--spirulina);color:white;font-size:10px;':''}">${h}</td>
+    ${cols.map(()=>`<td style="text-align:center;vertical-align:middle;border:1px solid var(--border2);${deep?'background:rgba(0,80,86,.04);':''}"><input type="checkbox" style="width:14px;height:14px;accent-color:var(--kale);"></td>`).join('')}
+    <td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;font-family:var(--font);" type="text" placeholder=""></td>
+    <td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;padding:0 6px;font-size:12px;height:26px;font-family:var(--font);" type="text" placeholder=""></td>
+  </tr>`;
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head salon"><div><div class="fp-title"><i class="ti ti-tools-kitchen"></i> ${sub.name}</div><div class="fp-sub">16 franjas horarias + limpieza profunda 8:30pm</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    <div class="fp-body" style="overflow-x:auto;">
+      <div class="meta-row"><div class="meta-f"><label>Fecha</label><input type="date"></div><div class="meta-f"><label>Baño</label><select><option>Damas</option><option>Caballeros</option><option>Universal</option></select></div><div class="meta-f"><label>Elaboró</label><input type="text" placeholder="Nombre"></div><div class="meta-f"><label>Supervisó</label><input type="text" placeholder="Nombre"></div></div>
+      <table style="width:100%;border-collapse:collapse;min-width:780px;">
+        <thead><tr>
+          <th style="text-align:left;padding:6px 10px;background:var(--salon);color:white;font-size:9px;width:100px;">Hora</th>
+          ${ths}
+          <th style="background:var(--salon);color:white;font-size:9px;width:100px;text-align:center;">Responsable</th>
+          <th style="background:var(--salon);color:white;font-size:9px;text-align:left;padding:6px 8px;">Observaciones</th>
+        </tr></thead>
+        <tbody>${horas.map(h=>makeRow(h)).join('')}${makeRow('8:30 PM · LIMPIEZA PROFUNDA',true)}${makeRow('9:00 p.m.')}</tbody>
+      </table>
+    </div>
+  </div>`;
+  triggerFades();
+}
+
+function renderSupervisor(el,cat,sub){
+  const mc = document.getElementById('main-content');
+  renderChecklist(mc,{id:'supervisor',icon:'<i class="ti ti-eye"></i>',name:'Supervisor',color:'var(--kale)'},{name:'Supervisión de Turno'},'Verificación cruzada · Todas las áreas','cocina',[
+    {sec:'Cocina',items:['Temperaturas verificadas y dentro de rango.','PEPS aplicado correctamente.','Mise en place completo para el turno.','Área limpia y equipos funcionando.']},
+    {sec:'Barra',items:['Calibración espresso realizada y documentada.','Insumos completos para el turno.','Área de trabajo limpia y organizada.','Tiempos de entrega adecuados.']},
+    {sec:'Salón',items:['Mesas montadas correctamente.','Estaciones de servicio completas.','Personal con uniforme y actitud de servicio.','Baños habilitados y limpios.']},
+    {sec:'Cierre',items:['Corte de caja realizado y cuadrado.','Merma del día registrada en todas las áreas.','Bitácoras de inocuidad firmadas.','Incidencias reportadas y documentadas.'],dark:true},
+  ]);
+}
+
+function renderConteoVitrinas(el,cat,sub){
+  const productos=['Croissant Clásico','Chocolatín','Croissant Almendra','Roll de Canela','Panqué Plátano (Reb.)','Panqué Plátano (Loaf)','Tarta Limón','Galletas','Bowl de Proteína'];
+  el.innerHTML=`<div class="fp fade-in">
+    <div class="fp-head vitrinas"><div><div class="fp-title"><i class="ti ti-bread"></i> ${sub.name}</div><div class="fp-sub">Registro de producto en vitrina</div></div>
+    <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
+    <div class="fp-body">
+      <div class="meta-row"><div class="meta-f"><label>Fecha</label><input type="date"></div><div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div><div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div><div class="meta-f"><label>Vitrina</label><select><option>Vitrina 1 — Refrigerada</option><option>Vitrina 2 — Seca</option><option>Mostrador</option></select></div></div>
+      <table class="inv-table">
+        <thead><tr>
+          <th style="text-align:left;padding-left:8px;background:var(--vitrinas);color:white;font-size:9px;">Producto</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Inicial AM</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Conteo 12pm</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Final PM</th>
+          <th style="background:var(--vitrinas);color:white;font-size:9px;width:80px;">Vendidos</th>
+          <th style="background:var(--spirulina);color:white;font-size:9px;width:80px;">Sobrante</th>
+        </tr></thead>
+        <tbody>${productos.map((p,i)=>`<tr class="cl-row">
+          <td style="border:1px solid var(--border2);padding:0 8px;font-size:13px;height:26px;">${p}</td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);"><input class="inv-inp" type="text" placeholder="0"></td>
+          <td style="border:1px solid var(--border2);background:var(--vitrinas-bg);"><input class="inv-inp" type="text" placeholder="0" style="color:var(--vitrinas);font-weight:700;"></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+  triggerFades();
+}
+
+function renderSobrantesVitrinas(el,cat,sub){
+  renderConteoVitrinas(el,cat,sub);
+}
+
+function renderComingSoon(el,cat,sub){
+  const phrases = {
+    cocina:'Este módulo de cocina está germinando — nutriéndose con los estándares de alimentos reales para brotar pronto.',
+    barra:'Este módulo de barra está echando raíces — cada bebida perfecta tiene su proceso. Florecerá pronto.',
+    almacen:'El almacén está tomando forma — cada entrada, cada salida, trazabilidad real. En proceso.',
+    salon:'El salón está listo para crecer — cada detalle del servicio consciente está por venir.',
+    servicio:'El protocolo de servicio está fermentando — se sirve con energía e intención. Próximamente.',
+    vitrinas:'La vitrina está floreciendo — cada pieza exhibida con propósito. En proceso.',
+  };
+  el.innerHTML=`<div class="denied fade-in">
+    <div class="denied-icon">${catIcon(cat.icon)}</div>
+    <div class="denied-title">${sub.name} — En proceso</div>
+    <div class="denied-sub">${phrases[cat.id]||'Este módulo está germinando. Regresa pronto.'}</div>
+  </div>`;
+  triggerFades();
+}
+
+function renderDenied(){
+  document.getElementById('main-content').innerHTML=`<div class="denied fade-in"><div class="denied-icon"><i class="ti ti-lock"></i></div><div class="denied-title">Área restringida</div><div class="denied-sub">No tienes acceso a esta área. Contacta a tu supervisor.</div></div>`;
+  triggerFades();
+}
+
+/* ════════════════════════════════════
+   TRANSVERSALES
+════════════════════════════════════ */
+function showSupervisor(){
+  setNavActive('nav-supervisor');
+  const mc=document.getElementById('main-content');
+  const cat={id:'supervisor',icon:'<i class="ti ti-eye"></i>',name:'Supervisor',color:'var(--kale)'};
+  const sub={name:'Verificación Cruzada'};
+  renderChecklist(mc,cat,sub,'Verificación cruzada · Todas las áreas','cocina',[
+    {sec:'Cocina',items:['Temperaturas verificadas y dentro de rango.','PEPS aplicado correctamente.','Mise en place completo para el turno.','Área limpia y equipos funcionando.']},
+    {sec:'Barra',items:['Calibración espresso realizada y documentada.','Insumos completos para el turno.','Área de trabajo limpia y organizada.','Tiempos de entrega adecuados.']},
+    {sec:'Salón',items:['Mesas montadas correctamente.','Estaciones de servicio completas.','Personal con uniforme y actitud de servicio.','Baños habilitados y limpios.']},
+    {sec:'Cierre General',items:['Corte de caja realizado y cuadrado.','Merma del día registrada en todas las áreas.','Bitácoras de inocuidad firmadas.','Incidencias reportadas.'],dark:true},
+  ]);
+}
+
+function showAlerts(){
+  setNavActive('nav-alertas');
+  const mc=document.getElementById('main-content');
+  function getLS(k){try{return JSON.parse(localStorage.getItem(k)||'{}');}catch(e){return {};}}
+  const today=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  function estadoArea(subs){
+    let tot=0,chk=0;
+    subs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
+    if(tot===0)return{label:'Sin datos',cls:'warn',icon:'ti-circle-dashed'};
+    const pct=chk/tot;
+    if(pct===1)return{label:'Completo',cls:'ok',icon:'ti-circle-check'};
+    if(pct>0)return{label:chk+'/'+tot+' tareas',cls:'ok',icon:'ti-progress'};
+    return{label:'Sin iniciar',cls:'warn',icon:'ti-circle-dashed'};
+  }
+  const areas=[
+    {name:'Cocina',subs:['cocina-checklist','cocina-inocuidad','cocina-temperatura']},
+    {name:'Barra',subs:['barra-checklist','barra-calibracion','barra-insumos']},
+    {name:'Almacén',subs:['almacen-entradas','almacen-peps']},
+    {name:'Salón',subs:['salon-checklist','salon-banos']},
+    {name:'Servicio',subs:['servicio-protocolo']},
+    {name:'Vitrinas',subs:['vitrinas-conteo','vitrinas-temperatura']},
+  ];
+  const allSubs=['cocina-checklist','cocina-inocuidad','cocina-temperatura','cocina-merma',
+    'barra-checklist','barra-calibracion','barra-insumos','barra-merma',
+    'almacen-entradas','almacen-salidas','almacen-peps',
+    'salon-checklist','salon-banos','salon-limpieza',
+    'servicio-protocolo','servicio-incidencias',
+    'vitrinas-conteo','vitrinas-rotacion','vitrinas-temperatura','cocina-produccion'];
+  let tot=0,chk=0;
+  allSubs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
+  const pct=tot>0?Math.round(chk/tot*100):0;
+  const conDatos=allSubs.filter(sid=>Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_'))).length;
+  const bc=pct===100?'var(--juice)':pct>50?'var(--kale)':'var(--warn)';
+  const sinDatos=allSubs.filter(sid=>!Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_')));
+  mc.innerHTML=`<div class="fade-in">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
+    <div><div style="font-size:18px;font-weight:700;color:var(--kale);"><i class="ti ti-bell"></i> Alertas & Reportes</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px;">${today}</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="showAlerts()"><i class="ti ti-refresh"></i> Actualizar</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--kale);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${pct}%</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Cumplimiento global</div>
+      <div style="margin-top:8px;background:var(--bg2);border-radius:4px;height:5px;">
+        <div style="width:${pct}%;height:5px;border-radius:4px;background:${bc};"></div></div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--juice);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${chk}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Tareas completadas</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${tot} totales</div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--blueberry);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${conDatos}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Módulos con registros</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${allSubs.length} disponibles</div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid ${sinDatos.length?'var(--warn)':'var(--juice)'};">
+      <div style="font-size:26px;font-weight:700;color:${sinDatos.length?'var(--warn)':'var(--kale)'};">${sinDatos.length||'✓'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${sinDatos.length?'Pendientes':'Al corriente'}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">${sinDatos.length?'Módulos sin completar':'Operación normal'}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="fp" style="margin-bottom:0;">
+      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-layout-grid"></i> Estado por área</div>
+      <div class="fp-sub">Basado en checklists del día</div></div></div>
+      <div class="fp-body" style="padding:12px 16px;">
+        ${areas.map(a=>{const e=estadoArea(a.subs);return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border2);"><span style="font-size:13px;color:var(--text);">'+a.name+'</span><span style="font-size:12px;font-weight:600;color:'+(e.cls==='ok'?'var(--juice)':'var(--warn)')+'"><i class="ti '+e.icon+'" style="font-size:11px;margin-right:3px;"></i>'+e.label+'</span></div>';}).join('')}
+      </div>
+    </div>
+    <div class="fp" style="margin-bottom:0;">
+      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-checklist"></i> Prioridades del turno</div>
+      <div class="fp-sub">Módulos sin completar — clic para ir</div></div></div>
+      <div class="fp-body" style="padding:12px;">
+        ${sinDatos.slice(0,6).map(sid=>{
+          const p=sid.split('-');const cat=p[0];const sub=p.slice(1).join('-');
+          const col={'cocina':'var(--cocina)','barra':'var(--barra)','almacen':'var(--almacen)','salon':'var(--salon)','servicio':'var(--servicio)','vitrinas':'var(--vitrinas)'}[cat]||'var(--kale)';
+          return '<div onclick="showSub(\''+cat+'\',\''+sid+'\');" style="cursor:pointer;padding:9px 11px;border:1.5px solid var(--border);border-left:3px solid '+col+';border-radius:8px;background:white;margin-bottom:6px;font-size:12px;color:var(--text);" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'white\'"><span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:'+col+';">'+cat+'</span> — '+sub.replace(/-/g,' ')+'</div>';
+        }).join('')||'<div style="font-size:12px;color:var(--juice);padding:8px;text-align:center;font-weight:600;">✓ Todos los módulos completados</div>'}
+      </div>
+    </div>
+  </div></div>`;
+  triggerFades();
+}
+
+/* ════════════════════════════════════
+   ADMIN — USUARIOS & ROLES
+════════════════════════════════════ */
+let editUID = null;
+
+function showAdmin(){
+  if(!isAdmin()){ renderDenied(); return; }
+  setNavActive('nav-admin');
+  const users = getUsers().filter(u=>!u.hidden);
+  const mc = document.getElementById('main-content');
+  mc.innerHTML=`
+    <div class="admin-bar fade-in"><span class="admin-badge-sm">Admin · Control Absoluto</span>Gestión de usuarios, roles y áreas de acceso. Solo visible en sesión admin.</div>
+    <div class="fp fade-in">
+      <div class="fp-head cocina">
+        <div><div class="fp-title"><i class="ti ti-settings"></i> Usuarios & Roles</div><div class="fp-sub">Vitality Kitchen · Portal Operativo</div></div>
+        <button class="btn btn-kale btn-sm" onclick="openNewUser()">+ Nuevo usuario</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="user-table">
+          <thead><tr><th>Usuario</th><th>Familia</th><th>Áreas</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>
+            ${users.map(u=>`<tr>
+              <td>
+                <strong>${u.name}</strong><br>
+                <span style="font-size:11px;font-family:var(--mono);color:var(--muted);">${u.email}</span>
+              </td>
+              <td><span class="role-pill ${FAMILIAS[u.rol]?.pill||'rp-mesero'}">${FAMILIAS[u.rol]?.label||u.rol}</span></td>
+              <td style="font-size:11px;color:var(--muted);max-width:180px;">${(u.cats||[]).join(', ')||'—'}</td>
+              <td>
+                ${u.status==='pending'
+                  ? '<span style="color:var(--warn);font-size:12px;font-weight:700;background:rgba(176,125,32,.08);padding:3px 8px;border-radius:6px;"><i class="ti ti-clock"></i> Pendiente</span>'
+                  : u.active
+                    ? '<span style="color:var(--juice);font-size:12px;font-weight:700;">● Activo</span>'
+                    : '<span style="color:var(--danger);font-size:12px;font-weight:700;">○ Inactivo</span>'
+                }
+              </td>
+              <td style="display:flex;gap:5px;flex-wrap:wrap;">
+                <button class="act-btn" onclick="openEditUser('${u.id}')">Editar</button>
+                <button class="act-btn" style="color:${u.status==='pending'?'var(--juice)':u.active?'var(--danger)':'var(--juice)'};" 
+                  onclick="toggleUser('${u.id}')">${u.status==='pending'?'✓ Activar':u.active?'Desactivar':'Activar'}</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  triggerFades();
+}
+
+function openNewUser(){
+  editUID=null;
+  document.getElementById('modal-title').textContent='Nuevo usuario';
+  document.getElementById('m-name').value='';
+  document.getElementById('m-email').value='';
+  document.getElementById('m-pass').value='';
+  document.getElementById('m-rol').value='chef';
+  updateModalAreas();
+  document.getElementById('user-modal').style.display='flex';
+}
+function openEditUser(uid){
+  const users=getUsers();
+  const u=users.find(x=>x.id===uid);if(!u)return;
+  editUID=uid;
+  document.getElementById('modal-title').textContent='Editar usuario';
+  document.getElementById('m-name').value=u.name;
+  document.getElementById('m-email').value=u.email;
+  document.getElementById('m-pass').value=u.pass;
+  document.getElementById('m-rol').value=u.rol;
+  updateModalAreas();
+  document.querySelectorAll('#modal-areas input[type=checkbox]').forEach(cb=>{
+    cb.checked=(u.cats||[]).includes(cb.value);
+  });
+  document.getElementById('user-modal').style.display='flex';
+}
+function updateModalAreas(){
+  const rol=document.getElementById('m-rol').value;
+  const def=FAMILIAS[rol]?.cats||[];
+  document.getElementById('modal-areas').innerHTML=ESTRUCTURA.map(cat=>`
+    <label class="area-chk">
+      <input type="checkbox" value="${cat.id}" ${def.includes(cat.id)?'checked':''}>
+      ${catIcon(cat.icon)} ${cat.name}
+    </label>`).join('');
+}
+function closeModal(){ document.getElementById('user-modal').style.display='none'; }
+function saveUser(){
+  const name=document.getElementById('m-name').value.trim();
+  const email=document.getElementById('m-email').value.trim().toLowerCase();
+  const pass=document.getElementById('m-pass').value.trim();
+  const rol=document.getElementById('m-rol').value;
+  const cats=[...document.querySelectorAll('#modal-areas input:checked')].map(c=>c.value);
+  if(!name||!email||!pass){alert('Completa todos los campos.');return;}
+  const users=getUsers();
+  if(editUID){
+    const idx=users.findIndex(u=>u.id===editUID);
+    if(idx>=0) users[idx]={...users[idx],name,email,pass,rol,cats,status:undefined};
+  }else{
+    users.push({id:'u'+Date.now(),name,email,pass,rol,cats,trans:FAMILIAS[rol]?.trans||[],active:false,status:'pending'});
+  }
+  saveUsers(users);
+  closeModal();
+  showAdmin();
+}
+function toggleUser(uid){
+  const users=getUsers();
+  const idx=users.findIndex(u=>u.id===uid);
+  if(idx>=0){
+    if(users[idx].status==='pending'){ users[idx].active=true; delete users[idx].status; }
+    else users[idx].active=!users[idx].active;
+  }
+  saveUsers(users);
+  showAdmin();
+}
+
+/* ════════════════════════════════════
+   UTILS
+════════════════════════════════════ */
+
+function catIcon(icon){
+  const map={
+    kitchen:'<i class="ti ti-tools-kitchen-2"></i>',
+    coffee:'<i class="ti ti-coffee"></i>',
+    package:'<i class="ti ti-package"></i>',
+    restaurant:'<i class="ti ti-tools-kitchen"></i>',
+    service:'<i class="ti ti-users"></i>',
+    vitrine:'<i class="ti ti-bread"></i>',
+  };
+  return map[icon]||icon;
+}
+
+function triggerFades(){
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.fade-in').forEach(el=>{
+      el.classList.remove('show');
+      requestAnimationFrame(()=>el.classList.add('show'));
+    });
+  });
+}
+</script>
+</body>
+</html>
++costo.toFixed(2);
+  calcMermaCausas();
+}
+function calcMermaCausas(){
+  const rows=[...document.querySelectorAll('.merma-row')];const counts={};
+  rows.forEach(r=>{const sel=r.querySelectorAll('select')[1];if(sel&&sel.value){const cod=sel.value.split('—')[0].trim();counts[cod]=(counts[cod]||0)+1;}});
+  ['VEN','DAN','TEM','ERR','SOB','TRA','DEV','OTR'].forEach(cod=>{const el=document.getElementById('causa-cnt-'+cod);if(el)el.textContent=(counts[cod]||0);});
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const cp=document.getElementById('merma-causa-principal');if(cp)cp.textContent=sorted.length?sorted[0][0]:'—';
+}
+
 
 function renderProduccion(el,cat,sub){
   const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
