@@ -785,7 +785,11 @@ function showSub(catId, subId){
       {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
       {sec:'Control de Plagas',items:['Inspección visual de zona de almacenamiento.','Sin evidencia de plagas en cocina.','Trampas de monitoreo revisadas.','Reportar cualquier hallazgo inmediatamente.'],dark:true},
     ]),
-    'cocina-recetas':     ()=>renderComingSoon(mc,cat,sub),
+    'cocina-recetas': ()=>renderChecklist(mc,cat,sub,'Recetario Operativo — Cocina','cocina',[
+      {sec:'Desayunos & Bowls',items:['Bowl de proteína — pollo grillado, quinoa, verduras asadas, salsa verde.','Parfait granola — yogurt griego, granola artesanal, fruta fresca, miel.','Avena cocida — leche de avena, plátano, canela, nueces.','Tostadas de aguacate — pan artesanal, aguacate, hojuelas de chile, limón.']},
+      {sec:'Snacks & Ensaladas',items:['Ensalada verde — lechuga romana, pepino, betabel, vinagreta.','Bowl de fruta — mango, papaya, melón, jícama, limón y chile.','Wrap de pollo — tortilla integral, pollo, lechuga, jitomate, mostaza.','Guacamole con totopos — 3 aguacates, jitomate, cebolla, cilantro.']},
+      {sec:'Postres & Horneados',items:['Panqué de plátano — plátano macho, harina de avena, huevo, aceite de coco.','Galletas de avena — avena, mantequilla, azúcar moscabado, chips de chocolate.','Tarta limón — base de galleta, crema de limón, merengue italiano.'],dark:true},
+    ]),
     'barra-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','barra',[
       {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Prender máquina de espresso.','Prender molino y rellenarlo.','Abrir paso del molino.','Armar área: montar tapetes, revisar cerámica.','Barrer y trapear.','Colocar bolsa de basura.']},
       {sec:'Insumos & Equipos',items:['Checar insumos (85 y 86).','Rellenar teteras y encenderlas.','Confirmar báscula cargada.']},
@@ -795,8 +799,16 @@ function showSub(catId, subId){
     ]),
     'barra-calibracion':  ()=>renderCalibration(mc,cat,sub),
     'barra-merma':        ()=>renderMerma(mc,cat,sub),
-    'barra-espresso':     ()=>renderComingSoon(mc,cat,sub),
-    'barra-frias':        ()=>renderComingSoon(mc,cat,sub),
+    'barra-espresso': ()=>renderChecklist(mc,cat,sub,'Café Espresso — Parámetros y Preparaciones','barra',[
+      {sec:'Parámetros de Extracción',items:['Dosis: 18–19 g · Rendimiento: 36–40 g · Tiempo: 25–30 seg.','Temperatura de agua: 93–95°C · Presión: 9 bar.','Molienda: ajustar diario según clima y humedad.','Calibración: probar shot antes de servir al cliente.','TDS objetivo: 8–12% · Ratio 1:2 café / agua.']},
+      {sec:'Preparaciones Base',items:['Espresso — 18 g dosis · 36 g rendimiento · 28 seg.','Americano — espresso + agua caliente 150 ml.','Cappuccino — espresso + leche texturizada 120 ml · espuma densa.','Latte — espresso + leche vaporizada 200 ml · espuma fina.','Flat White — doble espresso + 100 ml leche · sin espuma.']},
+      {sec:'Control de Calidad',items:['Probar primer shot de apertura — registrar parámetros.','Verificar presión de máquina cada turno.','Purgar grupos antes de cada extracción.','Registrar cualquier desviación en formato de calibración.'],dark:true},
+    ]),
+    'barra-frias': ()=>renderChecklist(mc,cat,sub,'Bebidas Frías & Matcha — Estándares','barra',[
+      {sec:'Matcha & Té',items:['Matcha latte frío — 4 g matcha ceremonial, 30 ml agua 80°C, batir, 200 ml leche fría, hielo.','Matcha latte caliente — misma base con leche vaporizada.','Cold brew matcha — matcha + agua fría 12 hrs refrigeración.','London Fog frío — té earl grey, lavanda, leche de avena, vainilla, hielo.']},
+      {sec:'Lattes Fríos',items:['Lavender latte — espresso, sirope lavanda, leche fría, hielo.','Chai latte frío — concentrado chai, leche fría, canela, hielo.','Latte de cúrcuma — cúrcuma, pimienta, leche vegetal, miel, hielo.','Horchata coffee — espresso, horchata casera, canela, hielo.']},
+      {sec:'Cold Brew',items:['Cold brew: 100 g café grueso + 800 ml agua fría · 16–20 hrs · colar.','Ratio servicio: 150 ml cold brew + 50 ml agua + hielo.','Almacenar cold brew máximo 72 hrs en refrigeración.'],dark:true},
+    ]),
     'barra-insumos':      ()=>renderChecklist(mc,cat,sub,'Control de Insumos de Barra','barra',[
       {sec:'Stock AM',items:['Leche entera: ___ lt · Mínimo 5 lt','Leche de avena: ___ lt · Mínimo 2 lt','Café en grano: ___ kg · Mínimo 0.5 kg','Matcha en polvo: ___ gr · Mínimo 100 gr','Jarabes y azúcares: stock completo ✓','Hielo: hielera llena ✓']},
       {sec:'Stock PM / Reposición',items:['Leche entera: ___ lt','Leche de avena: ___ lt','Café en grano: ___ kg','Solicitud de reposición enviada a almacén: ✓'],dark:true},
@@ -809,7 +821,11 @@ function showSub(catId, subId){
     'almacen-peps':       ()=>renderChecklist(mc,cat,sub,'PEPS / Caducidades','almacen',[
       {sec:'Revisión Diaria',items:['Verificar fecha de todos los productos refrigerados.','Retirar y documentar productos próximos a caducar.','Rotar productos — los más antiguos al frente.','Etiquetar todos los productos con fecha de entrada.','Reportar merma por caducidad en bitácora.']},
     ]),
-    'almacen-proveedores':()=>renderComingSoon(mc,cat,sub),
+    'almacen-proveedores': ()=>renderChecklist(mc,cat,sub,'Directorio y Evaluación de Proveedores','almacen',[
+      {sec:'Proveedores Activos',items:['Café verde — especialidad · pedido lunes y jueves.','Leche y lácteos — entrega diaria AM · verificar temperatura.','Frutas y verduras — mercado local · pedido día previo · 7 AM.','Panadería artesanal — entrega diaria 6:30 AM · contar piezas.','Insumos secos — pedido semanal · revisar fechas de caducidad.']},
+      {sec:'Protocolo de Recepción',items:['Verificar factura contra pedido antes de firmar.','Revisar temperatura de refrigerados (máx. 4°C).','Inspeccionar empaques — sin golpes ni humedad.','Rechazar producto fuera de especificación — documentar.','Ingresar en inventario inmediatamente.']},
+      {sec:'Evaluación Mensual',items:['Calificar puntualidad, calidad y precio cada mes.','Registrar incidencias — faltantes, retrasos, calidad baja.','Mantener mínimo 2 proveedores alternativos por categoría.','Revisar precios cada trimestre.'],dark:true},
+    ]),
     'almacen-conteo':     ()=>renderInventarioGeneral(mc,cat,sub),
     'salon-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','salon',[
       {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Habilitar luces del salón y mostrador.','Sacar bancas a la entrada.','Barrer y trapear salón completo.','Habilitar punto de venta — limpiar pantalla.','Prueba de terminales bancarias.']},
@@ -825,20 +841,40 @@ function showSub(catId, subId){
       {sec:'Montaje de Mesas',items:['Mesas alineadas y con distancia adecuada.','Individuales limpios y bien colocados.','Servilletas dobladas en su lugar.','Saleros y pimenteros completos y limpios.','Menús limpios y sin páginas dañadas.']},
       {sec:'Estaciones de Servicio',items:['Cubiertos surtidos y organizados.','Popotes y agitadores disponibles.','Servilletas de respaldo en estación.','Bandejas limpias y en su lugar.']},
     ]),
-    'salon-mesas':        ()=>renderComingSoon(mc,cat,sub),
+    'salon-mesas': ()=>renderChecklist(mc,cat,sub,'Control de Mesas & Flujo de Servicio','salon',[
+      {sec:'Asignación y Estado',items:['Mapa de mesas actualizado al inicio de cada turno.','Registrar hora de llegada por mesa.','Comunicar tiempo de espera estimado al cliente.','Máximo 5 min de espera para toma de orden.','Rotación objetivo: 45 min por mesa en hora pico.']},
+      {sec:'Durante el Servicio',items:['Monitorear que mesas no estén más de 10 min sin atención.','Coordinar cocina y barra — evitar salidas descoordinadas.','Limpiar mesa en máximo 3 min tras salida del cliente.','Comunicar mesa disponible al equipo inmediatamente.']},
+      {sec:'Registro del Turno',items:['Mesas atendidas: ___ · Tiempo promedio: ___ min','Incidencias registradas: ___','Capacidad máxima alcanzada: ___','Observaciones del turno: ___'],dark:true},
+    ]),
     'salon-supervisor':   ()=>renderSupervisor(mc,cat,sub),
     'servicio-protocolo': ()=>renderChecklist(mc,cat,sub,'Protocolo de Atención al Cliente','servicio',[
       {sec:'Bienvenida',items:['Recibir al cliente en máximo 30 segundos de su llegada.','Saludo cordial con mirada y nombre si es cliente frecuente.','Acompañar a la mesa disponible de su elección.','Presentar menú y especificar producto del día.','Ofrecer agua de cortesía inmediatamente.']},
       {sec:'Durante el Servicio',items:['Confirmar pedido repitiendo los ítems.','Informar tiempo de espera estimado.','Estar disponible sin ser intrusivo.','Preguntar satisfacción al entregar el pedido.']},
       {sec:'Despedida',items:['Agradecer visita al momento del pago.','Invitar a regresar con sinceridad.','Registrar cualquier incidencia o comentario.'],dark:true},
     ]),
-    'servicio-tiempos':   ()=>renderComingSoon(mc,cat,sub),
-    'servicio-satisfaccion':()=>renderComingSoon(mc,cat,sub),
-    'servicio-comandas':  ()=>renderComingSoon(mc,cat,sub),
+    'servicio-tiempos': ()=>renderChecklist(mc,cat,sub,'Tiempos Estándar de Servicio','servicio',[
+      {sec:'Tiempos Objetivo',items:['Bienvenida y menú: máximo 2 min desde que el cliente se sienta.','Toma de orden: máximo 5 min desde la bienvenida.','Entrega de bebidas: máximo 5 min desde la orden.','Entrega de alimentos: máximo 12 min (desayuno) · 15 min (comida).','Presentación de cuenta: máximo 2 min desde que se solicita.']},
+      {sec:'Registro del Día',items:['Tiempo promedio bienvenida: ___ min','Tiempo promedio entrega bebida: ___ min','Tiempo promedio entrega alimento: ___ min','Mesas dentro del estándar: ___ / ___','Mesas fuera del estándar (motivo): ___']},
+      {sec:'Acciones Correctivas',items:['Si cocina supera 15 min — avisar y disculparse con el cliente.','Si espera supera 5 min — reconocimiento inmediato.','Registrar cualquier retraso con causa en formato de incidencias.'],dark:true},
+    ]),
+    'servicio-satisfaccion': ()=>renderChecklist(mc,cat,sub,'Satisfacción del Cliente & NPS','servicio',[
+      {sec:'Puntos de Contacto',items:['Preguntar satisfacción 3 min después del primer bite.','Revisita a la mesa — ¿Todo está bien?','Invitar comentario al momento del pago.','Registrar feedback positivo y negativo del turno.','Informar a cocina sobre comentarios relevantes del día.']},
+      {sec:'Registro de Feedback',items:['Comentarios positivos del turno: ___','Quejas recibidas: ___ · Motivo: ___','Acciones tomadas: ___ · Seguimiento: ___']},
+      {sec:'Indicadores',items:['Meta NPS: 70+ · ¿Lo recomendarías? (0–10)','Google reviews objetivo: 4.5+','Clientes frecuentes identificados: ___','Propinas promedio: ___% del ticket.'],dark:true},
+    ]),
+    'servicio-comandas': ()=>renderChecklist(mc,cat,sub,'Comandas & Pedidos — Protocolo','servicio',[
+      {sec:'Toma de Orden',items:['Anotar número de mesa y número de personas.','Repetir la orden en voz alta para confirmar.','Especificar modificaciones: sin azúcar, sin gluten, temperatura.','Señalar tiempo estimado si hay producto agotado.','Ingresar comanda en sistema inmediatamente.']},
+      {sec:'Seguimiento',items:['Verificar que la comanda fue recibida en cocina/barra.','Comunicar si algún ítem tardará más de lo normal.','Entregar bebidas primero, alimentos después.','Confirmar que el pedido es completo antes de retirarte.']},
+      {sec:'Cierre de Comanda',items:['Verificar ticket antes de presentar al cliente.','Ofrecer extra: postre, segundo café, bebida.','Confirmar método de pago — efectivo, tarjeta o QR.','Registrar total en corte de caja.'],dark:true},
+    ]),
     'servicio-venta':     ()=>renderChecklist(mc,cat,sub,'Venta Sugerida','servicio',[
       {sec:'Técnicas de Sugerencia',items:['Conocer el menú completo — precios, ingredientes, alérgenos.','Sugerir el producto del día al inicio del servicio.','Ofrecer maridaje entre bebida y platillo.','Mencionar postres antes del cierre de cuenta.','Sugerir para llevar si el cliente menciona que le gustó algo.']},
     ]),
-    'servicio-incidencias':()=>renderComingSoon(mc,cat,sub),
+    'servicio-incidencias': ()=>renderChecklist(mc,cat,sub,'Registro de Incidencias & Resolución','servicio',[
+      {sec:'Tipos de Incidencia',items:['Queja de alimento — temperatura, preparación, presentación.','Queja de servicio — tiempo de espera, atención, error en orden.','Accidente — derrame, ruptura de loza, daño a cliente.','Error de cobro — monto incorrecto, cargo duplicado.']},
+      {sec:'Protocolo de Resolución',items:['Escuchar sin interrumpir. Validar la experiencia del cliente.','Disculparse genuinamente — nunca justificar ni debatir.','Ofrecer solución inmediata: reposición, cortesía, descuento.','Escalar al supervisor si el cliente no queda conforme.','Registrar incidencia antes de terminar el turno.']},
+      {sec:'Registro',items:['Fecha: ___ · Turno: ___ · Responsable: ___','Tipo de incidencia: ___ · Descripción: ___','Solución aplicada: ___ · ¿Cliente conforme?: Sí / No'],dark:true},
+    ]),
     'vitrinas-exhibicion':()=>renderChecklist(mc,cat,sub,'Exhibición y Montaje de Vitrina','vitrinas',[
       {sec:'Montaje AM',items:['Limpiar vitrina por dentro antes de colocar producto.','Colocar producto con etiqueta de precio visible.','Productos más llamativos al nivel de los ojos.','Respetar temperatura de vitrina refrigerada: 4–8 °C.','Colocar carteles de ingredientes y alérgenos.']},
       {sec:'Durante el Día',items:['Reponer producto cuando quede menos del 30% de stock.','Retirar producto que pierda presentación.','Limpiar vidrios cada 2 horas o cuando sea necesario.','Verificar etiquetas de precio vigentes.']},
