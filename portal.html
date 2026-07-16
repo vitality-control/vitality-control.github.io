@@ -899,12 +899,39 @@ function showSub(catId, subId){
 /* ════════════════════════════════════
    RENDERS ESPECIALES
 ════════════════════════════════════ */
+
+/* ════ PERSISTENCIA LOCAL ════ */
+let _currentSubId=null;
+function vkSave(){
+  if(!_currentSubId)return;
+  const d={};
+  document.querySelectorAll('.cl-inp,.inv-inp,.meta-f input,.meta-f select').forEach((el,i)=>d['inp_'+i]=el.value||'');
+  document.querySelectorAll('.cl-chk input[type=checkbox]').forEach((el,i)=>d['chk_'+i]=el.checked);
+  try{localStorage.setItem('vk_data_'+_currentSubId,JSON.stringify(d));}catch(e){}
+}
+function vkLoad(subId){
+  _currentSubId=subId;
+  try{
+    const s=JSON.parse(localStorage.getItem('vk_data_'+subId)||'{}');
+    if(!Object.keys(s).length)return;
+    document.querySelectorAll('.cl-inp,.inv-inp,.meta-f input,.meta-f select').forEach((el,i)=>{ if(s['inp_'+i]!==undefined)el.value=s['inp_'+i]; });
+    document.querySelectorAll('.cl-chk input[type=checkbox]').forEach((el,i)=>{ if(s['chk_'+i]!==undefined)el.checked=!!s['chk_'+i]; });
+  }catch(e){}
+}
+function vkClear(subId){
+  if(confirm('¿Limpiar datos guardados de este módulo?')){
+    localStorage.removeItem('vk_data_'+(subId||_currentSubId));
+    if(activeSub){const p=activeSub.split('-');showSub(p[0],activeSub);}
+  }
+}
+document.addEventListener('change',e=>{if(e.target.closest('.content'))vkSave();});
+document.addEventListener('input',e=>{if(e.target.closest('.content'))vkSave();});
 function renderChecklist(el,cat,sub,subtitle,cls,secciones){
   const hdr = `<div class="fp fade-in">
     <div class="fp-head ${cls}">
       <div><div class="fp-title">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">${subtitle}</div></div>
       <div class="fp-acts">
-        <button class="btn btn-ghost btn-sm" onclick="limpiarChecks()">Limpiar</button>
+        <button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button>
         <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
       </div>
     </div>
@@ -931,6 +958,7 @@ function renderChecklist(el,cat,sub,subtitle,cls,secciones){
     </table>`).join('');
   el.innerHTML = hdr+cuerpo+`</div></div>`;
   triggerFades();
+  if(sub&&sub.id)setTimeout(()=>vkLoad(sub.id),50);
 }
 
 function addClRow(btn){
@@ -948,7 +976,7 @@ function addClRow(btn){
   tr.querySelector('input[type=text]').focus();
 }
 function renumCl(btn){/* renumerar si se quiere */}
-function limpiarChecks(){ document.querySelectorAll('.cl-chk input').forEach(c=>c.checked=false); }
+function limpiarChecks(){ vkClear(); }
 
 function renderProduccion(el,cat,sub){
   const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
@@ -1298,26 +1326,83 @@ function showSupervisor(){
 
 function showAlerts(){
   setNavActive('nav-alertas');
-  document.getElementById('main-content').innerHTML=`<div class="fade-in">
-    <div class="fp"><div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-bell"></i> Alertas & Reportes</div><div class="fp-sub">Resumen del día · Estado operativo</div></div></div>
-    <div class="fp-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-        <div class="info-card"><h4>Estado del día</h4>
-          <div class="status-row"><span class="status-label">Cocina</span><span class="status-val ok">● Operando</span></div>
-          <div class="status-row"><span class="status-label">Barra</span><span class="status-val ok">● Operando</span></div>
-          <div class="status-row"><span class="status-label">Salón</span><span class="status-val ok">● Operando</span></div>
-          <div class="status-row"><span class="status-label">Vitrinas</span><span class="status-val warn"><i class="ti ti-alert-triangle"></i> Revisar temp.</span></div>
-        </div>
-        <div class="info-card"><h4>Bitácoras del día</h4>
-          <div class="status-row"><span class="status-label">Inocuidad AM</span><span class="status-val ok">✓ Firmada</span></div>
-          <div class="status-row"><span class="status-label">Calibración barra</span><span class="status-val ok">✓ Firmada</span></div>
-          <div class="status-row"><span class="status-label">Baños (última rev.)</span><span class="status-val">12:00 p.m.</span></div>
-          <div class="status-row"><span class="status-label">Corte de caja</span><span class="status-val warn"><i class="ti ti-clock"></i> Pendiente</span></div>
-        </div>
+  const mc=document.getElementById('main-content');
+  function getLS(k){try{return JSON.parse(localStorage.getItem(k)||'{}');}catch(e){return {};}}
+  const today=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  function estadoArea(subs){
+    let tot=0,chk=0;
+    subs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
+    if(tot===0)return{label:'Sin datos',cls:'warn',icon:'ti-circle-dashed'};
+    const pct=chk/tot;
+    if(pct===1)return{label:'Completo',cls:'ok',icon:'ti-circle-check'};
+    if(pct>0)return{label:chk+'/'+tot+' tareas',cls:'ok',icon:'ti-progress'};
+    return{label:'Sin iniciar',cls:'warn',icon:'ti-circle-dashed'};
+  }
+  const areas=[
+    {name:'Cocina',subs:['cocina-checklist','cocina-inocuidad','cocina-temperatura']},
+    {name:'Barra',subs:['barra-checklist','barra-calibracion','barra-insumos']},
+    {name:'Almacén',subs:['almacen-entradas','almacen-peps']},
+    {name:'Salón',subs:['salon-checklist','salon-banos']},
+    {name:'Servicio',subs:['servicio-protocolo']},
+    {name:'Vitrinas',subs:['vitrinas-conteo','vitrinas-temperatura']},
+  ];
+  const allSubs=['cocina-checklist','cocina-inocuidad','cocina-temperatura','cocina-merma',
+    'barra-checklist','barra-calibracion','barra-insumos','barra-merma',
+    'almacen-entradas','almacen-salidas','almacen-peps',
+    'salon-checklist','salon-banos','salon-limpieza',
+    'servicio-protocolo','servicio-incidencias',
+    'vitrinas-conteo','vitrinas-rotacion','vitrinas-temperatura','cocina-produccion'];
+  let tot=0,chk=0;
+  allSubs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
+  const pct=tot>0?Math.round(chk/tot*100):0;
+  const conDatos=allSubs.filter(sid=>Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_'))).length;
+  const bc=pct===100?'var(--juice)':pct>50?'var(--kale)':'var(--warn)';
+  const sinDatos=allSubs.filter(sid=>!Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_')));
+  mc.innerHTML=`<div class="fade-in">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
+    <div><div style="font-size:18px;font-weight:700;color:var(--kale);"><i class="ti ti-bell"></i> Alertas & Reportes</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px;">${today}</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="showAlerts()"><i class="ti ti-refresh"></i> Actualizar</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--kale);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${pct}%</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Cumplimiento global</div>
+      <div style="margin-top:8px;background:var(--bg2);border-radius:4px;height:5px;">
+        <div style="width:${pct}%;height:5px;border-radius:4px;background:${bc};"></div></div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--juice);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${chk}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Tareas completadas</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${tot} totales</div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--blueberry);">
+      <div style="font-size:26px;font-weight:700;color:var(--kale);">${conDatos}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Módulos con registros</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${allSubs.length} disponibles</div></div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid ${sinDatos.length?'var(--warn)':'var(--juice)'};">
+      <div style="font-size:26px;font-weight:700;color:${sinDatos.length?'var(--warn)':'var(--kale)'};">${sinDatos.length||'✓'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${sinDatos.length?'Pendientes':'Al corriente'}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;">${sinDatos.length?'Módulos sin completar':'Operación normal'}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="fp" style="margin-bottom:0;">
+      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-layout-grid"></i> Estado por área</div>
+      <div class="fp-sub">Basado en checklists del día</div></div></div>
+      <div class="fp-body" style="padding:12px 16px;">
+        ${areas.map(a=>{const e=estadoArea(a.subs);return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border2);"><span style="font-size:13px;color:var(--text);">'+a.name+'</span><span style="font-size:12px;font-weight:600;color:'+(e.cls==='ok'?'var(--juice)':'var(--warn)')+'"><i class="ti '+e.icon+'" style="font-size:11px;margin-right:3px;"></i>'+e.label+'</span></div>';}).join('')}
       </div>
-      <div class="info-card" style="margin-top:14px;"><h4>Módulo en desarrollo</h4><p>Las alertas automáticas por WhatsApp y el dashboard en tiempo real están en proceso de implementación — Semana 9–10 del roadmap.</p></div>
-    </div></div>
-  </div>`;
+    </div>
+    <div class="fp" style="margin-bottom:0;">
+      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-checklist"></i> Prioridades del turno</div>
+      <div class="fp-sub">Módulos sin completar — clic para ir</div></div></div>
+      <div class="fp-body" style="padding:12px;">
+        ${sinDatos.slice(0,6).map(sid=>{
+          const p=sid.split('-');const cat=p[0];const sub=p.slice(1).join('-');
+          const col={'cocina':'var(--cocina)','barra':'var(--barra)','almacen':'var(--almacen)','salon':'var(--salon)','servicio':'var(--servicio)','vitrinas':'var(--vitrinas)'}[cat]||'var(--kale)';
+          return '<div onclick="showSub(\''+cat+'\',\''+sid+'\');" style="cursor:pointer;padding:9px 11px;border:1.5px solid var(--border);border-left:3px solid '+col+';border-radius:8px;background:white;margin-bottom:6px;font-size:12px;color:var(--text);" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'white\'"><span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:'+col+';">'+cat+'</span> — '+sub.replace(/-/g,' ')+'</div>';
+        }).join('')||'<div style="font-size:12px;color:var(--juice);padding:8px;text-align:center;font-weight:600;">✓ Todos los módulos completados</div>'}
+      </div>
+    </div>
+  </div></div>`;
   triggerFades();
 }
 
