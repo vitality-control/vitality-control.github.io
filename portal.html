@@ -773,15 +773,19 @@ function showSub(catId, subId){
       {sec:'Durante Operación',items:['Registrar temperatura de alimentos.','Verificar PEPS en refrigeradores.','Controlar gramajes según receta.','Documentar merma en formato.'],dark:true},
       {sec:'Cierre de Cocina',items:['Enfriamiento rápido de alimentos preparados.','Etiquetar con fecha y hora todos los recipientes.','Limpiar y desinfectar equipos y superficies.','Guardar insumos en refrigeración o almacén seco.','Cerrar gas y apagar equipos.','Firmar bitácora de inocuidad del día.'],dark:true},
     ]),
-    'cocina-temperatura': ()=>renderTempCocina(mc,cat,sub),
+    'cocina-temperatura': ()=>renderChecklist(mc,cat,sub,'Registro de temperaturas y equipos','cocina',[
+      {sec:'Temperaturas AM',items:['Refrigerador 1 — temp: ___ °C · Rango: 1–4 °C','Refrigerador 2 — temp: ___ °C · Rango: 1–4 °C','Congelador — temp: ___ °C · Rango: -18 a -22 °C','Área fría de preparación: ___ °C','Baño María / área caliente: ___ °C']},
+      {sec:'Verificación de Alimentos',items:['Pollo crudo separado de cocidos: ✓','Etiquetado PEPS vigente — verificar fechas: ✓','Sin alimentos caducados en refrigeración: ✓','Tablas de corte limpias y sanitizadas: ✓']},
+      {sec:'Temperaturas PM / Cierre',items:['Refrigerador 1 cierre — temp: ___ °C','Refrigerador 2 cierre — temp: ___ °C','Congelador cierre — temp: ___ °C','Alimentos preparados etiquetados con fecha: ✓'],dark:true},
+    ]),
     'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
-    'cocina-merma':       ()=>renderMermaCocina(mc,cat,sub),
+    'cocina-merma':       ()=>renderMerma(mc,cat,sub),
     'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
       {sec:'Verificación PEPS',items:['Revisar fechas de caducidad en todos los productos.','Colocar productos más viejos al frente.','Retirar y registrar productos caducados.','Verificar etiquetas con fecha de elaboración y caducidad.']},
       {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
       {sec:'Control de Plagas',items:['Inspección visual de zona de almacenamiento.','Sin evidencia de plagas en cocina.','Trampas de monitoreo revisadas.','Reportar cualquier hallazgo inmediatamente.'],dark:true},
     ]),
-    'cocina-recetas': ()=>renderRecetasCocina(mc,cat,sub),
+    'cocina-recetas': ()=>renderChecklist(mc,cat,sub,'Recetario Operativo','cocina',[{sec:'Desayunos y Bowls',items:['Bowl de proteina — pollo grillado, quinoa, verduras asadas, salsa verde.','Parfait granola — yogurt griego, granola artesanal, fruta fresca, miel.','Avena cocida — leche de avena, platano, canela, nueces.','Tostadas de aguacate — pan artesanal, aguacate, hojuelas de chile, limon.']},{sec:'Snacks y Ensaladas',items:['Ensalada verde — lechuga romana, pepino, betabel, vinagreta.','Bowl de fruta — mango, papaya, melon, jicama, limon y chile.','Wrap de pollo — tortilla integral, pollo, lechuga, jitomate, mostaza.','Guacamole — 3 aguacates, jitomate, cebolla, cilantro.']},{sec:'Postres y Horneados',items:['Panque de platano — harina de avena, huevo, aceite de coco.','Galletas de avena — avena, mantequilla, azucar moscabado, chips chocolate.','Tarta limon — base de galleta, crema de limon, merengue italiano.'],dark:true}]),
     'barra-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','barra',[
       {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Prender máquina de espresso.','Prender molino y rellenarlo.','Abrir paso del molino.','Armar área: montar tapetes, revisar cerámica.','Barrer y trapear.','Colocar bolsa de basura.']},
       {sec:'Insumos & Equipos',items:['Checar insumos (85 y 86).','Rellenar teteras y encenderlas.','Confirmar báscula cargada.']},
@@ -791,16 +795,8 @@ function showSub(catId, subId){
     ]),
     'barra-calibracion':  ()=>renderCalibration(mc,cat,sub),
     'barra-merma':        ()=>renderMerma(mc,cat,sub),
-    'barra-espresso': ()=>renderChecklist(mc,cat,sub,'Café Espresso — Parámetros y Preparaciones','barra',[
-      {sec:'Parámetros de Extracción',items:['Dosis: 18–19 g · Rendimiento: 36–40 g · Tiempo: 25–30 seg.','Temperatura de agua: 93–95°C · Presión: 9 bar.','Molienda: ajustar diario según clima y humedad.','Calibración: probar shot antes de servir al cliente.','TDS objetivo: 8–12% · Ratio 1:2 café / agua.']},
-      {sec:'Preparaciones Base',items:['Espresso — 18 g dosis · 36 g rendimiento · 28 seg.','Americano — espresso + agua caliente 150 ml.','Cappuccino — espresso + leche texturizada 120 ml · espuma densa.','Latte — espresso + leche vaporizada 200 ml · espuma fina.','Flat White — doble espresso + 100 ml leche · sin espuma.']},
-      {sec:'Control de Calidad',items:['Probar primer shot de apertura — registrar parámetros.','Verificar presión de máquina cada turno.','Purgar grupos antes de cada extracción.','Registrar cualquier desviación en formato de calibración.'],dark:true},
-    ]),
-    'barra-frias': ()=>renderChecklist(mc,cat,sub,'Bebidas Frías & Matcha — Estándares','barra',[
-      {sec:'Matcha & Té',items:['Matcha latte frío — 4 g matcha ceremonial, 30 ml agua 80°C, batir, 200 ml leche fría, hielo.','Matcha latte caliente — misma base con leche vaporizada.','Cold brew matcha — matcha + agua fría 12 hrs refrigeración.','London Fog frío — té earl grey, lavanda, leche de avena, vainilla, hielo.']},
-      {sec:'Lattes Fríos',items:['Lavender latte — espresso, sirope lavanda, leche fría, hielo.','Chai latte frío — concentrado chai, leche fría, canela, hielo.','Latte de cúrcuma — cúrcuma, pimienta, leche vegetal, miel, hielo.','Horchata coffee — espresso, horchata casera, canela, hielo.']},
-      {sec:'Cold Brew',items:['Cold brew: 100 g café grueso + 800 ml agua fría · 16–20 hrs · colar.','Ratio servicio: 150 ml cold brew + 50 ml agua + hielo.','Almacenar cold brew máximo 72 hrs en refrigeración.'],dark:true},
-    ]),
+    'barra-espresso': ()=>renderChecklist(mc,cat,sub,'Cafe Espresso — Parametros','barra',[{sec:'Parametros de Extraccion',items:['Dosis: 18-19 g. Rendimiento: 36-40 g. Tiempo: 25-30 seg.','Temperatura de agua: 93-95 C. Presion: 9 bar.','Molienda: ajustar diario segun clima y humedad.','Calibracion: probar shot antes de servir al cliente.']},{sec:'Preparaciones Base',items:['Espresso — 18 g dosis, 36 g rendimiento, 28 seg.','Americano — espresso + agua caliente 150 ml.','Cappuccino — espresso + leche texturizada 120 ml, espuma densa.','Latte — espresso + leche vaporizada 200 ml, espuma fina.']},{sec:'Control de Calidad',items:['Probar primer shot de apertura y registrar parametros.','Verificar presion de maquina cada turno.','Purgar grupos antes de cada extraccion.','Registrar desviaciones en formato de calibracion.'],dark:true}]),
+    'barra-frias': ()=>renderChecklist(mc,cat,sub,'Bebidas Frias y Matcha','barra',[{sec:'Matcha y Te',items:['Matcha latte frio — 4 g matcha, 30 ml agua 80C, batir, 200 ml leche fria, hielo.','Matcha latte caliente — misma base con leche vaporizada.','Cold brew matcha — matcha + agua fria 12 hrs refrigeracion.','London Fog frio — te earl grey, lavanda, leche de avena, hielo.']},{sec:'Lattes Frios',items:['Lavender latte — espresso, sirope lavanda, leche fria, hielo.','Chai latte frio — concentrado chai, leche fria, canela, hielo.','Latte de curcuma — curcuma, pimienta, leche vegetal, miel, hielo.','Horchata coffee — espresso, horchata casera, canela, hielo.']},{sec:'Cold Brew',items:['Cold brew: 100 g cafe grueso + 800 ml agua fria, 16-20 hrs, colar.','Ratio servicio: 150 ml cold brew + 50 ml agua + hielo.','Almacenar cold brew maximo 72 hrs en refrigeracion.'],dark:true}]),
     'barra-insumos':      ()=>renderChecklist(mc,cat,sub,'Control de Insumos de Barra','barra',[
       {sec:'Stock AM',items:['Leche entera: ___ lt · Mínimo 5 lt','Leche de avena: ___ lt · Mínimo 2 lt','Café en grano: ___ kg · Mínimo 0.5 kg','Matcha en polvo: ___ gr · Mínimo 100 gr','Jarabes y azúcares: stock completo ✓','Hielo: hielera llena ✓']},
       {sec:'Stock PM / Reposición',items:['Leche entera: ___ lt','Leche de avena: ___ lt','Café en grano: ___ kg','Solicitud de reposición enviada a almacén: ✓'],dark:true},
@@ -813,11 +809,7 @@ function showSub(catId, subId){
     'almacen-peps':       ()=>renderChecklist(mc,cat,sub,'PEPS / Caducidades','almacen',[
       {sec:'Revisión Diaria',items:['Verificar fecha de todos los productos refrigerados.','Retirar y documentar productos próximos a caducar.','Rotar productos — los más antiguos al frente.','Etiquetar todos los productos con fecha de entrada.','Reportar merma por caducidad en bitácora.']},
     ]),
-    'almacen-proveedores': ()=>renderChecklist(mc,cat,sub,'Directorio y Evaluación de Proveedores','almacen',[
-      {sec:'Proveedores Activos',items:['Café verde — especialidad · pedido lunes y jueves.','Leche y lácteos — entrega diaria AM · verificar temperatura.','Frutas y verduras — mercado local · pedido día previo · 7 AM.','Panadería artesanal — entrega diaria 6:30 AM · contar piezas.','Insumos secos — pedido semanal · revisar fechas de caducidad.']},
-      {sec:'Protocolo de Recepción',items:['Verificar factura contra pedido antes de firmar.','Revisar temperatura de refrigerados (máx. 4°C).','Inspeccionar empaques — sin golpes ni humedad.','Rechazar producto fuera de especificación — documentar.','Ingresar en inventario inmediatamente.']},
-      {sec:'Evaluación Mensual',items:['Calificar puntualidad, calidad y precio cada mes.','Registrar incidencias — faltantes, retrasos, calidad baja.','Mantener mínimo 2 proveedores alternativos por categoría.','Revisar precios cada trimestre.'],dark:true},
-    ]),
+    'almacen-proveedores': ()=>renderChecklist(mc,cat,sub,'Directorio de Proveedores','almacen',[{sec:'Proveedores Activos',items:['Cafe verde — especialidad, pedido lunes y jueves.','Leche y lacteos — entrega diaria AM, verificar temperatura.','Frutas y verduras — mercado local, pedido dia previo, 7 AM.','Panaderia artesanal — entrega diaria 6:30 AM, contar piezas.','Insumos secos — pedido semanal, revisar fechas de caducidad.']},{sec:'Protocolo de Recepcion',items:['Verificar factura contra pedido antes de firmar.','Revisar temperatura de refrigerados (max 4 C).','Inspeccionar empaques sin golpes ni humedad.','Rechazar producto fuera de especificacion y documentar.','Ingresar en inventario inmediatamente.']},{sec:'Evaluacion Mensual',items:['Calificar puntualidad, calidad y precio cada mes.','Registrar incidencias: faltantes, retrasos, calidad baja.','Mantener minimo 2 proveedores alternativos por categoria.','Revisar precios cada trimestre.'],dark:true}]),
     'almacen-conteo':     ()=>renderInventarioGeneral(mc,cat,sub),
     'salon-checklist':    ()=>renderChecklist(mc,cat,sub,'Apertura · Cambio de Turno · Cierre','salon',[
       {sec:'Apertura General',items:['Marcar entrada y uniformarse.','Habilitar luces del salón y mostrador.','Sacar bancas a la entrada.','Barrer y trapear salón completo.','Habilitar punto de venta — limpiar pantalla.','Prueba de terminales bancarias.']},
@@ -833,40 +825,20 @@ function showSub(catId, subId){
       {sec:'Montaje de Mesas',items:['Mesas alineadas y con distancia adecuada.','Individuales limpios y bien colocados.','Servilletas dobladas en su lugar.','Saleros y pimenteros completos y limpios.','Menús limpios y sin páginas dañadas.']},
       {sec:'Estaciones de Servicio',items:['Cubiertos surtidos y organizados.','Popotes y agitadores disponibles.','Servilletas de respaldo en estación.','Bandejas limpias y en su lugar.']},
     ]),
-    'salon-mesas': ()=>renderChecklist(mc,cat,sub,'Control de Mesas & Flujo de Servicio','salon',[
-      {sec:'Asignación y Estado',items:['Mapa de mesas actualizado al inicio de cada turno.','Registrar hora de llegada por mesa.','Comunicar tiempo de espera estimado al cliente.','Máximo 5 min de espera para toma de orden.','Rotación objetivo: 45 min por mesa en hora pico.']},
-      {sec:'Durante el Servicio',items:['Monitorear que mesas no estén más de 10 min sin atención.','Coordinar cocina y barra — evitar salidas descoordinadas.','Limpiar mesa en máximo 3 min tras salida del cliente.','Comunicar mesa disponible al equipo inmediatamente.']},
-      {sec:'Registro del Turno',items:['Mesas atendidas: ___ · Tiempo promedio: ___ min','Incidencias registradas: ___','Capacidad máxima alcanzada: ___','Observaciones del turno: ___'],dark:true},
-    ]),
+    'salon-mesas': ()=>renderChecklist(mc,cat,sub,'Control de Mesas','salon',[{sec:'Asignacion y Estado',items:['Mapa de mesas actualizado al inicio de cada turno.','Registrar hora de llegada por mesa.','Comunicar tiempo de espera estimado al cliente.','Maximo 5 min de espera para toma de orden.','Rotacion objetivo: 45 min por mesa en hora pico.']},{sec:'Durante el Servicio',items:['Monitorear que mesas no esten mas de 10 min sin atencion.','Coordinar cocina y barra para evitar salidas descoordinadas.','Limpiar mesa en maximo 3 min tras salida del cliente.','Comunicar mesa disponible al equipo inmediatamente.']},{sec:'Registro del Turno',items:['Mesas atendidas: ___. Tiempo promedio: ___ min.','Incidencias registradas: ___.','Capacidad maxima alcanzada: ___.','Observaciones del turno: ___.'],dark:true}]),
     'salon-supervisor':   ()=>renderSupervisor(mc,cat,sub),
     'servicio-protocolo': ()=>renderChecklist(mc,cat,sub,'Protocolo de Atención al Cliente','servicio',[
       {sec:'Bienvenida',items:['Recibir al cliente en máximo 30 segundos de su llegada.','Saludo cordial con mirada y nombre si es cliente frecuente.','Acompañar a la mesa disponible de su elección.','Presentar menú y especificar producto del día.','Ofrecer agua de cortesía inmediatamente.']},
       {sec:'Durante el Servicio',items:['Confirmar pedido repitiendo los ítems.','Informar tiempo de espera estimado.','Estar disponible sin ser intrusivo.','Preguntar satisfacción al entregar el pedido.']},
       {sec:'Despedida',items:['Agradecer visita al momento del pago.','Invitar a regresar con sinceridad.','Registrar cualquier incidencia o comentario.'],dark:true},
     ]),
-    'servicio-tiempos': ()=>renderChecklist(mc,cat,sub,'Tiempos Estándar de Servicio','servicio',[
-      {sec:'Tiempos Objetivo',items:['Bienvenida y menú: máximo 2 min desde que el cliente se sienta.','Toma de orden: máximo 5 min desde la bienvenida.','Entrega de bebidas: máximo 5 min desde la orden.','Entrega de alimentos: máximo 12 min (desayuno) · 15 min (comida).','Presentación de cuenta: máximo 2 min desde que se solicita.']},
-      {sec:'Registro del Día',items:['Tiempo promedio bienvenida: ___ min','Tiempo promedio entrega bebida: ___ min','Tiempo promedio entrega alimento: ___ min','Mesas dentro del estándar: ___ / ___','Mesas fuera del estándar (motivo): ___']},
-      {sec:'Acciones Correctivas',items:['Si cocina supera 15 min — avisar y disculparse con el cliente.','Si espera supera 5 min — reconocimiento inmediato.','Registrar cualquier retraso con causa en formato de incidencias.'],dark:true},
-    ]),
-    'servicio-satisfaccion': ()=>renderChecklist(mc,cat,sub,'Satisfacción del Cliente & NPS','servicio',[
-      {sec:'Puntos de Contacto',items:['Preguntar satisfacción 3 min después del primer bite.','Revisita a la mesa — ¿Todo está bien?','Invitar comentario al momento del pago.','Registrar feedback positivo y negativo del turno.','Informar a cocina sobre comentarios relevantes del día.']},
-      {sec:'Registro de Feedback',items:['Comentarios positivos del turno: ___','Quejas recibidas: ___ · Motivo: ___','Acciones tomadas: ___ · Seguimiento: ___']},
-      {sec:'Indicadores',items:['Meta NPS: 70+ · ¿Lo recomendarías? (0–10)','Google reviews objetivo: 4.5+','Clientes frecuentes identificados: ___','Propinas promedio: ___% del ticket.'],dark:true},
-    ]),
-    'servicio-comandas': ()=>renderChecklist(mc,cat,sub,'Comandas & Pedidos — Protocolo','servicio',[
-      {sec:'Toma de Orden',items:['Anotar número de mesa y número de personas.','Repetir la orden en voz alta para confirmar.','Especificar modificaciones: sin azúcar, sin gluten, temperatura.','Señalar tiempo estimado si hay producto agotado.','Ingresar comanda en sistema inmediatamente.']},
-      {sec:'Seguimiento',items:['Verificar que la comanda fue recibida en cocina/barra.','Comunicar si algún ítem tardará más de lo normal.','Entregar bebidas primero, alimentos después.','Confirmar que el pedido es completo antes de retirarte.']},
-      {sec:'Cierre de Comanda',items:['Verificar ticket antes de presentar al cliente.','Ofrecer extra: postre, segundo café, bebida.','Confirmar método de pago — efectivo, tarjeta o QR.','Registrar total en corte de caja.'],dark:true},
-    ]),
+    'servicio-tiempos': ()=>renderChecklist(mc,cat,sub,'Tiempos Estandar de Servicio','servicio',[{sec:'Tiempos Objetivo',items:['Bienvenida y menu: maximo 2 min desde que el cliente se sienta.','Toma de orden: maximo 5 min desde la bienvenida.','Entrega de bebidas: maximo 5 min desde la orden.','Entrega de alimentos: maximo 12 min desayuno, 15 min comida.','Presentacion de cuenta: maximo 2 min desde que se solicita.']},{sec:'Registro del Dia',items:['Tiempo promedio bienvenida: ___ min.','Tiempo promedio entrega bebida: ___ min.','Tiempo promedio entrega alimento: ___ min.','Mesas dentro del estandar: ___ / ___.','Mesas fuera del estandar (motivo): ___.']},{sec:'Acciones Correctivas',items:['Si cocina supera 15 min: avisar y disculparse con el cliente.','Si espera supera 5 min: reconocimiento inmediato.','Registrar retrasos con causa en formato de incidencias.'],dark:true}]),
+    'servicio-satisfaccion': ()=>renderChecklist(mc,cat,sub,'Satisfaccion del Cliente y NPS','servicio',[{sec:'Puntos de Contacto',items:['Preguntar satisfaccion 3 min despues del primer plato.','Revisita a la mesa: Todo esta bien?','Invitar comentario al momento del pago.','Registrar feedback positivo y negativo del turno.','Informar a cocina sobre comentarios relevantes.']},{sec:'Registro de Feedback',items:['Comentarios positivos del turno: ___.','Quejas recibidas: ___. Motivo: ___.','Acciones tomadas: ___. Seguimiento: ___.']},{sec:'Indicadores',items:['Meta NPS: 70+. Google reviews objetivo: 4.5+.','Clientes frecuentes identificados: ___.','Propinas promedio: ___% del ticket.'],dark:true}]),
+    'servicio-comandas': ()=>renderChecklist(mc,cat,sub,'Comandas y Pedidos','servicio',[{sec:'Toma de Orden',items:['Anotar numero de mesa y numero de personas.','Repetir la orden en voz alta para confirmar.','Especificar modificaciones: sin azucar, sin gluten, temperatura.','Senalar tiempo estimado si hay producto agotado.','Ingresar comanda en sistema inmediatamente.']},{sec:'Seguimiento',items:['Verificar que la comanda fue recibida en cocina y barra.','Comunicar si algun item tardara mas de lo normal.','Entregar bebidas primero, alimentos despues.','Confirmar que el pedido es completo antes de retirarte.']},{sec:'Cierre de Comanda',items:['Verificar ticket antes de presentar al cliente.','Ofrecer extra: postre, segundo cafe, bebida.','Confirmar metodo de pago: efectivo, tarjeta o QR.','Registrar total en corte de caja.'],dark:true}]),
     'servicio-venta':     ()=>renderChecklist(mc,cat,sub,'Venta Sugerida','servicio',[
       {sec:'Técnicas de Sugerencia',items:['Conocer el menú completo — precios, ingredientes, alérgenos.','Sugerir el producto del día al inicio del servicio.','Ofrecer maridaje entre bebida y platillo.','Mencionar postres antes del cierre de cuenta.','Sugerir para llevar si el cliente menciona que le gustó algo.']},
     ]),
-    'servicio-incidencias': ()=>renderChecklist(mc,cat,sub,'Registro de Incidencias & Resolución','servicio',[
-      {sec:'Tipos de Incidencia',items:['Queja de alimento — temperatura, preparación, presentación.','Queja de servicio — tiempo de espera, atención, error en orden.','Accidente — derrame, ruptura de loza, daño a cliente.','Error de cobro — monto incorrecto, cargo duplicado.']},
-      {sec:'Protocolo de Resolución',items:['Escuchar sin interrumpir. Validar la experiencia del cliente.','Disculparse genuinamente — nunca justificar ni debatir.','Ofrecer solución inmediata: reposición, cortesía, descuento.','Escalar al supervisor si el cliente no queda conforme.','Registrar incidencia antes de terminar el turno.']},
-      {sec:'Registro',items:['Fecha: ___ · Turno: ___ · Responsable: ___','Tipo de incidencia: ___ · Descripción: ___','Solución aplicada: ___ · ¿Cliente conforme?: Sí / No'],dark:true},
-    ]),
+    'servicio-incidencias': ()=>renderChecklist(mc,cat,sub,'Incidencias y Resolucion','servicio',[{sec:'Tipos de Incidencia',items:['Queja de alimento: temperatura, preparacion, presentacion.','Queja de servicio: tiempo de espera, atencion, error en orden.','Accidente: derrame, ruptura de loza, dano a cliente.','Error de cobro: monto incorrecto, cargo duplicado.']},{sec:'Protocolo de Resolucion',items:['Escuchar sin interrumpir. Validar la experiencia del cliente.','Disculparse genuinamente, nunca justificar ni debatir.','Ofrecer solucion inmediata: reposicion, cortesia, descuento.','Escalar al supervisor si el cliente no queda conforme.','Registrar incidencia antes de terminar el turno.']},{sec:'Registro',items:['Fecha: ___. Turno: ___. Responsable: ___.','Tipo: ___. Descripcion: ___.','Solucion aplicada: ___. Cliente conforme: Si o No.'],dark:true}]),
     'vitrinas-exhibicion':()=>renderChecklist(mc,cat,sub,'Exhibición y Montaje de Vitrina','vitrinas',[
       {sec:'Montaje AM',items:['Limpiar vitrina por dentro antes de colocar producto.','Colocar producto con etiqueta de precio visible.','Productos más llamativos al nivel de los ojos.','Respetar temperatura de vitrina refrigerada: 4–8 °C.','Colocar carteles de ingredientes y alérgenos.']},
       {sec:'Durante el Día',items:['Reponer producto cuando quede menos del 30% de stock.','Retirar producto que pierda presentación.','Limpiar vidrios cada 2 horas o cuando sea necesario.','Verificar etiquetas de precio vigentes.']},
@@ -891,39 +863,12 @@ function showSub(catId, subId){
 /* ════════════════════════════════════
    RENDERS ESPECIALES
 ════════════════════════════════════ */
-
-/* ════ PERSISTENCIA LOCAL ════ */
-let _currentSubId=null;
-function vkSave(){
-  if(!_currentSubId)return;
-  const d={};
-  document.querySelectorAll('.cl-inp,.inv-inp,.meta-f input,.meta-f select').forEach((el,i)=>d['inp_'+i]=el.value||'');
-  document.querySelectorAll('.cl-chk input[type=checkbox]').forEach((el,i)=>d['chk_'+i]=el.checked);
-  try{localStorage.setItem('vk_data_'+_currentSubId,JSON.stringify(d));}catch(e){}
-}
-function vkLoad(subId){
-  _currentSubId=subId;
-  try{
-    const s=JSON.parse(localStorage.getItem('vk_data_'+subId)||'{}');
-    if(!Object.keys(s).length)return;
-    document.querySelectorAll('.cl-inp,.inv-inp,.meta-f input,.meta-f select').forEach((el,i)=>{ if(s['inp_'+i]!==undefined)el.value=s['inp_'+i]; });
-    document.querySelectorAll('.cl-chk input[type=checkbox]').forEach((el,i)=>{ if(s['chk_'+i]!==undefined)el.checked=!!s['chk_'+i]; });
-  }catch(e){}
-}
-function vkClear(subId){
-  if(confirm('¿Limpiar datos guardados de este módulo?')){
-    localStorage.removeItem('vk_data_'+(subId||_currentSubId));
-    if(activeSub){const p=activeSub.split('-');showSub(p[0],activeSub);}
-  }
-}
-document.addEventListener('change',e=>{if(e.target.closest('.content'))vkSave();});
-document.addEventListener('input',e=>{if(e.target.closest('.content'))vkSave();});
 function renderChecklist(el,cat,sub,subtitle,cls,secciones){
   const hdr = `<div class="fp fade-in">
     <div class="fp-head ${cls}">
       <div><div class="fp-title">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">${subtitle}</div></div>
       <div class="fp-acts">
-        <button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button>
+        <button class="btn btn-ghost btn-sm" onclick="limpiarChecks()">Limpiar</button>
         <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
       </div>
     </div>
@@ -950,7 +895,6 @@ function renderChecklist(el,cat,sub,subtitle,cls,secciones){
     </table>`).join('');
   el.innerHTML = hdr+cuerpo+`</div></div>`;
   triggerFades();
-  if(sub&&sub.id)setTimeout(()=>vkLoad(sub.id),50);
 }
 
 function addClRow(btn){
@@ -968,222 +912,9 @@ function addClRow(btn){
   tr.querySelector('input[type=text]').focus();
 }
 function renumCl(btn){/* renumerar si se quiere */}
-function limpiarChecks(){ vkClear(); }
+function limpiarChecks(){ document.querySelectorAll('.cl-chk input').forEach(c=>c.checked=false); }
 
-function renderTempCocina(el,cat,sub){
-  const equipos=[
-    {nombre:'Refrigerador 1',min:1,max:4},{nombre:'Refrigerador 2',min:1,max:4},
-    {nombre:'Congelador',min:-22,max:-18},{nombre:'Área fría prep.',min:1,max:8},
-    {nombre:'Baño María',min:60,max:90},{nombre:'Refrigerador 1 PM',min:1,max:4},
-    {nombre:'Refrigerador 2 PM',min:1,max:4},{nombre:'Congelador PM',min:-22,max:-18},
-  ];
-  const makeRow=(eq,i)=>`<tr class="cl-row"><td style="border:1px solid var(--border2);padding:0 10px;font-size:13px;height:32px;min-width:155px;">${eq.nombre}</td><td style="border:1px solid var(--border2);text-align:center;font-size:11px;font-family:var(--mono);color:var(--muted);">${eq.min} a ${eq.max} °C</td><td style="border:1px solid var(--border2);"><input type="number" step="0.1" placeholder="—" style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:14px;font-weight:700;height:32px;" class="temp-inp" data-min="${eq.min}" data-max="${eq.max}" data-row="${i}" oninput="validarTemp(this)"></td><td style="border:1px solid var(--border2);text-align:center;font-size:18px;" id="temp-ico-${i}">—</td><td style="border:1px solid var(--border2);"><input type="text" placeholder="Observaciones..." class="cl-inp" style="height:32px;"></td><td style="border:1px solid var(--border2);text-align:center;"><input type="checkbox" style="width:14px;height:14px;accent-color:var(--kale);" class="cl-chk"></td></tr>`;
-  el.innerHTML=`<div class="fp fade-in">
-    <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-thermometer"></i> ${sub.name}</div><div class="fp-sub">Registro de temperaturas · Validación automática de rangos</div></div>
-      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button><button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
-    </div>
-    <div class="fp-body">
-      <div class="meta-row">
-        <div class="meta-f"><label>Fecha</label><input type="date"></div>
-        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM"></div>
-        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre"></div>
-        <div class="meta-f"><label>Supervisor</label><input type="text" placeholder="Nombre"></div>
-      </div>
-      <div class="cl-ban" style="background:var(--cocina);">TEMPERATURAS AM</div>
-      <table class="cl-table"><thead><tr><th style="text-align:left;width:155px;">Equipo</th><th style="width:95px;">Rango °C</th><th style="width:90px;">Temp. °C</th><th style="width:40px;">Estado</th><th>Observaciones</th><th style="width:32px;">✓</th></tr></thead><tbody>${equipos.slice(0,5).map((e,i)=>makeRow(e,i)).join('')}</tbody></table>
-      <div class="cl-ban" style="background:var(--spirulina);margin-top:12px;">VERIFICACIÓN DE ALIMENTOS</div>
-      <table class="cl-table"><thead><tr><th style="width:30px;">No.</th><th>Verificación</th><th style="width:32px;">✓</th><th style="width:28px;"></th></tr></thead><tbody>
-        ${['Pollo crudo separado de cocidos — verificado','Etiquetado PEPS vigente en todos los productos','Sin alimentos caducados en refrigeración','Tablas de corte limpias y sanitizadas','Guantes disponibles y en uso correcto'].map((item,i)=>`<tr class="cl-row"><td class="cl-num">${i+1}</td><td><input class="cl-inp" type="text" value="${item}"></td><td class="cl-chk"><input type="checkbox"></td><td class="cl-del"><button onclick="this.closest('tr').remove()">✕</button></td></tr>`).join('')}
-      </tbody></table>
-      <div class="cl-ban" style="background:var(--spirulina);margin-top:12px;">TEMPERATURAS PM / CIERRE</div>
-      <table class="cl-table"><thead><tr><th style="text-align:left;width:155px;">Equipo</th><th style="width:95px;">Rango °C</th><th style="width:90px;">Temp. °C</th><th style="width:40px;">Estado</th><th>Observaciones</th><th style="width:32px;">✓</th></tr></thead><tbody>${equipos.slice(5).map((e,i)=>makeRow(e,i+5)).join('')}</tbody></table>
-      <div class="info-card" style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--juice);text-transform:uppercase;">Dentro de rango</div><div style="font-size:24px;font-weight:700;color:var(--juice);" id="temp-ok-count">—</div></div>
-        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--danger);text-transform:uppercase;">Fuera de rango</div><div style="font-size:24px;font-weight:700;color:var(--danger);" id="temp-err-count">—</div></div>
-        <div><div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;">Sin registrar</div><div style="font-size:24px;font-weight:700;color:var(--muted);" id="temp-nd-count">—</div></div>
-      </div>
-    </div>
-  </div>`;
-  triggerFades();
-  if(sub&&sub.id) setTimeout(()=>vkLoad(sub.id),50);
-}
-function validarTemp(inp){
-  const val=parseFloat(inp.value);const min=parseFloat(inp.dataset.min);const max=parseFloat(inp.dataset.max);const row=inp.dataset.row;
-  const ico=document.getElementById('temp-ico-'+row);const tr=inp.closest('tr');
-  if(isNaN(val)){if(ico)ico.textContent='—';if(tr){tr.style.background='';inp.style.color='var(--text)';}}
-  else if(val>=min&&val<=max){if(ico)ico.textContent='✅';if(tr){tr.style.background='rgba(139,184,57,.06)';inp.style.color='var(--juice)';}}
-  else{if(ico)ico.textContent='🚨';if(tr){tr.style.background='rgba(192,57,43,.06)';inp.style.color='var(--danger)';}}
-  const all=[...document.querySelectorAll('.temp-inp')];
-  const ok=all.filter(i=>{const v=parseFloat(i.value),mn=parseFloat(i.dataset.min),mx=parseFloat(i.dataset.max);return !isNaN(v)&&v>=mn&&v<=mx;}).length;
-  const err=all.filter(i=>{const v=parseFloat(i.value),mn=parseFloat(i.dataset.min),mx=parseFloat(i.dataset.max);return !isNaN(v)&&(v<mn||v>mx);}).length;
-  const nd=all.filter(i=>i.value==='').length;
-  const ok_el=document.getElementById('temp-ok-count');const err_el=document.getElementById('temp-err-count');const nd_el=document.getElementById('temp-nd-count');
-  if(ok_el)ok_el.textContent=ok;if(err_el)err_el.textContent=err;if(nd_el)nd_el.textContent=nd;
-  vkSave();
-}
-
-function renderRecetasCocina(el,cat,sub){
-  const recetas=[
-    {nombre:'Bowl de Proteína',cat:'Desayunos',porciones:1,tiempo:'12 min',fc:28,precio_menu:165,
-     ings:[{i:'Pollo grillado',gr:150,c:22},{i:'Quinoa cocida',gr:80,c:5},{i:'Mix verduras asadas',gr:100,c:8},{i:'Salsa verde',gr:40,c:3},{i:'Aceite de oliva',gr:10,c:2},{i:'Limón',gr:15,c:1}],
-     metodo:'1. Grillar pollo con sal, pimienta y ajo. 2. Cocer quinoa 1:2 agua, 15 min. 3. Asar verduras 200°C, 10 min. 4. Montar: quinoa → verduras → pollo laminado. 5. Salsear y servir inmediatamente.'},
-    {nombre:'Parfait Granola & Fruta',cat:'Desayunos',porciones:1,tiempo:'5 min',fc:22,precio_menu:95,
-     ings:[{i:'Yogurt griego',gr:150,c:12},{i:'Granola artesanal',gr:50,c:6},{i:'Fruta fresca mix',gr:100,c:8},{i:'Miel de agave',gr:15,c:2}],
-     metodo:'1. Yogurt en base del vaso. 2. Granola como segunda capa. 3. Fruta fresca cortada encima. 4. Hilo de miel al final. 5. Servir de inmediato — granola pierde textura con humedad.'},
-    {nombre:'Panqué de Plátano',cat:'Horneados',porciones:8,tiempo:'55 min',fc:18,precio_menu:55,
-     ings:[{i:'Plátano maduro',gr:300,c:9},{i:'Harina de avena',gr:200,c:8},{i:'Huevo',gr:120,c:10},{i:'Aceite de coco',gr:60,c:7},{i:'Azúcar moscabado',gr:80,c:4},{i:'Canela+polvo hornear',gr:8,c:1}],
-     metodo:'1. Triturar plátanos con tenedor, textura rústica. 2. Mezclar secos: harina, azúcar, canela, polvo de hornear. 3. Integrar huevos y aceite con plátano. 4. Unir húmedos con secos sin sobrebatir. 5. Hornear 180°C, 45-50 min. Prueba palillo.'},
-    {nombre:'Guacamole con Totopos',cat:'Snacks',porciones:2,tiempo:'8 min',fc:25,precio_menu:95,
-     ings:[{i:'Aguacate hass',gr:200,c:18},{i:'Jitomate',gr:60,c:4},{i:'Cebolla blanca',gr:30,c:2},{i:'Chile serrano',gr:10,c:1},{i:'Cilantro',gr:10,c:1},{i:'Limón',gr:20,c:1},{i:'Totopos',gr:80,c:5}],
-     metodo:'1. Machacar aguacate con tenedor — textura rústica. 2. Sal y limón inmediatamente para evitar oxidación. 3. Picar jitomate, cebolla y chile muy fino. 4. Integrar con movimientos envolventes. 5. Rectificar sal. 6. Servir inmediato con totopos.'},
-    {nombre:'Tarta Limón',cat:'Postres',porciones:6,tiempo:'40 min',fc:32,precio_menu:75,
-     ings:[{i:'Galleta triturada',gr:200,c:12},{i:'Mantequilla',gr:80,c:8},{i:'Jugo de limón',gr:120,c:6},{i:'Yema de huevo',gr:80,c:8},{i:'Leche condensada',gr:200,c:14},{i:'Crema',gr:100,c:8}],
-     metodo:'1. Base: galleta + mantequilla derretida. Prensar en molde. Refrigerar 20 min. 2. Relleno: batir yemas + leche condensada + limón, 3 min. Agregar crema. 3. Verter sobre base. 4. Hornear 160°C, 18 min. 5. Refrigerar 2 hrs mínimo antes de servir.'},
-  ];
-  const tarjeta=r=>{
-    const costoTotal=r.ings.reduce((s,i)=>s+i.c,0);
-    const margen=r.precio_menu>0?Math.round((1-costoTotal/r.precio_menu)*100):0;
-    return `<div style="background:white;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;">
-      <div style="background:var(--cocina-bg);border-bottom:2px solid var(--cocina);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">
-        <div>
-          <div style="font-size:15px;font-weight:700;color:var(--cocina);">${r.nombre}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">${r.cat} · ${r.porciones} porción${r.porciones>1?'es':''} · ⏱ ${r.tiempo}</div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <div style="text-align:center;background:${r.fc<=30?'rgba(139,184,57,.12)':'rgba(176,125,32,.12)'};border-radius:8px;padding:6px 10px;">
-            <div style="font-size:15px;font-weight:700;color:${r.fc<=30?'var(--juice)':'var(--warn)'};">${r.fc}%</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">FC%</div>
-          </div>
-          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:6px 10px;">
-            <div style="font-size:15px;font-weight:700;color:var(--text);">${costoTotal}</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Costo</div>
-          </div>
-          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:6px 10px;">
-            <div style="font-size:15px;font-weight:700;color:var(--spirulina);">${r.precio_menu}</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Precio menú</div>
-          </div>
-          <div style="text-align:center;background:rgba(0,80,86,.08);border-radius:8px;padding:6px 10px;">
-            <div style="font-size:15px;font-weight:700;color:var(--spirulina);">${margen}%</div>
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Margen</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:0;">
-        <div style="border-right:1px solid var(--border2);padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Ingredientes</div>
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr>
-              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:left;border-bottom:1px solid var(--border2);">Ingrediente</th>
-              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:right;border-bottom:1px solid var(--border2);width:45px;">Gr</th>
-              <th style="font-size:9px;font-family:var(--mono);color:var(--muted);padding:3px 4px;text-align:right;border-bottom:1px solid var(--border2);width:35px;">$</th>
-            </tr></thead>
-            <tbody>${r.ings.map(i=>`<tr style="border-bottom:1px solid var(--border2);">
-              <td style="font-size:12px;padding:4px;">${i.i}</td>
-              <td style="font-size:11px;font-family:var(--mono);padding:4px;text-align:right;color:var(--muted);">${i.gr}</td>
-              <td style="font-size:11px;font-family:var(--mono);padding:4px;text-align:right;color:var(--muted);">${i.c}</td>
-            </tr>`).join('')}
-            <tr><td colspan="2" style="font-size:11px;font-weight:700;padding:5px 4px;border-top:2px solid var(--border);color:var(--text);">Total insumos</td>
-              <td style="font-size:11px;font-weight:700;padding:5px 4px;border-top:2px solid var(--border);text-align:right;color:var(--cocina);">${costoTotal}</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Método</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.8;">${r.metodo}</div>
-        </div>
-      </div>
-    </div>`;
-  };
-  el.innerHTML=`<div class="fade-in">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div><div style="font-size:18px;font-weight:700;color:var(--cocina);">Recetario Técnico — Cocina VK</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px;">Fichas con gramajes · FC% · Precio de menú · Margen</div></div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" placeholder="Buscar receta..." class="field-input" style="width:200px;padding:8px 12px;font-size:13px;" oninput="filtrarRecetas(this.value)">
-        <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
-      </div>
-    </div>
-    <div id="recetas-container">${recetas.map(r=>tarjeta(r)).join('')}</div>
-  </div>`;
-  window._recetasData=recetas; window._recetasTarjeta=tarjeta;
-  triggerFades();
-}
-function filtrarRecetas(q){
-  const c=document.getElementById('recetas-container');
-  if(!c||!window._recetasData)return;
-  const filtered=window._recetasData.filter(r=>r.nombre.toLowerCase().includes(q.toLowerCase())||r.cat.toLowerCase().includes(q.toLowerCase()));
-  c.innerHTML=filtered.map(r=>window._recetasTarjeta(r)).join('');
-}
-
-function renderMermaCocina(el,cat,sub){
-  const causas=[{cod:'VEN',label:'Vencimiento'},{cod:'DAN',label:'Daño físico'},{cod:'TEM',label:'Temperatura'},{cod:'ERR',label:'Error prep.'},{cod:'SOB',label:'Sobrante'},{cod:'TRA',label:'Traspaso'},{cod:'DEV',label:'Devolución'},{cod:'OTR',label:'Otro'}];
-  const makeRow=i=>`<tr class="cl-row merma-row">
-    <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..." oninput="vkSave()"></td>
-    <td style="border:1px solid var(--border2);"><input class="inv-inp merma-qty" type="number" step="0.01" min="0" placeholder="0" oninput="calcMermaTotal();vkSave()"></td>
-    <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" oninput="vkSave()"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td>
-    <td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" onchange="calcMermaCausas();vkSave()">${causas.map(c=>`<option value="${c.cod}">${c.cod} — ${c.label}</option>`).join('')}</select></td>
-    <td style="border:1px solid var(--border2);"><input class="inv-inp" type="number" step="0.01" min="0" placeholder="0.00" oninput="calcMermaTotal();vkSave()"></td>
-    <td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Observación..." oninput="vkSave()"></td>
-    <td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove();calcMermaTotal();">✕</button></td>
-  </tr>`;
-  el.innerHTML=`<div class="fp fade-in">
-    <div class="fp-head cocina"><div><div class="fp-title" style="color:var(--cocina);">${catIcon(cat.icon)} ${sub.name}</div><div class="fp-sub">Causas codificadas DMZ · Costo de merma · Resumen por causa</div></div>
-      <div class="fp-acts"><button class="btn btn-ghost btn-sm" onclick="vkClear(sub&&sub.id)">Limpiar</button><button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button></div>
-    </div>
-    <div class="fp-body">
-      <div class="meta-row">
-        <div class="meta-f"><label>Fecha</label><input type="date" oninput="vkSave()"></div>
-        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM" oninput="vkSave()"></div>
-        <div class="meta-f"><label>Área</label><input type="text" value="${cat.name}" oninput="vkSave()"></div>
-        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre" oninput="vkSave()"></div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
-        ${causas.map(c=>`<span style="font-size:10px;font-family:var(--mono);background:var(--bg2);border:1px solid var(--border2);border-radius:5px;padding:3px 8px;"><strong>${c.cod}</strong> ${c.label}</span>`).join('')}
-      </div>
-      <table class="inv-table"><thead><tr>
-        <th style="text-align:left;background:var(--cocina);padding-left:8px;min-width:160px;">Producto</th>
-        <th style="background:var(--cocina);width:70px;">Cantidad</th>
-        <th style="background:var(--cocina);width:60px;">Unidad</th>
-        <th style="background:var(--cocina);width:125px;">Causa (DMZ)</th>
-        <th style="background:var(--cocina);width:80px;">Costo $</th>
-        <th style="background:var(--cocina);">Observación</th>
-        <th style="background:var(--spirulina);width:28px;"></th>
-      </tr></thead>
-      <tbody id="merma-cocina-tb">${[0,1,2,3,4].map(i=>makeRow(i)).join('')}</tbody></table>
-      <button class="add-btn" onclick="addMermaCocinaRow()">+ Agregar ítem</button>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
-        <div class="info-card"><h4>Resumen por causa</h4>
-          ${causas.map(c=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border2);font-size:12px;">
-            <span style="font-family:var(--mono);font-weight:700;color:var(--muted);">${c.cod}</span>
-            <span style="color:var(--muted);">${c.label}</span>
-            <span style="font-family:var(--mono);" id="causa-cnt-${c.cod}">0</span>
-          </div>`).join('')}
-        </div>
-        <div class="info-card"><h4>Totales del turno</h4>
-          <div style="margin-top:12px;">
-            <div class="status-row"><span class="status-label">Ítems registrados</span><span class="status-val" id="merma-total-items">0</span></div>
-            <div class="status-row"><span class="status-label">Costo total merma</span><span class="status-val warn" id="merma-total-costo">$0.00</span></div>
-            <div class="status-row"><span class="status-label">Causa principal</span><span class="status-val" id="merma-causa-principal">—</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-  triggerFades();
-  if(sub&&sub.id) setTimeout(()=>vkLoad(sub.id),50);
-}
-function addMermaCocinaRow(){
-  const tb=document.getElementById('merma-cocina-tb');if(!tb)return;
-  const causas=[{cod:'VEN'},{cod:'DAN'},{cod:'TEM'},{cod:'ERR'},{cod:'SOB'},{cod:'TRA'},{cod:'DEV'},{cod:'OTR'}];
-  const tr=document.createElement('tr');tr.className='cl-row merma-row';
-  tr.innerHTML=`<td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Producto..." oninput="vkSave()"></td><td style="border:1px solid var(--border2);"><input class="inv-inp merma-qty" type="number" step="0.01" min="0" placeholder="0" oninput="calcMermaTotal();vkSave()"></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" oninput="vkSave()"><option>kg</option><option>lt</option><option>pz</option><option>gr</option></select></td><td style="border:1px solid var(--border2);"><select style="width:100%;border:none;background:transparent;font-size:12px;height:25px;font-family:var(--font);" onchange="calcMermaCausas();vkSave()">${causas.map(c=>`<option value="${c.cod}">${c.cod}</option>`).join('')}</select></td><td style="border:1px solid var(--border2);"><input class="inv-inp" type="number" step="0.01" placeholder="0.00" oninput="calcMermaTotal();vkSave()"></td><td style="border:1px solid var(--border2);"><input class="inv-inp desc" type="text" placeholder="Observación..." oninput="vkSave()"></td><td style="border:1px solid var(--border2);text-align:center;"><button style="background:none;border:none;color:var(--dim);cursor:pointer;" onclick="this.closest('tr').remove();calcMermaTotal();">✕</button></td>`;
-  tb.appendChild(tr);tr.querySelector('input').focus();
-}
-function calcMermaTotal(){
-  const rows=[...document.querySelectorAll('.merma-row')];let items=0,costo=0;
-  rows.forEach(r=>{const qty=parseFloat(r.querySelector('.merma-qty')?.value)||0;const c=parseFloat(r.querySelectorAll('input[type=number]')[1]?.value)||0;if(qty>0){items++;costo+=c;}});
-  const ti=document.getElementById('merma-total-items');const tc=document.getElementById('merma-total-costo');
-  if(ti)ti.textContent=items;if(tc)tc.textContent='
+function renderProduccion(el,cat,sub){
   const dias=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
   const ths=`<th style="text-align:left;padding-left:8px;width:160px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);letter-spacing:1px;padding:7px;">Producto</th>${dias.map(d=>`<th style="width:52px;background:var(--cocina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">${d}</th>`).join('')}<th style="width:58px;background:var(--spirulina);color:white;font-size:9px;font-family:var(--mono);padding:7px;text-align:center;">TOTAL</th>`;
   const makeRow=p=>`<tr>${['','','','','','','',''].map((_,i)=>i===0?`<td style="border:1px solid var(--border2);padding:0 8px;font-size:13px;height:25px;"><input style="width:100%;border:none;background:transparent;font-size:13px;height:25px;" type="text" value="${p||''}" placeholder="Producto..."></td>`:`<td style="border:1px solid var(--border2);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;" type="text" placeholder=""></td>`).join('')}<td style="border:1px solid var(--border2);background:var(--cocina-bg);"><input style="width:100%;border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;height:25px;font-weight:700;color:var(--cocina);" type="text" placeholder="0"></td></tr>`;
@@ -1531,83 +1262,26 @@ function showSupervisor(){
 
 function showAlerts(){
   setNavActive('nav-alertas');
-  const mc=document.getElementById('main-content');
-  function getLS(k){try{return JSON.parse(localStorage.getItem(k)||'{}');}catch(e){return {};}}
-  const today=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  function estadoArea(subs){
-    let tot=0,chk=0;
-    subs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
-    if(tot===0)return{label:'Sin datos',cls:'warn',icon:'ti-circle-dashed'};
-    const pct=chk/tot;
-    if(pct===1)return{label:'Completo',cls:'ok',icon:'ti-circle-check'};
-    if(pct>0)return{label:chk+'/'+tot+' tareas',cls:'ok',icon:'ti-progress'};
-    return{label:'Sin iniciar',cls:'warn',icon:'ti-circle-dashed'};
-  }
-  const areas=[
-    {name:'Cocina',subs:['cocina-checklist','cocina-inocuidad','cocina-temperatura']},
-    {name:'Barra',subs:['barra-checklist','barra-calibracion','barra-insumos']},
-    {name:'Almacén',subs:['almacen-entradas','almacen-peps']},
-    {name:'Salón',subs:['salon-checklist','salon-banos']},
-    {name:'Servicio',subs:['servicio-protocolo']},
-    {name:'Vitrinas',subs:['vitrinas-conteo','vitrinas-temperatura']},
-  ];
-  const allSubs=['cocina-checklist','cocina-inocuidad','cocina-temperatura','cocina-merma',
-    'barra-checklist','barra-calibracion','barra-insumos','barra-merma',
-    'almacen-entradas','almacen-salidas','almacen-peps',
-    'salon-checklist','salon-banos','salon-limpieza',
-    'servicio-protocolo','servicio-incidencias',
-    'vitrinas-conteo','vitrinas-rotacion','vitrinas-temperatura','cocina-produccion'];
-  let tot=0,chk=0;
-  allSubs.forEach(sid=>{const d=getLS('vk_data_'+sid);Object.keys(d).forEach(k=>{if(k.startsWith('chk_')){tot++;if(d[k]===true||d[k]==='true')chk++;}});});
-  const pct=tot>0?Math.round(chk/tot*100):0;
-  const conDatos=allSubs.filter(sid=>Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_'))).length;
-  const bc=pct===100?'var(--juice)':pct>50?'var(--kale)':'var(--warn)';
-  const sinDatos=allSubs.filter(sid=>!Object.keys(getLS('vk_data_'+sid)).some(k=>k.startsWith('chk_')));
-  mc.innerHTML=`<div class="fade-in">
-  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;">
-    <div><div style="font-size:18px;font-weight:700;color:var(--kale);"><i class="ti ti-bell"></i> Alertas & Reportes</div>
-    <div style="font-size:12px;color:var(--muted);margin-top:2px;">${today}</div></div>
-    <button class="btn btn-ghost btn-sm" onclick="showAlerts()"><i class="ti ti-refresh"></i> Actualizar</button>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
-    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--kale);">
-      <div style="font-size:26px;font-weight:700;color:var(--kale);">${pct}%</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Cumplimiento global</div>
-      <div style="margin-top:8px;background:var(--bg2);border-radius:4px;height:5px;">
-        <div style="width:${pct}%;height:5px;border-radius:4px;background:${bc};"></div></div></div>
-    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--juice);">
-      <div style="font-size:26px;font-weight:700;color:var(--kale);">${chk}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Tareas completadas</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${tot} totales</div></div>
-    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid var(--blueberry);">
-      <div style="font-size:26px;font-weight:700;color:var(--kale);">${conDatos}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Módulos con registros</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:4px;">de ${allSubs.length} disponibles</div></div>
-    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;border-top:3px solid ${sinDatos.length?'var(--warn)':'var(--juice)'};">
-      <div style="font-size:26px;font-weight:700;color:${sinDatos.length?'var(--warn)':'var(--kale)'};">${sinDatos.length||'✓'}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:3px;">${sinDatos.length?'Pendientes':'Al corriente'}</div>
-      <div style="font-size:10px;color:var(--dim);margin-top:4px;">${sinDatos.length?'Módulos sin completar':'Operación normal'}</div></div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-    <div class="fp" style="margin-bottom:0;">
-      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-layout-grid"></i> Estado por área</div>
-      <div class="fp-sub">Basado en checklists del día</div></div></div>
-      <div class="fp-body" style="padding:12px 16px;">
-        ${areas.map(a=>{const e=estadoArea(a.subs);return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border2);"><span style="font-size:13px;color:var(--text);">'+a.name+'</span><span style="font-size:12px;font-weight:600;color:'+(e.cls==='ok'?'var(--juice)':'var(--warn)')+'"><i class="ti '+e.icon+'" style="font-size:11px;margin-right:3px;"></i>'+e.label+'</span></div>';}).join('')}
+  document.getElementById('main-content').innerHTML=`<div class="fade-in">
+    <div class="fp"><div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-bell"></i> Alertas & Reportes</div><div class="fp-sub">Resumen del día · Estado operativo</div></div></div>
+    <div class="fp-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="info-card"><h4>Estado del día</h4>
+          <div class="status-row"><span class="status-label">Cocina</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Barra</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Salón</span><span class="status-val ok">● Operando</span></div>
+          <div class="status-row"><span class="status-label">Vitrinas</span><span class="status-val warn"><i class="ti ti-alert-triangle"></i> Revisar temp.</span></div>
+        </div>
+        <div class="info-card"><h4>Bitácoras del día</h4>
+          <div class="status-row"><span class="status-label">Inocuidad AM</span><span class="status-val ok">✓ Firmada</span></div>
+          <div class="status-row"><span class="status-label">Calibración barra</span><span class="status-val ok">✓ Firmada</span></div>
+          <div class="status-row"><span class="status-label">Baños (última rev.)</span><span class="status-val">12:00 p.m.</span></div>
+          <div class="status-row"><span class="status-label">Corte de caja</span><span class="status-val warn"><i class="ti ti-clock"></i> Pendiente</span></div>
+        </div>
       </div>
-    </div>
-    <div class="fp" style="margin-bottom:0;">
-      <div class="fp-head cocina"><div><div class="fp-title"><i class="ti ti-checklist"></i> Prioridades del turno</div>
-      <div class="fp-sub">Módulos sin completar — clic para ir</div></div></div>
-      <div class="fp-body" style="padding:12px;">
-        ${sinDatos.slice(0,6).map(sid=>{
-          const p=sid.split('-');const cat=p[0];const sub=p.slice(1).join('-');
-          const col={'cocina':'var(--cocina)','barra':'var(--barra)','almacen':'var(--almacen)','salon':'var(--salon)','servicio':'var(--servicio)','vitrinas':'var(--vitrinas)'}[cat]||'var(--kale)';
-          return '<div onclick="showSub(\''+cat+'\',\''+sid+'\');" style="cursor:pointer;padding:9px 11px;border:1.5px solid var(--border);border-left:3px solid '+col+';border-radius:8px;background:white;margin-bottom:6px;font-size:12px;color:var(--text);" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'white\'"><span style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:'+col+';">'+cat+'</span> — '+sub.replace(/-/g,' ')+'</div>';
-        }).join('')||'<div style="font-size:12px;color:var(--juice);padding:8px;text-align:center;font-weight:600;">✓ Todos los módulos completados</div>'}
-      </div>
-    </div>
-  </div></div>`;
+      <div class="info-card" style="margin-top:14px;"><h4>Módulo en desarrollo</h4><p>Las alertas automáticas por WhatsApp y el dashboard en tiempo real están en proceso de implementación — Semana 9–10 del roadmap.</p></div>
+    </div></div>
+  </div>`;
   triggerFades();
 }
 
