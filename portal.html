@@ -465,6 +465,15 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+/* ════ SUPABASE INIT ════ */
+const VK_SB_URL='https://nivloptdmunxtokyddlj.supabase.co';
+const VK_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pdmxvcHRkbXVueHRva3lkZGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNDQyNTksImV4cCI6MjA5OTcyMDI1OX0.IF9fbn28k38LIWGzSrUcysoJscH2d7FrH_V20XfT8pk';
+let vkSB=null;
+function initSB(){if(typeof window.supabase==='undefined'||vkSB)return;try{vkSB=window.supabase.createClient(VK_SB_URL,VK_SB_KEY);}catch(e){}}
+async function sbUpsertProgreso(subId,pct,total,ok,datos){try{initSB();if(!vkSB)return;await vkSB.from('modulo_progreso').upsert({modulo_id:subId,area:subId.split('-')[0],fecha:new Date().toISOString().slice(0,10),usuario:typeof CU!=='undefined'&&CU?CU.email:'',total_items:total,items_ok:ok,pct:pct,datos:datos||{},updated_at:new Date().toISOString()},{onConflict:'modulo_id,fecha'});}catch(e){console.warn('[SB]',e.message);}}
+async function sbUpsertDisplay(area,semanaKey,dataObj){try{initSB();if(!vkSB)return;await vkSB.from('display_sabores').upsert({area,semana_key:semanaKey,proyecto:dataObj.proyecto||'Vitality Kitchen',elaboro:dataObj.elaboro||'',reviso:dataObj.reviso||'',obs:dataObj.obs||'',filas:dataObj.rows||[],actualizado_por:typeof CU!=='undefined'&&CU?CU.email:'',updated_at:new Date().toISOString()},{onConflict:'area,semana_key'});}catch(e){console.warn('[SB-DS]',e.message);}}
+async function sbInsertAlerta(tipo,severidad,titulo,mensaje,moduloId){try{initSB();if(!vkSB)return;await vkSB.from('alertas').insert({tipo,severidad,titulo,mensaje,modulo_id:moduloId,fecha:new Date().toISOString().slice(0,10)});}catch(e){}}
+/* ════ FIN SUPABASE ════ */
 /* ════════════════════════════════════
    ESTRUCTURA CATEGORÍAS + SUBCATS
 ════════════════════════════════════ */
