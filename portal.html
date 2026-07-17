@@ -773,11 +773,7 @@ function showSub(catId, subId){
       {sec:'Durante Operación',items:['Registrar temperatura de alimentos.','Verificar PEPS en refrigeradores.','Controlar gramajes según receta.','Documentar merma en formato.'],dark:true},
       {sec:'Cierre de Cocina',items:['Enfriamiento rápido de alimentos preparados.','Etiquetar con fecha y hora todos los recipientes.','Limpiar y desinfectar equipos y superficies.','Guardar insumos en refrigeración o almacén seco.','Cerrar gas y apagar equipos.','Firmar bitácora de inocuidad del día.'],dark:true},
     ]),
-    'cocina-temperatura': ()=>renderChecklist(mc,cat,sub,'Registro de temperaturas y equipos','cocina',[
-      {sec:'Temperaturas AM',items:['Refrigerador 1 — temp: ___ °C · Rango: 1–4 °C','Refrigerador 2 — temp: ___ °C · Rango: 1–4 °C','Congelador — temp: ___ °C · Rango: -18 a -22 °C','Área fría de preparación: ___ °C','Baño María / área caliente: ___ °C']},
-      {sec:'Verificación de Alimentos',items:['Pollo crudo separado de cocidos: ✓','Etiquetado PEPS vigente — verificar fechas: ✓','Sin alimentos caducados en refrigeración: ✓','Tablas de corte limpias y sanitizadas: ✓']},
-      {sec:'Temperaturas PM / Cierre',items:['Refrigerador 1 cierre — temp: ___ °C','Refrigerador 2 cierre — temp: ___ °C','Congelador cierre — temp: ___ °C','Alimentos preparados etiquetados con fecha: ✓'],dark:true},
-    ]),
+    'cocina-temperatura': ()=>renderTempFoto(mc,cat,sub),
     'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
     'cocina-merma':       ()=>renderMerma(mc,cat,sub),
     'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
@@ -992,9 +988,74 @@ function renderMerma(el,cat,sub){
         </tbody>
       </table>
       <button class="add-btn" onclick="addMermaRow()">+ Agregar ítem</button>
+
+      <!-- CIERRE DE TURNO -->
+      <div id="merma-cierre-wrap" style="margin-top:18px;padding:14px 16px;background:var(--bg2);border-radius:10px;border:1.5px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Cierre de Turno</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <input type="checkbox" id="merma-sin-merma" style="width:15px;height:15px;accent-color:var(--kale);" onchange="toggleSinMerma(this)">
+          <label for="merma-sin-merma" style="font-size:13px;color:var(--text);cursor:pointer;">Sin merma en este turno — confirmo que no hubo producto no conforme</label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:4px;">Firma responsable</label>
+            <input type="text" id="merma-firma-resp" placeholder="Nombre completo" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:var(--font);"></div>
+          <div><label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:4px;">Firma supervisor</label>
+            <input type="text" id="merma-firma-sup" placeholder="Nombre del supervisor" style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;font-family:var(--font);"></div>
+        </div>
+        <div id="merma-alerta" style="display:none;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:10px;"></div>
+        <button onclick="cerrarTurnoMerma()" style="width:100%;background:var(--kale);color:var(--lemon);border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;letter-spacing:.5px;">Confirmar y cerrar turno</button>
+        <div id="merma-ok" style="display:none;background:rgba(139,184,57,.12);border:1px solid rgba(139,184,57,.3);border-radius:8px;padding:12px;font-size:13px;color:var(--kale);margin-top:10px;text-align:center;font-weight:600;">Turno cerrado correctamente</div>
+      </div>
     </div>
   </div>`;
   triggerFades();
+}
+
+function toggleSinMerma(cb){
+  const rows = document.querySelectorAll('#merma-tb input[type="text"]');
+  rows.forEach(r => r.disabled = cb.checked);
+}
+
+function cerrarTurnoMerma(){
+  const alerta = document.getElementById('merma-alerta');
+  const ok = document.getElementById('merma-ok');
+  const sinMerma = document.getElementById('merma-sin-merma').checked;
+  const firma = document.getElementById('merma-firma-resp').value.trim();
+  const sup = document.getElementById('merma-firma-sup').value.trim();
+  alerta.style.display='none'; ok.style.display='none';
+
+  // Validar firmas
+  if(!firma || !sup){
+    alerta.textContent='Falta firma del responsable o del supervisor para cerrar el turno.';
+    alerta.style.display='block'; return;
+  }
+
+  if(!sinMerma){
+    // Validar que al menos 1 fila tiene producto documentado
+    const filas = document.querySelectorAll('#merma-tb tr');
+    let documentadas = 0;
+    filas.forEach(tr => {
+      const prod = tr.querySelector('input[type="text"]');
+      if(prod && prod.value.trim() !== '') documentadas++;
+    });
+    if(documentadas === 0){
+      alerta.textContent='Debes registrar al menos 1 ítem de merma, o marcar "Sin merma en este turno".';
+      alerta.style.display='block'; return;
+    }
+  }
+
+  // Guardar en localStorage
+  const turno = {
+    fecha: document.querySelector('#main-content input[type=date]')?.value || new Date().toLocaleDateString('es-MX'),
+    responsable: firma, supervisor: sup, sinMerma,
+    timestamp: new Date().toISOString(), cerrado: true
+  };
+  try{ localStorage.setItem('vk_merma_cierre_'+turno.fecha, JSON.stringify(turno)); }catch(e){}
+  ok.textContent = sinMerma
+    ? 'Turno cerrado sin merma. Firmado por ' + firma + ' · Supervisor: ' + sup
+    : 'Turno cerrado con merma documentada. Firmado por ' + firma + ' · Supervisor: ' + sup;
+  ok.style.display='block';
+  document.querySelector('#main-content .fp-head button:last-child').style.background='var(--juice)';
 }
 function addMermaRow(){
   const tb=document.getElementById('merma-tb');if(!tb)return;
@@ -1220,6 +1281,136 @@ function renderConteoVitrinas(el,cat,sub){
 
 function renderSobrantesVitrinas(el,cat,sub){
   renderConteoVitrinas(el,cat,sub);
+}
+
+function renderTempFoto(el,cat,sub){
+  const equipos = [
+    {id:'ref1', nombre:'Refrigerador 1', rango:'1 – 4', tipo:'ref'},
+    {id:'ref2', nombre:'Refrigerador 2', rango:'1 – 4', tipo:'ref'},
+    {id:'con1', nombre:'Congelador',     rango:'-18 a -22', tipo:'con'},
+    {id:'afria', nombre:'Area fria prep.',rango:'1 – 8', tipo:'ref'},
+  ];
+  const turno = ['AM','PM'];
+  let cards = equipos.map(eq => turno.map(t => `
+    <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${eq.nombre} <span style="font-size:10px;font-weight:400;color:var(--muted);">· Turno ${t}</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">Rango: ${eq.rango} °C</div>
+        </div>
+        <div id="ico-${eq.id}-${t}" style="font-size:22px;"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:4px;">Temperatura °C</label>
+          <input type="number" id="temp-${eq.id}-${t}" placeholder="0.0" step="0.1"
+            style="width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:18px;font-family:var(--mono);font-weight:700;"
+            oninput="checkTemp('${eq.id}','${t}',${eq.tipo==='con'?-1:1},${eq.tipo==='con'?-22:4},${eq.tipo==='con'?-18:1})">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--kale);display:block;margin-bottom:4px;">Foto del equipo *</label>
+          <label for="foto-${eq.id}-${t}" style="display:flex;align-items:center;justify-content:center;gap:6px;border:1.5px dashed var(--border);border-radius:7px;padding:8px;cursor:pointer;font-size:12px;color:var(--muted);background:var(--bg2);height:38px;transition:all .15s;"
+            id="foto-lbl-${eq.id}-${t}">
+            <i class="ti ti-camera" style="font-size:16px;"></i> Tomar foto
+          </label>
+          <input type="file" id="foto-${eq.id}-${t}" accept="image/*" capture="environment"
+            style="display:none;" onchange="previewFoto(this,'${eq.id}','${t}')">
+        </div>
+      </div>
+      <div id="preview-${eq.id}-${t}" style="margin-top:8px;display:none;">
+        <img style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border);">
+        <div style="font-size:11px;color:var(--juice);margin-top:4px;font-weight:600;">Foto capturada</div>
+      </div>
+    </div>`).join('')).join('');
+
+  el.innerHTML = `<div class="fp fade-in">
+    <div class="fp-head cocina">
+      <div><div class="fp-title" style="color:var(--cocina);">${catIcon(cat.icon)} ${sub.name}</div>
+      <div class="fp-sub">Temperaturas diarias + foto obligatoria de cada equipo</div></div>
+      <div class="fp-acts">
+        <button class="btn btn-ghost btn-sm" onclick="limpiarChecks()">Limpiar</button>
+        <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i> Imprimir</button>
+      </div>
+    </div>
+    <div class="fp-body">
+      <div class="meta-row">
+        <div class="meta-f"><label>Fecha</label><input type="date" id="temp-fecha"></div>
+        <div class="meta-f"><label>Turno</label><input type="text" placeholder="AM / PM" id="temp-turno"></div>
+        <div class="meta-f"><label>Responsable</label><input type="text" placeholder="Nombre" id="temp-resp"></div>
+        <div class="meta-f"><label>Supervisor</label><input type="text" placeholder="Nombre" id="temp-sup"></div>
+      </div>
+      <div id="temp-alerta" style="display:none;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:12px;"></div>
+      ${cards}
+      <div style="margin-top:8px;padding:12px 14px;background:rgba(176,125,32,.07);border:1px solid rgba(176,125,32,.2);border-radius:8px;font-size:12px;color:var(--warn);">
+        <strong>Obligatorio:</strong> foto de cada equipo refrigerado en cada turno (AM y PM). Sin foto el turno no puede cerrarse.
+      </div>
+      <button onclick="cerrarTurnoTemp()" style="width:100%;margin-top:14px;background:var(--kale);color:var(--lemon);border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">Validar y cerrar registro</button>
+      <div id="temp-ok" style="display:none;background:rgba(139,184,57,.12);border:1px solid rgba(139,184,57,.3);border-radius:8px;padding:12px;font-size:13px;color:var(--kale);margin-top:10px;text-align:center;font-weight:600;"></div>
+    </div>
+  </div>`;
+  triggerFades();
+}
+
+function checkTemp(id,turno,dir,max,min){
+  const val = parseFloat(document.getElementById('temp-'+id+'-'+turno).value);
+  const ico = document.getElementById('ico-'+id+'-'+turno);
+  const input = document.getElementById('temp-'+id+'-'+turno);
+  if(isNaN(val)){ ico.textContent=''; return; }
+  if(val>=min && val<=max){
+    ico.textContent='OK'; ico.style.color='var(--juice)';
+    input.style.borderColor='var(--juice)';
+  } else {
+    ico.textContent='ALERTA'; ico.style.color='var(--danger)'; ico.style.fontSize='14px';
+    input.style.borderColor='var(--danger)';
+  }
+}
+
+function previewFoto(input,id,turno){
+  const file = input.files[0]; if(!file) return;
+  const wrap = document.getElementById('preview-'+id+'-'+turno);
+  const lbl = document.getElementById('foto-lbl-'+id+'-'+turno);
+  const reader = new FileReader();
+  reader.onload = e => {
+    wrap.querySelector('img').src = e.target.result;
+    wrap.style.display='block';
+    lbl.innerHTML='<i class="ti ti-check" style="font-size:16px;color:var(--juice);"></i> Foto OK';
+    lbl.style.borderColor='var(--juice)';
+    lbl.style.color='var(--juice)';
+    // Guardar referencia en sessionStorage (solo nombre, no datos)
+    try{ sessionStorage.setItem('foto_'+id+'_'+turno, file.name); }catch(e){}
+  };
+  reader.readAsDataURL(file);
+}
+
+function cerrarTurnoTemp(){
+  const alerta = document.getElementById('temp-alerta');
+  const ok = document.getElementById('temp-ok');
+  alerta.style.display='none'; ok.style.display='none';
+
+  const resp = document.getElementById('temp-resp')?.value.trim();
+  const sup = document.getElementById('temp-sup')?.value.trim();
+  if(!resp || !sup){ alerta.textContent='Falta nombre del responsable o supervisor.'; alerta.style.display='block'; return; }
+
+  // Verificar fotos AM (minimo obligatorio)
+  const equipos = ['ref1','ref2','con1','afria'];
+  const turno = document.getElementById('temp-turno')?.value.toUpperCase() || 'AM';
+  const t = turno.includes('PM') ? 'PM' : 'AM';
+  const sinFoto = equipos.filter(id => !sessionStorage.getItem('foto_'+id+'_'+t));
+  if(sinFoto.length > 0){
+    const nombres = {'ref1':'Refrigerador 1','ref2':'Refrigerador 2','con1':'Congelador','afria':'Area fria'};
+    alerta.textContent = 'Faltan fotos de: ' + sinFoto.map(id=>nombres[id]).join(', ') + '. Todas las fotos son obligatorias para cerrar el turno.';
+    alerta.style.display='block'; return;
+  }
+
+  // Verificar temperaturas
+  const sinTemp = equipos.filter(id => {
+    const v = document.getElementById('temp-'+id+'-'+t)?.value;
+    return !v || v.trim() === '';
+  });
+  if(sinTemp.length > 0){ alerta.textContent='Faltan temperaturas por registrar.'; alerta.style.display='block'; return; }
+
+  ok.textContent = 'Registro cerrado correctamente. Responsable: ' + resp + ' · Supervisor: ' + sup;
+  ok.style.display='block';
 }
 
 function renderComingSoon(el,cat,sub){
