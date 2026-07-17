@@ -476,7 +476,8 @@ const ESTRUCTURA = [
       {id:'cocina-inocuidad',   name:'Inocuidad / PEPS'},
       {id:'cocina-merma',       name:'Merma y desperdicios'},
       {id:'cocina-checklist',   name:'Checklist apertura / cierre'},
-      {id:'cocina-temperatura', name:'Temperaturas / equipos'},
+      {id:'cocina-temperatura',      name:'Temperaturas / equipos'},
+      {id:'cocina-display-sabores',  name:'Display de Sabores'},
     ]
   },
   {
@@ -487,7 +488,8 @@ const ESTRUCTURA = [
       {id:'barra-calibracion', name:'Calibración espresso'},
       {id:'barra-insumos',     name:'Control de insumos'},
       {id:'barra-merma',       name:'Merma de leche / café'},
-      {id:'barra-checklist',   name:'Checklist turno'},
+      {id:'barra-checklist',         name:'Checklist turno'},
+      {id:'barra-display-sabores',   name:'Display de Sabores'},
     ]
   },
   {
@@ -724,7 +726,7 @@ function setNavActive(id){
    HOME
 ════════════════════════════════════ */
 /* SISTEMA CALIFICACION VK */
-const MOD_PESOS={'cocina-checklist':3,'cocina-temperatura':3,'cocina-merma':3,'cocina-inocuidad':2,'cocina-produccion':2,'cocina-recetas':1,'barra-checklist':3,'barra-calibracion':3,'barra-merma':2,'barra-insumos':2,'barra-espresso':1,'barra-frias':1,'almacen-entradas':3,'almacen-peps':3,'almacen-inventario':2,'almacen-salidas':2,'almacen-proveedores':1,'almacen-conteo':1,'salon-checklist':3,'salon-banos':3,'salon-limpieza':2,'salon-montaje':2,'salon-mesas':1,'salon-supervisor':1,'servicio-protocolo':2,'servicio-tiempos':2,'servicio-comandas':2,'servicio-satisfaccion':2,'servicio-venta':1,'servicio-incidencias':1,'vitrinas-temperatura':3,'vitrinas-rotacion':3,'vitrinas-limpieza':2,'vitrinas-conteo':2,'vitrinas-exhibicion':1,'vitrinas-sobrantes':1};
+const MOD_PESOS={'cocina-checklist':3,'cocina-temperatura':3,'cocina-merma':3,'cocina-inocuidad':2,'cocina-produccion':2,'cocina-recetas':1,'cocina-display-sabores':2,'barra-checklist':3,'barra-calibracion':3,'barra-merma':2,'barra-insumos':2,'barra-espresso':1,'barra-frias':1,'barra-display-sabores':2,'almacen-entradas':3,'almacen-peps':3,'almacen-inventario':2,'almacen-salidas':2,'almacen-proveedores':1,'almacen-conteo':1,'salon-checklist':3,'salon-banos':3,'salon-limpieza':2,'salon-montaje':2,'salon-mesas':1,'salon-supervisor':1,'servicio-protocolo':2,'servicio-tiempos':2,'servicio-comandas':2,'servicio-satisfaccion':2,'servicio-venta':1,'servicio-incidencias':1,'vitrinas-temperatura':3,'vitrinas-rotacion':3,'vitrinas-limpieza':2,'vitrinas-conteo':2,'vitrinas-exhibicion':1,'vitrinas-sobrantes':1};
 const MOD_CRITICOS=['cocina-checklist','cocina-temperatura','cocina-merma','barra-checklist','barra-calibracion','salon-checklist','salon-banos','almacen-entradas','almacen-peps','vitrinas-temperatura'];
 function hoyKey(){return new Date().toISOString().slice(0,10);}
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:Math.round(hechos/total*100),ts:Date.now()}));}catch(e){}}
@@ -885,6 +887,8 @@ function showSub(catId, subId){
     'vitrinas-temperatura':()=>renderChecklist(mc,cat,sub,'Control de Temperatura de Vitrina','vitrinas',[
       {sec:'Registro de Temperaturas',items:['Vitrina refrigerada 1: ___ °C · Rango: 4–8 °C','Vitrina refrigerada 2: ___ °C · Rango: 4–8 °C','Vitrina seca (pan): ___ °C · Temperatura ambiente','Registrar temperatura cada 2 horas.','Reportar desviación inmediatamente al supervisor.']},
     ]),
+    'cocina-display-sabores': ()=>renderDisplaySabores(mc,cat,sub,'cocina'),
+    'barra-display-sabores':  ()=>renderDisplaySabores(mc,cat,sub,'barra'),
   };
   const renderFn = renders[subId];
   if(renderFn) renderFn();
@@ -1446,6 +1450,195 @@ function cerrarTurnoTemp(){
 
   ok.textContent = 'Registro cerrado correctamente. Responsable: ' + resp + ' · Supervisor: ' + sup;
   ok.style.display='block';
+}
+
+/* ════════════════════════════════════
+   B-04 · DISPLAY DE SABORES
+   Cocina y Barra — verificación semanal
+════════════════════════════════════ */
+function renderDisplaySabores(el,cat,sub,areaId){
+  const DS_DAYS=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+  const DS_MOS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const DS_N=25;
+  if(!window._dsWk) window._dsWk={};
+  if(window._dsWk[areaId]===undefined) window._dsWk[areaId]=0;
+
+  function dsWkDates(off){
+    const b=new Date(); b.setDate(b.getDate()+off*7);
+    const dw=b.getDay(),df=dw===0?-6:1-dw;
+    const m=new Date(b); m.setDate(b.getDate()+df); m.setHours(0,0,0,0);
+    return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(m.getDate()+i);return d;});
+  }
+  function dsIsoKey(dates){
+    const d=new Date(Date.UTC(dates[0].getFullYear(),dates[0].getMonth(),dates[0].getDate()));
+    const dw=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-dw);
+    const y1=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const wk=Math.ceil((((d-y1)/86400000)+1)/7);
+    return 'vk_b04_'+areaId+'_'+d.getUTCFullYear()+'-W'+String(wk).padStart(2,'0');
+  }
+  function dsFmt(d){return d.getDate()+'/'+String(d.getMonth()+1).padStart(2,'0');}
+  function dsRange(dates){
+    const s=dates[0],e=dates[6];
+    return s.getDate()+' '+DS_MOS[s.getMonth()]+' — '+e.getDate()+' '+DS_MOS[e.getMonth()]+' '+e.getFullYear();
+  }
+  function dsTodayIdx(off){
+    if(off!==0)return -1;
+    const dw=new Date().getDay(); return dw===0?6:dw-1;
+  }
+  function dsEsc(s){
+    if(!s)return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+  }
+  function dsLoad(dates){
+    try{const r=localStorage.getItem(dsIsoKey(dates));return r?JSON.parse(r):null;}catch(e){return null;}
+  }
+  function dsSave(){
+    const dates=dsWkDates(window._dsWk[areaId]);
+    const rows=[];
+    for(let i=0;i<DS_N;i++){
+      const ne=document.getElementById('dsn_'+areaId+'_'+i);
+      const nte=document.getElementById('dsnt_'+areaId+'_'+i);
+      const dias={};
+      DS_DAYS.forEach((d,di)=>{const cb=document.getElementById('dscb_'+areaId+'_'+i+'_'+di);dias[d]=!!(cb&&cb.checked);});
+      rows.push({nombre:ne?ne.value:'',notas:nte?nte.value:'',dias});
+    }
+    const mp=document.getElementById('dsmp_'+areaId);
+    const me=document.getElementById('dsme_'+areaId);
+    const mr=document.getElementById('dsmr_'+areaId);
+    const ob=document.getElementById('dsob_'+areaId);
+    try{localStorage.setItem(dsIsoKey(dates),JSON.stringify({
+      proyecto:mp?mp.value:'',elaboro:me?me.value:'',
+      reviso:mr?mr.value:'',obs:ob?ob.value:'',rows
+    }));}catch(e){}
+    guardarProgreso();
+  }
+
+  function dsRebuild(){
+    const off=window._dsWk[areaId];
+    const dates=dsWkDates(off);
+    const ti=dsTodayIdx(off);
+    const data=dsLoad(dates);
+    const aC=areaId==='cocina'?'var(--cocina)':'var(--barra)';
+    const aBg=areaId==='cocina'?'var(--cocina-bg)':'var(--barra-bg)';
+
+    let html=`<div class="fp fade-in">
+      <div class="fp-head ${areaId}">
+        <div>
+          <div class="fp-title">${catIcon(cat.icon)} ${sub.name}</div>
+          <div class="fp-sub">Verificación semanal · B-04 &nbsp;·&nbsp; ${dsRange(dates)}</div>
+        </div>
+        <div class="fp-acts">
+          <button class="btn btn-ghost btn-sm" onclick="window._dsNav('${areaId}',-1)">&#9664; Semana</button>
+          <button class="btn btn-ghost btn-sm" onclick="window._dsNav('${areaId}',1)">Semana &#9654;</button>
+          <button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px;"></i></button>
+        </div>
+      </div>
+      <div class="fp-body">
+        <div class="meta-row">
+          <div class="meta-f"><label>Semana</label>
+            <input type="text" value="${dsRange(dates)}" readonly
+              style="background:var(--bg2);color:var(--muted);font-size:11px;font-family:var(--mono);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;width:100%"></div>
+          <div class="meta-f"><label>Proyecto / Cliente</label>
+            <input type="text" id="dsmp_${areaId}" value="${dsEsc(data&&data.proyecto?data.proyecto:'Vitality Kitchen')}"
+              style="border:1px solid var(--border2);border-radius:6px;padding:6px 10px;width:100%;font-family:inherit;font-size:13px;outline:none;background:var(--bg)"
+              oninput="window._dsSave('${areaId}')"></div>
+          <div class="meta-f"><label>Elaboró</label>
+            <input type="text" id="dsme_${areaId}" value="${dsEsc(data&&data.elaboro?data.elaboro:'')}"
+              placeholder="Responsable"
+              style="border:1px solid var(--border2);border-radius:6px;padding:6px 10px;width:100%;font-family:inherit;font-size:13px;outline:none;background:var(--bg)"
+              oninput="window._dsSave('${areaId}')"></div>
+          <div class="meta-f"><label>Revisó</label>
+            <input type="text" id="dsmr_${areaId}" value="${dsEsc(data&&data.reviso?data.reviso:'')}"
+              placeholder="Supervisor"
+              style="border:1px solid var(--border2);border-radius:6px;padding:6px 10px;width:100%;font-family:inherit;font-size:13px;outline:none;background:var(--bg)"
+              oninput="window._dsSave('${areaId}')"></div>
+        </div>
+
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin-bottom:14px">
+          <table style="width:100%;border-collapse:collapse;min-width:700px">
+            <thead><tr>
+              <th style="width:32px;background:${aC};color:#fff;font-size:9px;font-family:var(--mono);padding:9px 4px;text-align:center;letter-spacing:1px">#</th>
+              <th style="background:${aC};color:#fff;font-size:9px;font-family:var(--mono);padding:9px 10px;text-align:left;min-width:160px;letter-spacing:1px">SALSA / PREPARACIÓN</th>
+              ${DS_DAYS.map((d,di)=>{
+                const iT=di===ti;
+                return `<th style="width:50px;background:${iT?'var(--juice)':aC};color:#fff;font-size:9px;font-family:var(--mono);padding:9px 4px;text-align:center;letter-spacing:1px">${d}<br><span style="font-size:9px;font-weight:400;opacity:.75">${dsFmt(dates[di])}</span></th>`;
+              }).join('')}
+              <th style="background:${aC};color:#fff;font-size:9px;font-family:var(--mono);padding:9px 10px;text-align:left;min-width:100px;letter-spacing:1px">NOTAS</th>
+            </tr></thead>
+            <tbody>`;
+
+    for(let i=0;i<DS_N;i++){
+      const row=data&&data.rows&&data.rows[i]?data.rows[i]:null;
+      const nombre=row?dsEsc(row.nombre):'';
+      const notas=row?dsEsc(row.notas):'';
+      const act=nombre.trim()!=='';
+      html+=`<tr style="border-bottom:1px solid var(--border2);background:${act?aBg:'transparent'}" id="dstr_${areaId}_${i}">
+        <td style="text-align:center;font-size:11px;font-family:var(--mono);font-weight:${act?'600':'400'};color:${act?aC:'var(--muted)'};padding:0 4px;background:var(--bg2);border-right:1px solid var(--border2)">${i+1}</td>
+        <td style="padding:0;border-right:1px solid var(--border2)">
+          <input type="text" id="dsn_${areaId}_${i}" value="${nombre}"
+            placeholder="Nombre de salsa o preparación..." autocomplete="off" spellcheck="false"
+            style="width:100%;border:none;background:transparent;font-size:13px;color:var(--text);padding:0 10px;height:36px;font-family:inherit;outline:none"
+            oninput="window._dsOnName('${areaId}',${i})">
+        </td>
+        ${DS_DAYS.map((d,di)=>{
+          const chk=row&&row.dias&&row.dias[d]?'checked':'';
+          const iT=di===ti;
+          const cBg=iT&&act?'rgba(139,184,57,.12)':iT?'rgba(139,184,57,.05)':'transparent';
+          return `<td style="text-align:center;padding:0;background:${cBg};border-right:1px solid var(--border2)">
+            <label style="display:flex;align-items:center;justify-content:center;height:36px;cursor:pointer;width:100%">
+              <input type="checkbox" id="dscb_${areaId}_${i}_${di}" ${chk}
+                style="width:16px;height:16px;accent-color:${aC};cursor:pointer"
+                onchange="window._dsSave('${areaId}')" aria-label="${d} fila ${i+1}">
+            </label>
+          </td>`;
+        }).join('')}
+        <td style="padding:0">
+          <input type="text" id="dsnt_${areaId}_${i}" value="${notas}" placeholder="—" autocomplete="off"
+            style="width:100%;border:none;background:transparent;font-size:12px;color:var(--muted);padding:0 8px;height:36px;font-family:inherit;outline:none"
+            oninput="window._dsSave('${areaId}')">
+        </td>
+      </tr>`;
+    }
+
+    html+=`</tbody></table></div>
+
+        <div style="margin-bottom:4px">
+          <div style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Observaciones</div>
+          <textarea id="dsob_${areaId}"
+            style="width:100%;border:1px solid var(--border2);border-radius:6px;padding:10px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);resize:vertical;min-height:64px;outline:none"
+            placeholder="Notas de la semana, incidencias, cambios de producto..."
+            oninput="window._dsSave('${areaId}')">${dsEsc(data&&data.obs?data.obs:'')}</textarea>
+        </div>
+      </div>
+    </div>`;
+
+    el.innerHTML=html;
+    triggerFades();
+  }
+
+  /* Expose handlers — areaId param guards against stale closures */
+  window._dsSave=function(aid){if(aid===areaId)dsSave();};
+  window._dsNav=function(aid,dir){
+    if(aid!==areaId)return;
+    dsSave();
+    window._dsWk[areaId]+=dir;
+    dsRebuild();
+  };
+  window._dsOnName=function(aid,i){
+    if(aid!==areaId)return;
+    const ne=document.getElementById('dsn_'+areaId+'_'+i);
+    const tr=document.getElementById('dstr_'+areaId+'_'+i);
+    if(!ne||!tr)return;
+    const act=ne.value.trim()!=='';
+    const aC=areaId==='cocina'?'var(--cocina)':'var(--barra)';
+    const aBg=areaId==='cocina'?'var(--cocina-bg)':'var(--barra-bg)';
+    tr.style.background=act?aBg:'transparent';
+    const numTd=tr.querySelector('td:first-child');
+    if(numTd){numTd.style.color=act?aC:'var(--muted)';numTd.style.fontWeight=act?'600':'400';}
+    dsSave();
+  };
+
+  dsRebuild();
 }
 
 function renderComingSoon(el,cat,sub){
