@@ -728,91 +728,56 @@ const MOD_PESOS={'cocina-checklist':3,'cocina-temperatura':3,'cocina-merma':3,'c
 const MOD_CRITICOS=['cocina-checklist','cocina-temperatura','cocina-merma','barra-checklist','barra-calibracion','salon-checklist','salon-banos','almacen-entradas','almacen-peps','vitrinas-temperatura'];
 function hoyKey(){return new Date().toISOString().slice(0,10);}
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:Math.round(hechos/total*100),ts:Date.now()}));}catch(e){}}
-function getProgreso(subId){var key='vk_prog_'+subId+'_'+hoyKey();try{var v=localStorage.getItem(key);return v?JSON.parse(v):null;}catch(e){return null;}}
-function calcScoreArea(catId){var cat=ESTRUCTURA.find(c=>c.id===catId);if(!cat)return{pct:0,alerta:false};var score=0,maxScore=0,alerta=false;cat.subs.forEach(function(sub){var p=MOD_PESOS[sub.id]||1;maxScore+=p*100;var prog=getProgreso(sub.id);var pct=prog?prog.pct:0;score+=p*pct;if(MOD_CRITICOS.indexOf(sub.id)>=0&&pct<100)alerta=true;});return{pct:maxScore?Math.round(score/maxScore):0,score:score,maxScore:maxScore,alerta:alerta};}
+function getProgreso(s){var k='vk_prog_'+s+'_'+hoyKey();try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function calcScoreArea(catId){var cat=ESTRUCTURA.find(c=>c.id===catId);if(!cat)return{pct:0,alerta:false};var sc=0,mx=0,al=false;cat.subs.forEach(function(sub){var p=MOD_PESOS[sub.id]||1;mx+=p*100;var pr=getProgreso(sub.id);var pct=pr?pr.pct:0;sc+=p*pct;if(MOD_CRITICOS.indexOf(sub.id)>=0&&pct<100)al=true;});return{pct:mx?Math.round(sc/mx):0,score:sc,maxScore:mx,alerta:al};}
 function calcScoreGlobal(){var t=0,m=0;ESTRUCTURA.forEach(function(cat){var a=calcScoreArea(cat.id);t+=a.score;m+=a.maxScore;});return m?Math.round(t/m):0;}
 function letraCalif(pct){if(pct>=95)return{l:'A+',c:'#2D7D1A'};if(pct>=85)return{l:'A',c:'var(--juice)'};if(pct>=75)return{l:'B',c:'var(--warn)'};if(pct>=60)return{l:'C',c:'#D68000'};return{l:'D',c:'var(--danger)'};}
 function showHome(){
   setNavActive('nav-home');
   document.getElementById('nav-home').classList.add('active');
-  const mc = document.getElementById('main-content');
-  const accesibles = ESTRUCTURA.filter(c=>canCat(c.id));
-  const bloqueadas = ESTRUCTURA.filter(c=>!canCat(c.id));
-  const nombre = CU.name.split(' ')[0];
-
-  // DASHBOARD VK
-  const hoy=hoyKey(),hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-  const global_=calcScoreGlobal(),calif=letraCalif(global_);
-  let modCerrados=0,modTotal=0;
-  ESTRUCTURA.forEach(function(cat){if(!canCat(cat.id))return;cat.subs.forEach(function(sub){modTotal++;var p=getProgreso(sub.id);if(p&&p.pct===100)modCerrados++;});});
-  const alertas=ESTRUCTURA.filter(cat=>canCat(cat.id)&&calcScoreArea(cat.id).alerta);
-  const fechaStr=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
-  let aCards=ESTRUCTURA.map(function(cat){
+  var mc=document.getElementById('main-content');
+  var accesibles=ESTRUCTURA.filter(c=>canCat(c.id));
+  var nombre=CU.name.split(' ')[0];
+  var hoy=hoyKey(),hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  var gl=calcScoreGlobal(),cf=letraCalif(gl);
+  var mC=0,mT=0;
+  ESTRUCTURA.forEach(function(cat){if(!canCat(cat.id))return;cat.subs.forEach(function(sub){mT++;var p=getProgreso(sub.id);if(p&&p.pct===100)mC++;});});
+  var alts=ESTRUCTURA.filter(cat=>canCat(cat.id)&&calcScoreArea(cat.id).alerta);
+  var fd=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+  var aC=ESTRUCTURA.map(function(cat){
     if(!canCat(cat.id))return'';
-    const a=calcScoreArea(cat.id),c=letraCalif(a.pct);
-    const barC=a.pct===100?'var(--juice)':a.pct>=60?'var(--warn)':'var(--danger)';
-    let mRows=cat.subs.map(function(sub){
-      const p=getProgreso(sub.id),pct=p?p.pct:0;
-      const esCrit=MOD_CRITICOS.indexOf(sub.id)>=0;
-      const bg=pct===100?'rgba(139,184,57,.15)':pct>0?'rgba(176,125,32,.1)':esCrit?'rgba(192,57,43,.08)':'var(--bg2)';
-      const col=pct===100?'var(--juice)':pct>0?'var(--warn)':esCrit?'var(--danger)':'var(--muted)';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);padding:5px 2px;border-bottom:1px solid var(--border2);cursor:pointer;" onclick="event.stopPropagation();toggleCat(''+cat.id+'');showSub(''+cat.id+'',''+sub.id+'')">'
-        +'<span>'+(esCrit?'<i class="ti ti-point-filled" style="font-size:7px;color:var(--danger);margin-right:3px;"></i>':'')+sub.name+'</span>'
-        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;min-width:36px;text-align:center;background:'+bg+';color:'+col+';">'+(pct?pct+'%':'—')+'</span>'
-        +'</div>';
+    var a=calcScoreArea(cat.id),c=letraCalif(a.pct);
+    var bC=a.pct===100?'var(--juice)':a.pct>=60?'var(--warn)':'var(--danger)';
+    var mR=cat.subs.map(function(sub){
+      var p=getProgreso(sub.id),pct=p?p.pct:0;
+      var ec=MOD_CRITICOS.indexOf(sub.id)>=0;
+      var bg=pct===100?'rgba(139,184,57,.15)':pct>0?'rgba(176,125,32,.1)':ec?'rgba(192,57,43,.08)':'var(--bg2)';
+      var co=pct===100?'var(--juice)':pct>0?'var(--warn)':ec?'var(--danger)':'var(--muted)';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);padding:5px 2px;border-bottom:1px solid var(--border2);cursor:pointer;" onclick="event.stopPropagation();toggleCat(''+cat.id+'');showSub(''+cat.id+'',''+sub.id+'')">'+'<span>'+(ec?'<i class=\"ti ti-point-filled\" style=\"font-size:7px;color:var(--danger);margin-right:3px;\"></i>':'')+sub.name+'</span>'+'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;min-width:36px;text-align:center;background:'+bg+';color:'+co+';">'+(pct?pct+'%':'—')+'</span></div>';
     }).join('');
-    return '<div style="background:white;border:1.5px solid '+(a.alerta?'rgba(192,57,43,.35)':'var(--border)')+';border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .2s;background:'+(a.alerta?'rgba(192,57,43,.015)':'white')+';" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.07)'" onmouseout="this.style.transform='';this.style.boxShadow=''" onclick="toggleCat(''+cat.id+'');showSub(''+cat.id+'',''+cat.subs[0].id+'')">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'+
-        '<div style="display:flex;align-items:center;gap:7px;"><span style="font-size:18px;">'+catIcon(cat.icon)+'</span>'+
-        '<span style="font-size:13px;font-weight:700;color:'+cat.color+';">'+cat.name+'</span></div>'+
-        '<div style="font-size:22px;font-weight:700;color:'+c.c+';">'+c.l+'</div>'+
-      '</div>'+
-      '<div style="background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;"><div style="height:6px;border-radius:4px;background:'+barC+';width:'+a.pct+'%;transition:width .8s;"></div></div>'+
-      '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted);">'+
-        '<span>'+a.pct+'% completado</span>'+(a.alerta?'<span style="color:var(--danger);font-weight:700;font-size:9px;">CRITICO</span>':'')+
-      '</div>'+
-      '<div style="margin-top:8px;">'+mRows+'</div>'+
-    '</div>';
+    return '<div style="background:'+(a.alerta?'rgba(192,57,43,.02)':'white')+';border:1.5px solid '+(a.alerta?'rgba(192,57,43,.35)':'var(--border)')+';border-radius:14px;padding:14px 16px;cursor:pointer;" onclick="toggleCat(''+cat.id+'');showSub(''+cat.id+'',''+cat.subs[0].id+'')">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"><div style="display:flex;align-items:center;gap:7px;"><span style="font-size:18px;">'+catIcon(cat.icon)+'</span><span style="font-size:13px;font-weight:700;color:'+cat.color+';">'+cat.name+'</span></div><div style="font-size:22px;font-weight:700;color:'+c.c+';">'+c.l+'</div></div>'+
+    '<div style="background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;"><div style="height:6px;border-radius:4px;background:'+bC+';width:'+a.pct+'%;"></div></div>'+
+    '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--muted);"><span>'+a.pct+'% completado</span>'+(a.alerta?'<span style=\"color:var(--danger);font-weight:700;font-size:9px;\">CRITICO</span>':'')+'</div>'+
+    '<div style="margin-top:8px;">'+mR+'</div></div>';
   }).join('');
-
-  mc.innerHTML=
-  '<div class="fade-in" style="max-width:1200px;">'+
-  '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;">'+
-    '<div><h2 style="font-size:22px;font-weight:700;color:var(--kale);letter-spacing:-.3px;">Hola, '+nombre+'</h2>'+
-    '<p style="font-size:13px;color:var(--muted);margin-top:3px;">'+fechaStr+' · Turno '+hora+'</p></div>'+
-    '<button onclick="showHome()" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:7px 13px;font-size:11px;cursor:pointer;font-family:var(--font);color:var(--muted);">'+
-      '<i class="ti ti-refresh" style="font-size:13px;margin-right:4px;"></i>Actualizar</button>'+
+  mc.innerHTML='<div class=\"fade-in\">'+
+  '<div style=\"display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;\">'+
+  '<div><h2 style=\"font-size:22px;font-weight:700;color:var(--kale);\">Hola, '+nombre+'</h2><p style=\"font-size:13px;color:var(--muted);margin-top:3px;\">'+fd+' · Turno '+hora+'</p></div>'+
+  '<button onclick=\"showHome()\" style=\"background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:7px 13px;font-size:11px;cursor:pointer;font-family:var(--font);color:var(--muted);\"><i class=\"ti ti-refresh\" style=\"font-size:13px;margin-right:4px;\"></i>Actualizar</button>'+
   '</div>'+
-  (alertas.length?'<div style="background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--danger);"><i class="ti ti-alert-triangle" style="font-size:18px;flex-shrink:0;"></i><div><strong>Atencion:</strong> '+alertas.map(a=>a.name).join(', ')+' tiene modulos criticos sin completar.</div></div>':'')+
-  '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">'+
-    '<div style="background:white;border:2px solid '+calif.c+'50;border-radius:14px;padding:16px 18px;text-align:center;">'+
-      '<div style="font-size:38px;font-weight:700;line-height:1;margin-bottom:4px;color:'+calif.c+';">'+calif.l+'</div>'+
-      '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">Calificacion</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+global_+'% del turno</div>'+
-    '</div>'+
-    '<div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;text-align:center;">'+
-      '<div style="font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;color:var(--kale);">'+modCerrados+'<span style="font-size:16px;color:var(--muted);">/'+modTotal+'</span></div>'+
-      '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">Modulos 100%</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px;">completados hoy</div>'+
-    '</div>'+
-    '<div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;text-align:center;">'+
-      '<div style="font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;color:'+(alertas.length?'var(--danger)':'var(--juice)')+';">'+alertas.length+'</div>'+
-      '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">Alertas criticas</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+(alertas.length?'requieren atencion':'todo en orden')+'</div>'+
-    '</div>'+
-    '<div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;text-align:center;">'+
-      '<div style="font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;color:var(--spirulina);">'+accesibles.length+'</div>'+
-      '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);">Areas activas</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:3px;">'+accesibles.reduce(function(s,c){return s+c.subs.length;},0)+' modulos</div>'+
-    '</div>'+
+  (alts.length?'<div style=\"background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--danger);\"><i class=\"ti ti-alert-triangle\" style=\"font-size:18px;flex-shrink:0;\"></i><strong style=\"margin-right:4px;\">Atencion:</strong>'+alts.map(a=>a.name).join(', ')+' con modulos criticos sin completar.</div>':'')+
+  '<div style=\"display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;\">'+
+  '<div style=\"background:white;border:2px solid '+cf.c+'50;border-radius:14px;padding:16px;text-align:center;\"><div style=\"font-size:38px;font-weight:700;color:'+cf.c+';line-height:1;margin-bottom:4px;\">'+cf.l+'</div><div style=\"font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);\">Calificacion</div><div style=\"font-size:11px;color:var(--muted);margin-top:3px;\">'+gl+'% del turno</div></div>'+
+  '<div style=\"background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center;\"><div style=\"font-size:32px;font-weight:700;color:var(--kale);line-height:1;margin-bottom:4px;\">'+mC+'<span style=\"font-size:16px;color:var(--muted);\">/'+mT+'</span></div><div style=\"font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);\">Modulos 100%</div><div style=\"font-size:11px;color:var(--muted);margin-top:3px;\">completados hoy</div></div>'+
+  '<div style=\"background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center;\"><div style=\"font-size:32px;font-weight:700;color:'+(alts.length?'var(--danger)':'var(--juice)')+';line-height:1;margin-bottom:4px;\">'+alts.length+'</div><div style=\"font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);\">Alertas criticas</div><div style=\"font-size:11px;color:var(--muted);margin-top:3px;\">'+(alts.length?'requieren atencion':'todo en orden')+'</div></div>'+
+  '<div style=\"background:white;border:1.5px solid var(--border);border-radius:14px;padding:16px;text-align:center;\"><div style=\"font-size:32px;font-weight:700;color:var(--spirulina);line-height:1;margin-bottom:4px;\">'+accesibles.length+'</div><div style=\"font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);\">Areas activas</div><div style=\"font-size:11px;color:var(--muted);margin-top:3px;\">'+accesibles.reduce(function(s,c){return s+c.subs.length;},0)+' modulos</div></div>'+
   '</div>'+
-  '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">'+aCards+'</div>'+
-  '</div>';
+  '<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:12px;\">'+aC+'</div></div>';
   triggerFades();
 }
 
 /* ════════════════════════════════════
-   RENDERIZADOR POR SUBCATEGORÍA/* ════════════════════════════════════
    RENDERIZADOR POR SUBCATEGORÍA
 ════════════════════════════════════ */
 function showSub(catId, subId){
