@@ -796,7 +796,7 @@ function renderAlerts(items){
   el.innerHTML=items.map(function(a){
     var t=new Date(a.created_at);
     var hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
-    return '<div class="al-item"'+(a.leida?' style="opacity:.5"':'')+' onclick="markAlertRead(''+a.id+'')">'+
+    return '<div class="al-item" data-alid="'+a.id+'"'+(a.leida?' style="opacity:.5"':'')+' onclick="markAlertRead(this.dataset.alid)">'+
       '<div class="al-sev '+a.severidad+'">'+(EMJ[a.severidad]||'')+' '+a.severidad+'</div>'+
       '<div class="al-title">'+a.titulo+'</div>'+
       '<div class="al-msg">'+(a.mensaje||'')+'</div>'+
