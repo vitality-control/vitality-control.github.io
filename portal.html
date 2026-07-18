@@ -305,6 +305,32 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 /* FADE */
 .fade-in{opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;}
 .fade-in.show{opacity:1;transform:none;}
+
+.alert-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:50%;cursor:pointer;background:transparent;
+  border:1px solid rgba(255,255,255,.2);transition:background .15s;margin-right:8px;flex-shrink:0}
+.alert-bell:hover{background:rgba(255,255,255,.1)}
+.alert-bell .ti{font-size:16px;color:rgba(255,255,255,.85)}
+.al-badge{position:absolute;top:-3px;right:-3px;min-width:17px;height:17px;
+  border-radius:9px;background:#E0ED30;color:#005056;font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;padding:0 4px}
+.al-panel{position:fixed;top:54px;right:12px;width:330px;max-height:420px;
+  background:#fff;border:1px solid #ddd;border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;overflow:hidden;display:none}
+.al-panel.open{display:block}
+.al-head{background:#005056;color:#fff;padding:10px 14px;font-size:13px;font-weight:500;
+  display:flex;justify-content:space-between;align-items:center}
+.al-head button{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;
+  font-size:20px;line-height:1;padding:0}
+.al-list{overflow-y:auto;max-height:355px}
+.al-item{padding:10px 14px;border-bottom:1px solid #f3f3f3;cursor:pointer;transition:background .1s}
+.al-item:hover{background:#f9fafb}.al-item:last-child{border-bottom:none}
+.al-sev{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.al-sev.critica{color:#C0392B}.al-sev.importante{color:#B07D20}.al-sev.informativa{color:#185FA5}
+.al-title{font-size:12px;font-weight:500;color:#1A1A18;margin-bottom:2px}
+.al-msg{font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al-time{font-size:10px;color:#9ca3af;margin-top:3px}
+.al-empty{padding:24px;text-align:center;color:#9ca3af;font-size:13px}
 </style>
 </head>
 <body>
@@ -418,6 +444,17 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
       <div class="topbar-brand">vitality kitchen<small>portal operativo</small></div>
     </div>
     <div class="topbar-right">
+      <div class="alert-bell" id="alertBell" onclick="toggleAlertPanel()" title="Alertas">
+        <i class="ti ti-bell"></i>
+        <span class="al-badge" id="alertBadge">0</span>
+      </div>
+      <div class="al-panel" id="alertPanel">
+        <div class="al-head">
+          <span id="alertPanelTitle">Alertas de hoy</span>
+          <button onclick="toggleAlertPanel()">&#215;</button>
+        </div>
+        <div class="al-list" id="alertList"><div class="al-empty">Sin alertas</div></div>
+      </div>
       <div class="user-chip">
         <div class="user-avatar" id="tb-avatar">—</div>
         <div>
@@ -731,6 +768,67 @@ function setNavActive(id){
 const MOD_PESOS={'cocina-checklist':3,'cocina-temperatura':3,'cocina-merma':3,'cocina-inocuidad':2,'cocina-produccion':2,'cocina-recetas':1,'cocina-display-sabores':2,'cocina-display-sabores':2,'barra-checklist':3,'barra-calibracion':3,'barra-merma':2,'barra-insumos':2,'barra-espresso':1,'barra-frias':1,'barra-display-sabores':2,'barra-display-sabores':2,'almacen-entradas':3,'almacen-peps':3,'almacen-inventario':2,'almacen-salidas':2,'almacen-proveedores':1,'almacen-conteo':1,'salon-checklist':3,'salon-banos':3,'salon-limpieza':2,'salon-montaje':2,'salon-mesas':1,'salon-supervisor':1,'servicio-protocolo':2,'servicio-tiempos':2,'servicio-comandas':2,'servicio-satisfaccion':2,'servicio-venta':1,'servicio-incidencias':1,'vitrinas-temperatura':3,'vitrinas-rotacion':3,'vitrinas-limpieza':2,'vitrinas-conteo':2,'vitrinas-exhibicion':1,'vitrinas-sobrantes':1};
 const MOD_CRITICOS=['cocina-checklist','cocina-temperatura','cocina-merma','barra-checklist','barra-calibracion','salon-checklist','salon-banos','almacen-entradas','almacen-peps','vitrinas-temperatura'];
 function hoyKey(){return new Date().toISOString().slice(0,10);}
+
+/* ════ VK ALERT BELL ════ */
+var _alOpen=false,_alLoaded=false;
+function toggleAlertPanel(){
+  _alOpen=!_alOpen;
+  var pan=document.getElementById('alertPanel');
+  if(pan)pan.classList.toggle('open',_alOpen);
+  if(_alOpen&&!_alLoaded)loadAlerts();
+}
+function loadAlerts(){
+  initSB();if(!vkSB)return;
+  vkSB.from('alertas').select('*')
+    .eq('fecha',new Date().toISOString().slice(0,10))
+    .order('created_at',{ascending:false}).limit(30)
+    .then(function(res){
+      _alLoaded=true;
+      var all=res.data||[];
+      var unread=all.filter(function(a){return !a.leida;});
+      renderAlerts(all);setAlertBadge(unread.length);
+    }).catch(function(){});
+}
+function renderAlerts(items){
+  var el=document.getElementById('alertList');if(!el)return;
+  if(!items||!items.length){el.innerHTML='<div class="al-empty">Sin alertas hoy ✅</div>';return;}
+  var EMJ={critica:'🚨',importante:'⚠️',informativa:'ℹ️'};
+  el.innerHTML=items.map(function(a){
+    var t=new Date(a.created_at);
+    var hm=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+    return '<div class="al-item"'+(a.leida?' style="opacity:.5"':'')+' onclick="markAlertRead(''+a.id+'')">'+
+      '<div class="al-sev '+a.severidad+'">'+(EMJ[a.severidad]||'')+' '+a.severidad+'</div>'+
+      '<div class="al-title">'+a.titulo+'</div>'+
+      '<div class="al-msg">'+(a.mensaje||'')+'</div>'+
+      '<div class="al-time">'+hm+' · '+(a.modulo_id||'sistema')+'</div></div>';
+  }).join('');
+}
+function setAlertBadge(n){
+  var b=document.getElementById('alertBadge');if(!b)return;
+  b.style.display=n>0?'flex':'none';b.textContent=n>9?'9+':n;
+}
+function markAlertRead(id){
+  if(!vkSB)return;
+  vkSB.from('alertas').update({leida:true}).eq('id',id)
+    .then(function(){_alLoaded=false;loadAlerts();});
+}
+function insertAlerta(tipo,sev,titulo,msg,modId){
+  try{
+    initSB();if(!vkSB)return;
+    vkSB.from('alertas').insert({tipo:tipo,severidad:sev,titulo:titulo,
+      mensaje:msg,modulo_id:modId,fecha:new Date().toISOString().slice(0,10)})
+      .then(function(){
+        var cur=parseInt(document.getElementById('alertBadge')?.textContent||0);
+        setAlertBadge(cur+1);
+      });
+  }catch(e){}
+}
+function startAlertPolling(){
+  initSB();if(!vkSB)return;
+  setTimeout(function(){loadAlerts();setInterval(loadAlerts,5*60*1000);},3000);
+}
+/* ════ FIN ALERT BELL ════ */
+
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var pct=Math.round(hechos/total*100);var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:pct,ts:Date.now()}));}catch(e){}sbUpsertProgreso(activeSub,pct,total,hechos,{})}
 function getProgreso(s){var k='vk_prog_'+s+'_'+hoyKey();try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function calcScoreArea(catId){var cat=ESTRUCTURA.find(c=>c.id===catId);if(!cat)return{pct:0,alerta:false};var sc=0,mx=0,al=false;cat.subs.forEach(function(sub){var p=MOD_PESOS[sub.id]||1;mx+=p*100;var pr=getProgreso(sub.id);var pct=pr?pr.pct:0;sc+=p*pct;if(MOD_CRITICOS.indexOf(sub.id)>=0&&pct<100)al=true;});return{pct:mx?Math.round(sc/mx):0,score:sc,maxScore:mx,alerta:al};}
