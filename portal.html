@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1A1A18">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>Vitality Kitchen · Portal Operativo</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -398,6 +401,150 @@ body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;o
 .role-perm i{font-size:13px;color:var(--text3)}
 .role-perm.yes i{color:#15803D}
 .role-perm.no{opacity:.5}
+
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE SYSTEM — Desktop + Mobile
+   Breakpoint: 768px
+══════════════════════════════════════════════════════ */
+
+/* ─ MOBILE NAV BAR ─────────────────────────────────── */
+.mobile-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:400;
+  background:var(--surface-2,#fff);
+  border-top:.5px solid var(--border,#ddd);
+  padding:0 4px env(safe-area-inset-bottom,8px);
+  height:60px;align-items:center;justify-content:space-around;
+  box-shadow:0 -4px 16px rgba(0,0,0,.08);
+}
+.mnav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;padding:6px 8px;cursor:pointer;
+  color:var(--text-muted,#9CA3AF);font-size:9px;font-weight:500;
+  letter-spacing:.04em;text-transform:uppercase;border-radius:8px;
+  transition:color .15s;min-width:52px;
+}
+.mnav-btn i{font-size:20px;line-height:1}
+.mnav-btn.active{color:var(--kale,#146B4F)}
+.mnav-btn:active{background:var(--surface-1,#f5f5f5)}
+
+/* ─ MOBILE HAMBURGER ────────────────────────────────── */
+.hamburger{
+  display:none;background:none;border:none;
+  cursor:pointer;padding:8px;color:rgba(255,255,255,.8);
+  font-size:22px;line-height:1;margin-right:4px;
+}
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;z-index:350;
+  background:rgba(0,0,0,.5);
+}
+.sidebar-overlay.open{display:block}
+.sidebar.mobile-open{transform:translateX(0)!important}
+
+/* ─ MOBILE MORE MENU ────────────────────────────────── */
+.mobile-more-sheet{
+  position:fixed;bottom:60px;left:0;right:0;z-index:500;
+  background:var(--surface-2,#fff);
+  border-top:.5px solid var(--border,#ddd);
+  border-radius:16px 16px 0 0;
+  padding:12px 0 8px;
+  box-shadow:0 -8px 24px rgba(0,0,0,.12);
+  transform:translateY(100%);transition:transform .25s ease;
+}
+.mobile-more-sheet.open{transform:translateY(0)}
+.mmore-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 20px;font-size:14px;color:var(--text-primary,#1A1A18);
+  cursor:pointer;border:none;background:none;width:100%;text-align:left;
+}
+.mmore-item:active{background:var(--surface-1,#f5f5f5)}
+.mmore-item i{font-size:18px;color:var(--text-secondary,#6B7280);width:24px}
+
+/* ─ RESPONSIVE BREAKPOINT ───────────────────────────── */
+@media (max-width:768px) {
+  /* Mostrar elementos mobile */
+  .mobile-nav{display:flex}
+  .hamburger{display:block}
+
+  /* Sidebar: slide-in overlay */
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:400;
+    transform:translateX(-100%);transition:transform .25s ease;
+    box-shadow:4px 0 24px rgba(0,0,0,.15);
+  }
+
+  /* Main: full ancho + padding bottom para nav */
+  .main-wrap{
+    margin-left:0!important;
+    padding-bottom:70px!important;
+  }
+
+  /* Topbar: más compacto */
+  .topbar{padding:0 10px}
+  #topbar-turno-info{display:none}
+  .logout-btn{font-size:0;padding:8px}
+  .logout-btn::before{content:'\e4f5';font-family:'tabler-icons';font-size:18px;color:rgba(255,255,255,.7)}
+
+  /* Cards del dashboard: 1 columna */
+  .dash-areas-grid{grid-template-columns:1fr 1fr!important}
+  .dash-stats-row{grid-template-columns:1fr 1fr!important}
+
+  /* Tablas: scroll horizontal */
+  .usr-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .usr-table th:nth-child(5),.usr-table td:nth-child(5),
+  .usr-table th:nth-child(6),.usr-table td:nth-child(6){display:none}
+
+  /* Modales: bottom sheet en mobile */
+  .usr-modal-bg{align-items:flex-end;padding:0}
+  .usr-modal{
+    max-width:100%!important;border-radius:16px 16px 0 0;
+    max-height:92vh;
+  }
+
+  /* Modal apertura turno: full screen */
+  #aperturaTurnoModal > div{
+    border-radius:0;max-width:100%!important;height:100%;
+    max-height:100%;overflow-y:auto;
+  }
+
+  /* Botones: más grandes para touch */
+  .btn{min-height:40px;padding:10px 16px}
+  .usr-action-btn{padding:8px;min-width:32px;min-height:32px}
+
+  /* Campos de formulario: más altos */
+  .usr-field input,.usr-field select{min-height:42px;font-size:16px}
+
+  /* Score en cierre turno: más compacto */
+  .usr-modal-body > div[style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important;gap:14px;
+  }
+
+  /* Fases del portal: ocultar sidebar text */
+  .fp{padding:12px!important}
+
+  /* Topbar cerrar turno: solo icono en mobile */
+  .btn-cerrar-turno span.text-full{display:none}
+
+  /* Roles grid: 2 columnas en mobile */
+  .roles-grid{grid-template-columns:1fr!important}
+
+  /* Historial: 2 cols */
+  #histAreaGrid{grid-template-columns:1fr 1fr!important}
+}
+
+@media (max-width:380px) {
+  .dash-areas-grid{grid-template-columns:1fr!important}
+  .mnav-btn{font-size:8px;min-width:44px}
+}
+
+/* ─ MEJORAS GENERALES TOUCH ─────────────────────────── */
+@media (hover:none) and (pointer:coarse) {
+  .btn,.usr-action-btn,.mnav-btn,.mmore-item{
+    -webkit-tap-highlight-color:transparent;
+  }
+  input,select{font-size:16px} /* evita zoom en iOS */
+}
 
 </style>
 </head>
@@ -1846,6 +1993,140 @@ function actualizarScoreGlobal() {
 /* ─ CSS DEL REPORTE DE CIERRE ────────────────────── */
 /* (ya tiene usr-modal-* del módulo de usuarios) */
 /* ══ FIN MOTOR DE SCORING ══ */
+
+
+/* ══ MOBILE NAVIGATION JS ══ */
+var _mobileMoreOpen = false;
+
+function initMobileNav() {
+  var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  // Crear bottom nav
+  var mainAreas = areas.slice(0,4); // primeras 4 áreas en nav
+  
+  var nav = document.createElement('nav');
+  nav.className = 'mobile-nav';
+  nav.id = 'mobileNav';
+  nav.innerHTML = '<button class="mnav-btn active" id="mnav-inicio" onclick="mnavGoHome()">'
+    + '<i class="ti ti-home"></i>Inicio</button>'
+    + mainAreas.map(function(a) {
+        var icons = {
+          cocina:'ti-tools-kitchen-2', barra:'ti-coffee',
+          almacen:'ti-package', salon:'ti-armchair',
+          servicio:'ti-users', vitrinas:'ti-layout-grid'
+        };
+        var ic = icons[a.id] || 'ti-circle';
+        return '<button class="mnav-btn" id="mnav-'+a.id+'" onclick="mnavGoArea(\''+a.id+'\')">'
+          + '<i class="ti '+ic+'"></i>'+a.name+'</button>';
+      }).join('')
+    + '<button class="mnav-btn" onclick="toggleMobileMore()">'
+    + '<i class="ti ti-dots"></i>Más</button>';
+  document.body.appendChild(nav);
+
+  // Crear more sheet
+  var moreAreas = areas.slice(4);
+  var sheet = document.createElement('div');
+  sheet.className = 'mobile-more-sheet';
+  sheet.id = 'mobileMoreSheet';
+  sheet.innerHTML = moreAreas.map(function(a) {
+    var icons = {servicio:'ti-users',vitrinas:'ti-layout-grid'};
+    return '<button class="mmore-item" onclick="mnavGoArea(\''+a.id+'\');closeMobileMore()">'
+      + '<i class="ti '+(icons[a.id]||'ti-circle')+'"></i>'+a.name+'</button>';
+  }).join('')
+  + '<div style="height:.5px;background:var(--border);margin:8px 16px"></div>'
+  + '<button class="mmore-item" onclick="mnavGoSupervisor(\'supervisor-usuarios\');closeMobileMore()">'
+  + '<i class="ti ti-users-group"></i>Usuarios & Roles</button>'
+  + '<button class="mmore-item" onclick="mnavGoSupervisor(\'supervisor-historial\');closeMobileMore()">'
+  + '<i class="ti ti-chart-bar"></i>Historial de Turnos</button>'
+  + '<button class="mmore-item" onclick="mnavGoSupervisor(\'supervisor-alertas\');closeMobileMore()">'
+  + '<i class="ti ti-bell"></i>Alertas & Reportes</button>'
+  + '<div style="height:.5px;background:var(--border);margin:8px 16px"></div>'
+  + '<button class="mmore-item" onclick="mostrarCierreTurnoFull();closeMobileMore()">'
+  + '<i class="ti ti-flag-check" style="color:#DC2626"></i><span style="color:#DC2626">Cerrar turno</span></button>';
+  document.body.appendChild(sheet);
+
+  // Overlay para el more sheet
+  document.addEventListener('click', function(e) {
+    if(_mobileMoreOpen && !e.target.closest('#mobileMoreSheet') && !e.target.closest('.mobile-nav')) {
+      closeMobileMore();
+    }
+  });
+
+  // Overlay para el sidebar
+  var overlay = document.createElement('div');
+  overlay.className = 'sidebar-overlay';
+  overlay.id = 'sidebarOverlay';
+  overlay.onclick = closeMobileSidebar;
+  document.body.insertBefore(overlay, document.body.firstChild);
+}
+
+function toggleMobileMore() {
+  _mobileMoreOpen = !_mobileMoreOpen;
+  var sheet = document.getElementById('mobileMoreSheet');
+  if(sheet) sheet.classList.toggle('open', _mobileMoreOpen);
+}
+function closeMobileMore() {
+  _mobileMoreOpen = false;
+  var sheet = document.getElementById('mobileMoreSheet');
+  if(sheet) sheet.classList.remove('open');
+}
+
+function mnavGoHome() {
+  setAllMnavInactive();
+  document.getElementById('mnav-inicio')?.classList.add('active');
+  closeMobileMore();
+  // Navigate to dashboard
+  var homeLink = document.querySelector('.nav-item[data-id="inicio"],.sidebar-item[data-cat="inicio"]');
+  if(homeLink) homeLink.click();
+  else renderDashboard();
+}
+
+function mnavGoArea(areaId) {
+  setAllMnavInactive();
+  var btn = document.getElementById('mnav-'+areaId);
+  if(btn) btn.classList.add('active');
+  closeMobileMore();
+  // Navigate to first sub of area
+  var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var area  = areas.find(function(a){return a.id===areaId;});
+  if(area && area.subs && area.subs.length) {
+    var mc = document.getElementById('main-content');
+    if(mc && typeof navigateTo === 'function') navigateTo(area.subs[0].id, area.id);
+    else if(mc && typeof renderModule === 'function') renderModule(mc, area, area.subs[0]);
+  }
+}
+
+function mnavGoSupervisor(subId) {
+  setAllMnavInactive();
+  var mc = document.getElementById('main-content');
+  if(!mc) return;
+  if(subId === 'supervisor-usuarios') renderUsuariosAdmin(mc, null, null);
+  else if(subId === 'supervisor-historial') renderDashboardHistorico(mc);
+  else if(subId === 'supervisor-alertas') {
+    if(typeof toggleAlertPanel === 'function') toggleAlertPanel();
+  }
+}
+
+function setAllMnavInactive() {
+  document.querySelectorAll('.mnav-btn').forEach(function(b){b.classList.remove('active');});
+}
+
+function toggleMobileSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  if(!sidebar) return;
+  var isOpen = sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', !isOpen);
+  if(overlay) overlay.classList.toggle('open', !isOpen);
+}
+function closeMobileSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  if(sidebar) sidebar.classList.remove('mobile-open');
+  if(overlay) overlay.classList.remove('open');
+}
+
+function isMobile() { return window.innerWidth <= 768; }
+/* ══ FIN MOBILE NAV ══ */
 
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var pct=Math.round(hechos/total*100);var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:pct,ts:Date.now()}));}catch(e){}sbUpsertProgreso(activeSub,pct,total,hechos,{})}
 function getProgreso(s){var k='vk_prog_'+s+'_'+hoyKey();try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
