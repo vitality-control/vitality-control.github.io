@@ -1661,6 +1661,349 @@ function renderTurnosTable(turnos) {
 /* ══ FIN CONTROL DE TURNO ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   MÓDULO TEMPERATURAS — Registro por equipo
+   Rangos configurables · Alerta automática · AM/PM
+══════════════════════════════════════════════════════ */
+
+/* ─ Equipos por defecto (admin puede agregar/editar) ─ */
+function getEquipos() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_equipos') || 'null');
+    if(stored && stored.length) return stored;
+  } catch(e){}
+  var defaults = [
+    {id:'e1',nombre:'Refrigerador Cocina #1',area:'cocina',min:1,max:4,unidad:'°C',turno:'ambos',icono:'ti-snowflake'},
+    {id:'e2',nombre:'Congelador Cocina',      area:'cocina',min:-18,max:-15,unidad:'°C',turno:'ambos',icono:'ti-snowflake'},
+    {id:'e3',nombre:'Línea Fría',             area:'cocina',min:0,max:5,unidad:'°C',turno:'am',icono:'ti-temperature'},
+    {id:'e4',nombre:'Baño María',             area:'cocina',min:63,max:90,unidad:'°C',turno:'ambos',icono:'ti-temperature-plus'},
+    {id:'e5',nombre:'Refrigerador Barra',     area:'barra',min:1,max:6,unidad:'°C',turno:'ambos',icono:'ti-snowflake'},
+    {id:'e6',nombre:'Hielera / Ice Bath',     area:'barra',min:0,max:4,unidad:'°C',turno:'am',icono:'ti-snowflake'},
+    {id:'e7',nombre:'Cámara Almacén',         area:'almacen',min:1,max:5,unidad:'°C',turno:'am',icono:'ti-snowflake'},
+    {id:'e8',nombre:'Congelador Almacén',     area:'almacen',min:-20,max:-15,unidad:'°C',turno:'am',icono:'ti-snowflake'},
+  ];
+  localStorage.setItem('vk_equipos', JSON.stringify(defaults));
+  return defaults;
+}
+function saveEquipos(equipos) { localStorage.setItem('vk_equipos', JSON.stringify(equipos)); }
+
+function getTodayTemps() {
+  try {
+    var all = JSON.parse(localStorage.getItem('temps_registro') || '[]');
+    var hoy = new Date().toISOString().slice(0,10);
+    return all.filter(function(t){ return t.fecha === hoy; });
+  } catch(e){ return []; }
+}
+function saveTempRegistro(registro) {
+  try {
+    var all = JSON.parse(localStorage.getItem('temps_registro') || '[]');
+    all.push(registro);
+    localStorage.setItem('temps_registro', JSON.stringify(all.slice(-200)));
+  } catch(e){}
+}
+
+/* ─ RENDER PRINCIPAL ────────────────────────────────── */
+function renderTemperaturas(el, cat, sub) {
+  var equipos   = getEquipos();
+  var todayRecs = getTodayTemps();
+  var turno     = sub && sub.id && sub.id.includes('pm') ? 'pm' : 'am';
+  var areaFilt  = cat ? cat.id : null;
+
+  var equiposFilt = equipos.filter(function(eq) {
+    if(areaFilt && eq.area !== areaFilt) return false;
+    if(eq.turno !== 'ambos' && eq.turno !== turno) return false;
+    return true;
+  });
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Control de Temperaturas</span>'
+    + '<span class="usr-count">' + turno.toUpperCase() + ' · ' + new Date().toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}) + '</span></div>'
+    + '<button class="btn btn-sm btn-ghost" onclick="abrirConfigEquipos()"><i class="ti ti-settings" style="font-size:14px"></i> Equipos</button>'
+    + '</div>'
+
+    /* Resumen visual */
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">'
+    + buildTempResumen(equiposFilt, todayRecs)
+    + '</div>'
+
+    /* Lista de equipos */
+    + '<div style="display:flex;flex-direction:column;gap:8px">';
+
+  equiposFilt.forEach(function(eq) {
+    var rec = todayRecs.filter(function(r){ return r.equipo_id === eq.id && r.turno === turno; }).pop();
+    html += buildEquipoCard(eq, rec, turno);
+  });
+
+  html += '</div>';
+
+  // Historial del día
+  if(todayRecs.length) {
+    html += '<div style="margin-top:20px">'
+      + '<div class="usr-field-section">Registros de hoy</div>'
+      + '<div class="usr-table-wrap"><div style="overflow-x:auto">'
+      + '<table class="usr-table" style="width:100%"><thead><tr>'
+      + '<th>Equipo</th><th>Turno</th><th>Temperatura</th><th>Estado</th><th>Hora</th><th>Registró</th>'
+      + '</tr></thead><tbody>'
+      + todayRecs.slice().reverse().map(function(r) {
+          var eq = equipos.find(function(e){return e.id===r.equipo_id;}) || {nombre:r.equipo||'—'};
+          var ok = r.en_rango;
+          return '<tr>'
+            + '<td style="font-weight:500">' + eq.nombre + '</td>'
+            + '<td style="font-size:11px;text-transform:uppercase;color:var(--text-muted)">' + (r.turno||'—') + '</td>'
+            + '<td style="font-family:var(--mono,monospace);font-size:14px;font-weight:500;color:'+(ok?'#15803D':'#DC2626')+'">' + r.valor + r.unidad + '</td>'
+            + '<td><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:'+(ok?'#DCFCE7':'#FEE2E2')+';color:'+(ok?'#15803D':'#DC2626')+'">'+(ok?'✓ OK':'⚠ Fuera')+' </span></td>'
+            + '<td style="font-size:11px;color:var(--text-muted)">' + (r.hora||'—') + '</td>'
+            + '<td style="font-size:11px;color:var(--text-muted)">' + (r.usuario||'—') + '</td>'
+            + '</tr>';
+        }).join('')
+      + '</tbody></table></div></div></div>';
+  }
+
+  html += '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function buildTempResumen(equipos, recs) {
+  var total  = equipos.length;
+  var ok     = recs.filter(function(r){return r.en_rango;}).length;
+  var fuera  = recs.filter(function(r){return !r.en_rango;}).length;
+  var pendiente = Math.max(0, total - new Set(recs.map(function(r){return r.equipo_id;})).size);
+  return [
+    {n:ok,    l:'En rango', c:'#15803D', bg:'#DCFCE7'},
+    {n:fuera, l:'Fuera de rango', c:'#DC2626', bg:'#FEE2E2'},
+    {n:pendiente, l:'Pendientes', c:'#92400E', bg:'#FEF3C7'},
+  ].map(function(s) {
+    return '<div style="border:.5px solid var(--border);border-radius:10px;padding:12px;background:'+s.bg+';text-align:center">'
+      + '<div style="font-size:24px;font-weight:700;color:'+s.c+'">' + s.n + '</div>'
+      + '<div style="font-size:10px;color:'+s.c+';font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-top:2px">'+s.l+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+function buildEquipoCard(eq, rec, turno) {
+  var registered = !!rec;
+  var ok         = rec && rec.en_rango;
+  var borderC    = registered ? (ok?'#16A34A':'#DC2626') : 'var(--border)';
+  var bgC        = registered ? (ok?'#F0FDF4':'#FFF5F5') : 'var(--surface-2)';
+
+  return '<div style="border:.5px solid '+borderC+';border-radius:10px;padding:14px;background:'+bgC+';'
+    + 'display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+
+    /* Ícono + nombre */
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:2px">' + eq.nombre + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted)">Rango: ' + eq.min + ' a ' + eq.max + ' ' + eq.unidad + '</div>'
+    + (rec ? '<div style="font-size:11px;color:'+(ok?'#15803D':'#DC2626')+';margin-top:2px;font-weight:500">'
+        + (ok?'✓ ':'⚠ ') + rec.valor + rec.unidad + ' · ' + (rec.hora||'') + '</div>' : '')
+    + '</div>'
+
+    /* Acción */
+    + (registered
+        ? '<span style="font-size:11px;font-weight:600;color:'+(ok?'#15803D':'#DC2626')+';">'+(ok?'Registrado':'¡Atención!')+'</span>'
+          + '<button onclick="registrarTemp(\''+eq.id+'\',\''+turno+'\')" style="background:var(--surface-1);border:.5px solid var(--border);border-radius:6px;padding:6px 12px;font-family:inherit;font-size:12px;cursor:pointer">Re-registrar</button>'
+        : '<button onclick="registrarTemp(\''+eq.id+'\',\''+turno+'\')" style="background:var(--kale,#146B4F);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;min-height:40px">Registrar →</button>'
+      )
+    + '</div>';
+}
+
+/* ─ MODAL REGISTRO ──────────────────────────────────── */
+function registrarTemp(equipoId, turno) {
+  var eq  = getEquipos().find(function(e){return e.id===equipoId;});
+  if(!eq) return;
+
+  var html = '<div class="usr-modal-bg" id="tempModal" onclick="if(event.target.id===\'tempModal\')document.getElementById(\'tempModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:400px">'
+    + '<div class="usr-modal-head"><span class="usr-modal-title">Temperatura · '+eq.nombre+'</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'tempModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+
+    /* Rango visual */
+    + '<div style="background:var(--surface-1);border:.5px solid var(--border);border-radius:8px;padding:12px;margin-bottom:16px;text-align:center">'
+    + '<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Rango permitido</div>'
+    + '<div style="font-size:20px;font-weight:600;color:var(--text-primary)">'+eq.min+' a '+eq.max+' '+eq.unidad+'</div>'
+    + '</div>'
+
+    /* Input temperatura */
+    + '<div class="usr-field" style="margin-bottom:14px">'
+    + '<label>Temperatura registrada <span>*</span></label>'
+    + '<div style="display:flex;align-items:center;gap:8px">'
+    + '<input type="number" id="tempValor" step="0.1" placeholder="Ej: 3.5" autofocus '
+    + 'style="flex:1;border:.5px solid var(--border);border-radius:8px;padding:12px;font-size:22px;font-family:var(--mono,monospace);text-align:center" '
+    + 'oninput="checkTempRange('+eq.min+','+eq.max+')">'
+    + '<span style="font-size:18px;color:var(--text-secondary)">'+eq.unidad+'</span>'
+    + '</div>'
+    + '<div id="tempRangeIndicator" style="margin-top:6px;font-size:13px;font-weight:500;display:none"></div>'
+    + '</div>'
+
+    /* Observaciones */
+    + '<div class="usr-field" style="margin-bottom:14px">'
+    + '<label>Observaciones</label>'
+    + '<input type="text" id="tempObs" placeholder="Ej: puerta entreabierta, ajustado termostato..." '
+    + 'style="border:.5px solid var(--border);border-radius:8px;padding:9px 12px;width:100%;font-family:inherit;font-size:13px">'
+    + '</div>'
+
+    + '</div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'tempModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarTemp(\''+equipoId+'\',\''+eq.min+'\',\''+eq.max+'\',\''+eq.unidad+'\',\''+turno+'\')">Guardar temperatura</button>'
+    + '</div>'
+    + '</div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+  setTimeout(function(){ document.getElementById('tempValor')?.focus(); }, 100);
+}
+
+function checkTempRange(min, max) {
+  var v  = parseFloat(document.getElementById('tempValor')?.value);
+  var el = document.getElementById('tempRangeIndicator');
+  if(!el || isNaN(v)) { el.style.display='none'; return; }
+  var ok = v >= min && v <= max;
+  el.style.display = 'block';
+  el.style.color   = ok ? '#15803D' : '#DC2626';
+  el.textContent   = ok ? '✓ Dentro del rango permitido' : '⚠ FUERA DEL RANGO — se generará alerta';
+}
+
+function guardarTemp(equipoId, min, max, unidad, turno) {
+  var val = parseFloat(document.getElementById('tempValor')?.value);
+  if(isNaN(val)) { alert('Ingresa la temperatura.'); return; }
+
+  var eq      = getEquipos().find(function(e){return e.id===equipoId;}) || {};
+  var enRango = val >= parseFloat(min) && val <= parseFloat(max);
+  var hora    = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  var usuario = typeof CU !== 'undefined' && CU ? (CU.nombre||'') : '';
+
+  var registro = {
+    equipo_id: equipoId,
+    equipo:    eq.nombre || equipoId,
+    area:      eq.area || '',
+    valor:     val,
+    unidad:    unidad,
+    en_rango:  enRango,
+    turno:     turno,
+    hora:      hora,
+    obs:       document.getElementById('tempObs')?.value || '',
+    usuario:   usuario,
+    fecha:     new Date().toISOString().slice(0,10)
+  };
+
+  saveTempRegistro(registro);
+
+  // Guardar en Supabase si disponible
+  if(typeof vkSB !== 'undefined' && vkSB) {
+    vkSB.from('temperaturas').insert({
+      equipo: eq.nombre, tipo: eq.id,
+      turno_dia: turno, valor: val,
+      en_rango: enRango,
+      registrado_por: usuario,
+      fecha: registro.fecha
+    }).catch(function(){});
+  }
+
+  // ALERTA AUTOMÁTICA si fuera de rango
+  if(!enRango) {
+    var titulo  = '⚠️ Temperatura fuera de rango: ' + eq.nombre;
+    var mensaje = 'Registró ' + val + unidad + ' (rango: ' + min + '–' + max + unidad + '). Área: ' + (eq.area||'').toUpperCase() + '. Hora: ' + hora;
+    if(typeof sbInsertAlerta === 'function') {
+      sbInsertAlerta('temperatura', 'critica', titulo, mensaje, 'temp-' + eq.area);
+    }
+    // Actualizar score en tiempo real
+    if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
+  }
+
+  document.getElementById('tempModal')?.remove();
+
+  // Re-render
+  var mc = document.getElementById('main-content');
+  if(mc && typeof renderTemperaturas === 'function') {
+    var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+    var cat   = areas.find(function(a){return a.id===eq.area;});
+    renderTemperaturas(mc, cat, null);
+  }
+}
+
+/* ─ CONFIG DE EQUIPOS ───────────────────────────────── */
+function abrirConfigEquipos() {
+  var equipos = getEquipos();
+  var areas   = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var areaOpts = areas.map(function(a){return '<option value="'+a.id+'">'+a.name+'</option>';}).join('');
+
+  var html = '<div class="usr-modal-bg" id="equiposModal" onclick="if(event.target.id===\'equiposModal\')document.getElementById(\'equiposModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:560px">'
+    + '<div class="usr-modal-head"><span class="usr-modal-title">Equipos de temperatura</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'equiposModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Configura los equipos que se registran en cada turno y sus rangos de temperatura permitidos.</p>'
+
+    /* Lista actual */
+    + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:240px;overflow-y:auto">'
+    + equipos.map(function(eq) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:.5px solid var(--border);border-radius:8px;background:var(--surface-1)">'
+          + '<span style="flex:1;font-size:13px;font-weight:500">'+eq.nombre+'</span>'
+          + '<span style="font-size:11px;color:var(--text-muted)">'+eq.min+'–'+eq.max+eq.unidad+'</span>'
+          + '<span style="font-size:10px;background:var(--surface-2);padding:2px 8px;border-radius:10px;border:.5px solid var(--border)">'+eq.area+'</span>'
+          + '<button onclick="eliminarEquipo(\''+eq.id+'\')" style="background:none;border:none;cursor:pointer;color:#DC2626;padding:4px"><i class="ti ti-x"></i></button>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+
+    /* Formulario nuevo equipo */
+    + '<div style="border-top:.5px solid var(--border);padding-top:14px">'
+    + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:10px">Agregar equipo</div>'
+    + '<div class="usr-field-grid" style="margin-bottom:10px">'
+    + '<div class="usr-field"><label>Nombre *</label><input type="text" id="eqNombre" placeholder="Refrigerador Cocina #2"></div>'
+    + '<div class="usr-field"><label>Área</label><select id="eqArea">'+areaOpts+'</select></div>'
+    + '</div>'
+    + '<div class="usr-field-grid cols3" style="margin-bottom:10px">'
+    + '<div class="usr-field"><label>Temp. mínima</label><input type="number" id="eqMin" step="0.5" value="1"></div>'
+    + '<div class="usr-field"><label>Temp. máxima</label><input type="number" id="eqMax" step="0.5" value="4"></div>'
+    + '<div class="usr-field"><label>Unidad</label><select id="eqUnidad"><option>°C</option><option>°F</option></select></div>'
+    + '</div>'
+    + '<div class="usr-field" style="margin-bottom:14px"><label>Turno requerido</label>'
+    + '<select id="eqTurno"><option value="ambos">AM y PM</option><option value="am">Solo AM</option><option value="pm">Solo PM</option></select></div>'
+    + '<button onclick="agregarEquipo()" class="btn btn-kale" style="width:100%">+ Agregar equipo</button>'
+    + '</div>'
+    + '</div>'
+    + '<div class="usr-modal-footer"><button class="btn btn-ghost" onclick="document.getElementById(\'equiposModal\').remove()">Cerrar</button></div>'
+    + '</div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+}
+
+function agregarEquipo() {
+  var nombre = document.getElementById('eqNombre')?.value.trim();
+  if(!nombre) { alert('El nombre del equipo es obligatorio.'); return; }
+  var equipos = getEquipos();
+  equipos.push({
+    id:     'eq_' + Date.now(),
+    nombre: nombre,
+    area:   document.getElementById('eqArea')?.value || 'cocina',
+    min:    parseFloat(document.getElementById('eqMin')?.value) || 1,
+    max:    parseFloat(document.getElementById('eqMax')?.value) || 4,
+    unidad: document.getElementById('eqUnidad')?.value || '°C',
+    turno:  document.getElementById('eqTurno')?.value || 'ambos',
+    icono:  'ti-temperature'
+  });
+  saveEquipos(equipos);
+  document.getElementById('equiposModal')?.remove();
+  abrirConfigEquipos();
+}
+
+function eliminarEquipo(id) {
+  if(!confirm('¿Eliminar este equipo?')) return;
+  saveEquipos(getEquipos().filter(function(e){return e.id!==id;}));
+  document.getElementById('equiposModal')?.remove();
+  abrirConfigEquipos();
+}
+/* ══ FIN MÓDULO TEMPERATURAS ══ */
+
+
 /* ══════════════════════════════════════════════════════
    MOTOR DE SCORING — DMZ Kitchen Support
    Score global por turno · Reporte de conductas · Cierre
