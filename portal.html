@@ -1995,6 +1995,72 @@ function actualizarScoreGlobal() {
 /* ══ FIN MOTOR DE SCORING ══ */
 
 
+/* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
+function calcPenalizaciones() {
+  var penalties = { total: 0, items: [] };
+
+  // Temperaturas fuera de rango (guardadas en localStorage)
+  try {
+    var temps = JSON.parse(localStorage.getItem('temps_registro') || '[]');
+    temps.forEach(function(t) {
+      if(!t.en_rango && t.valor !== undefined) {
+        penalties.total += 10;
+        penalties.items.push({
+          tipo: 'temperatura',
+          desc: 'Temperatura fuera de rango: ' + t.equipo + ' (' + t.valor + '°C)',
+          puntos: -10
+        });
+      }
+    });
+  } catch(e){}
+
+  // Merma excesiva
+  try {
+    var merma = JSON.parse(localStorage.getItem('merma_registro') || '[]');
+    var today  = new Date().toISOString().slice(0,10);
+    var mermaHoy = merma.filter(function(m){ return m.fecha === today; });
+    var totalMerma = mermaHoy.reduce(function(s,m){ return s + (parseFloat(m.costo)||0); }, 0);
+    if(totalMerma > 500) {
+      var pen = Math.min(Math.floor(totalMerma/500)*5, 20);
+      penalties.total += pen;
+      penalties.items.push({
+        tipo: 'merma',
+        desc: 'Merma elevada del día: $' + totalMerma.toFixed(0) + ' MXN',
+        puntos: -pen
+      });
+    }
+  } catch(e){}
+
+  return penalties;
+}
+
+// Patch calcTurnoScore para incluir penalizaciones
+var _origCalcTurno = calcTurnoScore;
+calcTurnoScore = function() {
+  var score = _origCalcTurno();
+  var pen   = calcPenalizaciones();
+
+  score.globalPct    = Math.max(0, score.globalPct - pen.total);
+  score.globalLetter = scoreLetter(score.globalPct);
+  score.penalizaciones = pen.items;
+
+  // Agregar penalizaciones a "mejoras"
+  pen.items.forEach(function(p) {
+    score.mejoras.unshift({
+      area: p.tipo === 'temperatura' ? 'Temperaturas' : 'Merma',
+      areaId: p.tipo,
+      modulo: p.desc,
+      pct: 0,
+      esPenalizacion: true
+    });
+  });
+
+  return score;
+};
+/* ══ FIN PENALIZACIONES ══ */
+
+
+
 /* ══ MOBILE NAVIGATION JS ══ */
 var _mobileMoreOpen = false;
 
