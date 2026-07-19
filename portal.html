@@ -1059,6 +1059,340 @@ function startAlertPolling(){
 }
 /* ════ FIN ALERT BELL ════ */
 
+
+/* ══════════════════════════════════════════════════════
+   MOTOR DE SCORING — DMZ Kitchen Support
+   Score global por turno · Reporte de conductas · Cierre
+══════════════════════════════════════════════════════ */
+
+/* ─ Pesos por área ─────────────────────────────────── */
+var AREA_WEIGHTS = {
+  cocina:   1.5,   // más crítica — produce el producto
+  barra:    1.2,   // segunda en impacto directo
+  almacen:  1.1,   // controla costos
+  salon:    1.0,   // experiencia del cliente
+  servicio: 1.0,   // experiencia del cliente
+  vitrinas: 0.7    // presentación
+};
+
+/* ─ Módulos críticos — si están en 0% bajan área a D ─ */
+var CRITICAL_MODS = [
+  'cocina-temperatura','cocina-checklist',
+  'barra-calibracion','barra-checklist',
+  'almacen-peps'
+];
+
+/* ─ Carta de calificación ───────────────────────────── */
+function scoreLetter(pct) {
+  if(pct >= 95) return 'A+';
+  if(pct >= 85) return 'A';
+  if(pct >= 75) return 'B';
+  if(pct >= 65) return 'C';
+  return 'D';
+}
+function scoreColor(letter) {
+  return {
+    'A+':'#15803D','A':'#16A34A',
+    'B':'#D97706','C':'#EA580C','D':'#DC2626'
+  }[letter] || '#9CA3AF';
+}
+
+/* ─ CÁLCULO PRINCIPAL ───────────────────────────────── */
+function calcTurnoScore() {
+  var areas      = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var areaScores = {};
+  var correctas  = [];
+  var mejoras    = [];
+  var criticos   = [];
+  var totalW     = 0;
+  var weightedSum= 0;
+
+  areas.forEach(function(area) {
+    var weight   = AREA_WEIGHTS[area.id] || 1.0;
+    var subs     = area.subs || [];
+    var modPcts  = [];
+    var hasCritFail = false;
+
+    subs.forEach(function(sub) {
+      var raw    = localStorage.getItem('prog_' + sub.id) || '0';
+      var pct    = parseInt(raw) || 0;
+      var isCrit = CRITICAL_MODS.some(function(cm){return sub.id.includes(cm)||sub.id===cm;});
+
+      modPcts.push(pct);
+
+      if(isCrit && pct === 0) {
+        hasCritFail = true;
+        criticos.push({area:area.name, modulo:sub.name, pct:0});
+      }
+
+      if(pct >= 85) {
+        correctas.push({area:area.name, areaId:area.id, modulo:sub.name, pct:pct});
+      } else if(pct < 65 && pct > 0) {
+        mejoras.push({area:area.name, areaId:area.id, modulo:sub.name, pct:pct});
+      } else if(pct === 0 && !isCrit) {
+        mejoras.push({area:area.name, areaId:area.id, modulo:sub.name, pct:0});
+      }
+    });
+
+    var avgPct = modPcts.length
+      ? Math.round(modPcts.reduce(function(a,b){return a+b;},0)/modPcts.length)
+      : 0;
+
+    // Penalización por módulo crítico sin completar
+    if(hasCritFail) avgPct = Math.min(avgPct, 54);
+
+    var letter = scoreLetter(avgPct);
+    areaScores[area.id] = {name:area.name, pct:avgPct, letter:letter, weight:weight};
+    weightedSum += avgPct * weight;
+    totalW      += weight;
+  });
+
+  var globalPct    = totalW > 0 ? Math.round(weightedSum/totalW) : 0;
+  var globalLetter = scoreLetter(globalPct);
+
+  // Ordenar: mejoras por pct ascendente (peor primero)
+  mejoras.sort(function(a,b){return a.pct-b.pct;});
+  correctas.sort(function(a,b){return b.pct-a.pct;});
+
+  return {
+    globalPct:    globalPct,
+    globalLetter: globalLetter,
+    areaScores:   areaScores,
+    correctas:    correctas,
+    mejoras:      mejoras,
+    criticos:     criticos,
+    fecha:        new Date().toISOString().slice(0,10),
+    hora:         new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    usuario:      typeof CU !== 'undefined' && CU ? CU.nombre+' '+CU.apellido : 'Sistema'
+  };
+}
+
+/* ─ CIERRE DE TURNO ─────────────────────────────────── */
+function mostrarCierreTurno() {
+  var score = calcTurnoScore();
+  var sc    = score.scoreColor || scoreColor;
+
+  var areaRows = Object.values(score.areaScores).map(function(a) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:.5px solid var(--border)">'
+      + '<span style="font-size:13px;color:var(--text)">' + a.name + '</span>'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="background:var(--border);border-radius:4px;height:6px;width:80px;overflow:hidden">'
+      + '<div style="height:6px;background:' + scoreColor(a.letter) + ';width:' + a.pct + '%"></div></div>'
+      + '<span style="font-size:12px;color:var(--text2);min-width:30px;text-align:right">' + a.pct + '%</span>'
+      + '<span style="font-size:12px;font-weight:700;color:' + scoreColor(a.letter) + ';min-width:24px;text-align:center">' + a.letter + '</span>'
+      + '</div></div>';
+  }).join('');
+
+  var correctasList = score.correctas.slice(0,6).map(function(c) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--border2,#f0f0f0)">'
+      + '<i class="ti ti-check" style="color:#15803D;font-size:14px;flex-shrink:0"></i>'
+      + '<span style="font-size:12px;color:var(--text)">' + c.area + ' · <b>' + c.modulo + '</b></span>'
+      + '<span style="font-size:11px;color:#15803D;margin-left:auto">' + c.pct + '%</span></div>';
+  }).join('') || '<div style="font-size:12px;color:var(--text3);padding:8px 0">Sin módulos completados al 85%+</div>';
+
+  var mejorasList = score.mejoras.slice(0,6).map(function(m) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--border2,#f0f0f0)">'
+      + '<i class="ti ti-arrow-up" style="color:#EA580C;font-size:14px;flex-shrink:0"></i>'
+      + '<span style="font-size:12px;color:var(--text)">' + m.area + ' · <b>' + m.modulo + '</b></span>'
+      + '<span style="font-size:11px;color:#EA580C;margin-left:auto">' + m.pct + '%</span></div>';
+  }).join('') || '<div style="font-size:12px;color:#15803D;padding:8px 0">✓ Sin áreas de mejora detectadas</div>';
+
+  var criticosBanner = score.criticos.length
+    ? '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 14px;margin-bottom:14px">'
+      + '<div style="font-size:12px;font-weight:600;color:#DC2626;margin-bottom:6px">🚨 Módulos críticos sin completar</div>'
+      + score.criticos.map(function(c){
+          return '<div style="font-size:12px;color:#DC2626">· '+c.area+' — '+c.modulo+'</div>';
+        }).join('')
+      + '</div>'
+    : '';
+
+  var html = '<div class="usr-modal-bg" id="cierreTurnoModal" onclick="if(event.target.id===\'cierreTurnoModal\')cerrarCierre()">'
+    + '<div class="usr-modal" style="max-width:560px">'
+    + '<div class="usr-modal-head" style="background:var(--surface-1)">'
+    + '<div>'
+    + '<div class="usr-modal-title">Reporte de Turno</div>'
+    + '<div style="font-size:12px;color:var(--text3)">' + score.fecha + ' · ' + score.hora + ' · ' + score.usuario + '</div>'
+    + '</div>'
+    + '<button class="usr-modal-close" onclick="cerrarCierre()">×</button>'
+    + '</div>'
+    + '<div class="usr-modal-body" style="padding:0">'
+
+    /* Score global */
+    + '<div style="text-align:center;padding:24px;background:var(--surface-1)">'
+    + '<div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Score global del turno</div>'
+    + '<div style="font-size:64px;font-weight:700;color:' + scoreColor(score.globalLetter) + ';line-height:1">' + score.globalLetter + '</div>'
+    + '<div style="font-size:18px;color:var(--text2);margin-top:4px">' + score.globalPct + '%</div>'
+    + '</div>'
+
+    /* Scores por área */
+    + '<div style="padding:14px 16px 0">'
+    + '<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Desempeño por área</div>'
+    + '<div style="border:.5px solid var(--border);border-radius:8px;overflow:hidden">' + areaRows + '</div>'
+    + '</div>'
+
+    /* Críticos */
+    + '<div style="padding:14px 16px 0">' + criticosBanner + '</div>'
+
+    /* Conductas */
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px">'
+    + '<div>'
+    + '<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#15803D;margin-bottom:8px">✓ Conductas correctas</div>'
+    + correctasList
+    + '</div>'
+    + '<div>'
+    + '<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#EA580C;margin-bottom:8px">↑ Deben mejorar</div>'
+    + mejorasList
+    + '</div>'
+    + '</div>'
+
+    + '</div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="cerrarCierre()">Cerrar</button>'
+    + '<button class="btn btn-kale" onclick="cerrarTurnoFinal()">Cerrar turno y enviar reporte</button>'
+    + '</div>'
+    + '</div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+}
+
+function cerrarCierre() {
+  var m = document.getElementById('cierreTurnoModal');
+  if(m) m.remove();
+}
+
+function cerrarTurnoFinal() {
+  var score  = calcTurnoScore();
+  var turnoId = 'turno_' + Date.now();
+
+  // 1. Guardar en Supabase scores_diarios
+  if(typeof vkSB !== 'undefined' && vkSB) {
+    Object.entries(score.areaScores).forEach(function(entry) {
+      var aId = entry[0], a = entry[1];
+      vkSB.from('scores_diarios').upsert({
+        fecha: score.fecha,
+        area:  aId,
+        score_pct:   a.pct,
+        score_letra: a.letter,
+        modulos: {}
+      }, {onConflict:'fecha,area'}).catch(function(){});
+    });
+
+    // Registro del turno
+    vkSB.from('turnos').insert({
+      fecha:  score.fecha,
+      turno:  'manual',
+      abierto_por:     score.usuario,
+      score_pct:       score.globalPct,
+      score_letra:     score.globalLetter,
+      areas_completadas: score.areaScores,
+      cerrado_at: new Date().toISOString()
+    }).catch(function(){});
+
+    // Alerta si score bajo
+    if(score.globalPct < 65) {
+      if(typeof sbInsertAlerta === 'function') {
+        sbInsertAlerta('cierre-turno','critica',
+          'Score crítico al cierre: ' + score.globalLetter + ' (' + score.globalPct + '%)',
+          'Turno cerrado con calificación ' + score.globalLetter + '. Áreas que requieren atención inmediata: '
+          + score.mejoras.slice(0,3).map(function(m){return m.area;}).join(', '),
+          'turno-cierre'
+        );
+      }
+    }
+  }
+
+  // 2. Enviar email de reporte
+  enviarReporteTurno(score);
+
+  cerrarCierre();
+  alert('Turno cerrado. El reporte se ha enviado por email.');
+}
+
+function enviarReporteTurno(score) {
+  if(typeof vkSB === 'undefined' || !vkSB) return;
+
+  var html = generarEmailTurno(score);
+
+  vkSB.from('alertas').insert({
+    tipo: 'reporte-turno',
+    severidad: score.globalPct < 65 ? 'critica' : score.globalPct < 75 ? 'importante' : 'informativa',
+    titulo: 'Reporte de turno: ' + score.globalLetter + ' (' + score.globalPct + '%)',
+    mensaje: html,
+    modulo_id: 'turno-cierre',
+    fecha: score.fecha
+  }).catch(function(){});
+}
+
+function generarEmailTurno(score) {
+  var areaHtml = Object.values(score.areaScores).map(function(a) {
+    return '<tr><td style="padding:6px 12px;font-size:13px;color:#374151">'+a.name+'</td>'
+      + '<td style="padding:6px 12px;font-size:13px;text-align:center;font-weight:700;color:'+scoreColor(a.letter)+'">'+a.letter+'</td>'
+      + '<td style="padding:6px 12px;font-size:13px;text-align:right;color:#6B7280">'+a.pct+'%</td></tr>';
+  }).join('');
+
+  var correctasHtml = score.correctas.slice(0,5).map(function(c){
+    return '<li style="font-size:13px;color:#374151;padding:2px 0">'+c.area+' · '+c.modulo+' ('+c.pct+'%)</li>';
+  }).join('');
+
+  var mejorasHtml = score.mejoras.slice(0,5).map(function(m){
+    return '<li style="font-size:13px;color:#374151;padding:2px 0">'+m.area+' · '+m.modulo+' ('+m.pct+'%)</li>';
+  }).join('');
+
+  return '<div style="font-family:sans-serif;max-width:580px;margin:0 auto">'
+    + '<div style="background:#1A1A18;padding:20px 24px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:space-between">'
+    + '<div><h2 style="color:#fff;margin:0;font-size:17px">Reporte de Turno</h2>'
+    + '<p style="color:rgba(255,255,255,.5);margin:4px 0 0;font-size:12px">'+score.fecha+' · '+score.hora+'</p></div>'
+    + '<div style="text-align:right"><div style="font-size:40px;font-weight:700;color:'+scoreColor(score.globalLetter)+'">'+score.globalLetter+'</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.5)">'+score.globalPct+'%</div></div>'
+    + '</div>'
+    + '<div style="border:1px solid #e5e7eb;border-top:none;padding:20px 24px;background:#fff;border-radius:0 0 10px 10px">'
+    + '<h3 style="font-size:13px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px">Desempeño por área</h3>'
+    + '<table style="width:100%;border-collapse:collapse;border:.5px solid #e5e7eb;border-radius:8px;overflow:hidden">'
+    + '<thead><tr style="background:#f9fafb">'
+    + '<th style="padding:8px 12px;font-size:11px;font-weight:600;color:#6B7280;text-align:left">ÁREA</th>'
+    + '<th style="padding:8px 12px;font-size:11px;font-weight:600;color:#6B7280;text-align:center">NOTA</th>'
+    + '<th style="padding:8px 12px;font-size:11px;font-weight:600;color:#6B7280;text-align:right">%</th>'
+    + '</tr></thead><tbody>' + areaHtml + '</tbody></table>'
+    + (score.criticos.length ? '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px;margin-top:14px">'
+      + '<p style="color:#DC2626;font-size:12px;font-weight:600;margin:0 0 4px">🚨 Módulos críticos sin completar</p>'
+      + score.criticos.map(function(c){return '<p style="color:#DC2626;font-size:12px;margin:2px 0">· '+c.area+' — '+c.modulo+'</p>';}).join('')
+      + '</div>' : '')
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">'
+    + '<div><p style="color:#15803D;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">✓ Conductas correctas</p><ul style="padding-left:16px;margin:0">'+correctasHtml+'</ul></div>'
+    + '<div><p style="color:#EA580C;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">↑ Deben mejorar</p><ul style="padding-left:16px;margin:0">'+mejorasHtml+'</ul></div>'
+    + '</div>'
+    + '<p style="margin-top:20px;font-size:11px;color:#9CA3AF">Generado automáticamente · De la Mora Zumarán Kitchen Support</p>'
+    + '</div></div>';
+}
+
+/* ─ SCORE EN TIEMPO REAL — actualiza el dashboard ─── */
+function actualizarScoreGlobal() {
+  var score = calcTurnoScore();
+
+  // Actualizar la calificación global en el header del dashboard
+  var calEl = document.getElementById('dash-score-letter');
+  var pctEl = document.getElementById('dash-score-pct');
+  if(calEl) { calEl.textContent = score.globalLetter; calEl.style.color = scoreColor(score.globalLetter); }
+  if(pctEl) { pctEl.textContent = score.globalPct + '% del turno'; }
+
+  // Actualizar scores por área en las cards del dashboard
+  Object.entries(score.areaScores).forEach(function(entry) {
+    var aId = entry[0], a = entry[1];
+    var el = document.getElementById('area-score-' + aId);
+    if(el) { el.textContent = a.letter; el.style.color = scoreColor(a.letter); }
+    var elPct = document.getElementById('area-pct-' + aId);
+    if(elPct) { elPct.textContent = a.pct + '% completado'; }
+  });
+
+  return score;
+}
+
+/* ─ CSS DEL REPORTE DE CIERRE ────────────────────── */
+/* (ya tiene usr-modal-* del módulo de usuarios) */
+/* ══ FIN MOTOR DE SCORING ══ */
+
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var pct=Math.round(hechos/total*100);var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:pct,ts:Date.now()}));}catch(e){}sbUpsertProgreso(activeSub,pct,total,hechos,{})}
 function getProgreso(s){var k='vk_prog_'+s+'_'+hoyKey();try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function calcScoreArea(catId){var cat=ESTRUCTURA.find(c=>c.id===catId);if(!cat)return{pct:0,alerta:false};var sc=0,mx=0,al=false;cat.subs.forEach(function(sub){var p=MOD_PESOS[sub.id]||1;mx+=p*100;var pr=getProgreso(sub.id);var pct=pr?pr.pct:0;sc+=p*pct;if(MOD_CRITICOS.indexOf(sub.id)>=0&&pct<100)al=true;});return{pct:mx?Math.round(sc/mx):0,score:sc,maxScore:mx,alerta:al};}
