@@ -671,6 +671,168 @@ const DMZ = [
   {id:'dmz2',name:'Blanca DMZ', email:'blanca@delamorazumaran.com',pass:'VK.DMZ2026',rol:'admin',active:true,hidden:true},
 ];
 
+
+/* ══ ROLES DINÁMICOS ══ */
+var PERMS_LIST = [
+  {key:'dashboard',  label:'Dashboard & alertas'},
+  {key:'modulos',    label:'Módulos operativos'},
+  {key:'usuarios',   label:'Gestión de usuarios'},
+  {key:'reportes',   label:'Reportes e historial'},
+  {key:'config',     label:'Configuración'},
+];
+
+var ROLES_COLORS = ['#7C3AED','#1D4ED8','#15803D','#92400E','#BE185D','#374151','#C2410C','#0F766E','#B45309','#9F1239'];
+
+function getRoles() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_roles_v2') || 'null');
+    if(stored && stored.length) return stored;
+  } catch(e){}
+  // Roles por defecto
+  var defaults = [
+    {id:'propietario', label:'Propietario',  color:'#1D4ED8', perms:{dashboard:true, modulos:false,usuarios:true, reportes:true, config:false}},
+    {id:'gerente',     label:'Gerente',      color:'#0F766E', perms:{dashboard:true, modulos:true, usuarios:false,reportes:true, config:false}},
+    {id:'chef',        label:'Chef',         color:'#15803D', perms:{dashboard:false,modulos:true, usuarios:false,reportes:false,config:false}},
+    {id:'barista',     label:'Barista',      color:'#92400E', perms:{dashboard:false,modulos:true, usuarios:false,reportes:false,config:false}},
+    {id:'mesero',      label:'Mesero',       color:'#BE185D', perms:{dashboard:false,modulos:true, usuarios:false,reportes:false,config:false}},
+    {id:'supervisor',  label:'Supervisor',   color:'#C2410C', perms:{dashboard:true, modulos:true, usuarios:false,reportes:true, config:false}},
+    {id:'limpieza',    label:'Limpieza',     color:'#374151', perms:{dashboard:false,modulos:true, usuarios:false,reportes:false,config:false}},
+  ];
+  localStorage.setItem('vk_roles_v2', JSON.stringify(defaults));
+  return defaults;
+}
+
+function saveRoles(roles) {
+  localStorage.setItem('vk_roles_v2', JSON.stringify(roles));
+}
+
+function getRoleById(id) {
+  return getRoles().find(r => r.id === id) || {id:id, label:id, color:'#9CA3AF', perms:{}};
+}
+
+function renderRolesAdmin(el, cat, sub) {
+  var roles = getRoles();
+  var html = '<div class="fp fade-in"><div style="padding:20px 24px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Roles y Permisos</span>'
+    + '<span class="usr-count">' + roles.length + ' roles</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="abrirCrearRol()"><i class="ti ti-plus" style="font-size:14px"></i> Crear rol</button>'
+    + '</div>'
+    + '<p style="font-size:13px;color:var(--text3,#888);margin-bottom:20px">Agrega los roles que necesites según la operación. Cada rol define qué puede ver y hacer cada colaborador.</p>'
+    + '<div class="roles-grid">';
+
+  roles.forEach(r => {
+    var perms = r.perms || {};
+    html += '<div class="role-card">'
+      + '<div class="role-card-head">'
+      + '<div style="display:flex;align-items:center;gap:8px">'
+      + '<div style="width:10px;height:10px;border-radius:50%;background:' + r.color + ';flex-shrink:0"></div>'
+      + '<span class="role-card-name">' + r.label + '</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:4px">'
+      + '<button class="usr-action-btn edit" title="Editar" onclick="editarRol(\'' + r.id + '\')"><i class="ti ti-pencil" style="font-size:13px"></i></button>'
+      + '<button class="usr-action-btn del" title="Eliminar" onclick="eliminarRol(\'' + r.id + '\')"><i class="ti ti-trash" style="font-size:13px"></i></button>'
+      + '</div></div>'
+      + '<div class="role-perms">'
+      + PERMS_LIST.map(p => '<div class="role-perm ' + (perms[p.key]?'yes':'no') + '">'
+        + '<i class="ti ti-' + (perms[p.key]?'check':'x') + '"></i>'
+        + '<span>' + p.label + '</span></div>').join('')
+      + '</div></div>';
+  });
+
+  html += '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function abrirCrearRol()  { abrirModalRol(null); }
+function editarRol(id)    { abrirModalRol(getRoleById(id)); }
+
+function abrirModalRol(rol) {
+  var isNew  = !rol;
+  rol = rol || {};
+  var perms  = rol.perms || {};
+  var colorVal = rol.color || ROLES_COLORS[Math.floor(Math.random()*ROLES_COLORS.length)];
+
+  var html = '<div class="usr-modal-bg" id="rolModalBg" onclick="if(event.target.id===\'rolModalBg\')cerrarModalRol()">'
+    + '<div class="usr-modal" style="max-width:480px">'
+    + '<div class="usr-modal-head">'
+    + '<span class="usr-modal-title">' + (isNew?'Crear rol':'Editar rol') + '</span>'
+    + '<button class="usr-modal-close" onclick="cerrarModalRol()">×</button>'
+    + '</div><div class="usr-modal-body">'
+    + '<div class="usr-field-grid">'
+    + '<div class="usr-field"><label>Nombre del rol <span>*</span></label>'
+    + '<input type="text" id="rolNombre" value="' + (rol.label||'') + '" placeholder="Ej: Cocinero, Capitán, Hostess...">'
+    + '</div>'
+    + '<div class="usr-field"><label>Color identificador</label>'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-top:4px">'
+    + '<input type="color" class="usr-color-input" id="rolColor" value="' + colorVal + '">'
+    + '<span style="font-size:12px;color:var(--text3)">Color en lista y avatar</span>'
+    + '</div></div></div>'
+    + '<div class="usr-field-section">Permisos de acceso</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px">'
+    + PERMS_LIST.map(p => '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border:1px solid var(--border,#ddd);border-radius:8px;'
+      + (perms[p.key]?'background:var(--bg2,#f5f5f5)':'') + '">'
+      + '<input type="checkbox" id="rolPerm_' + p.key + '" ' + (perms[p.key]?'checked':'')
+      + ' style="accent-color:var(--cj,#146B4F);width:16px;height:16px"'
+      + ' onchange="this.closest(\'label\').style.background=this.checked?\'var(--bg2,#f5f5f5)\':\'\'">'
+      + '<span style="font-size:13px;font-weight:500">' + p.label + '</span></label>').join('')
+    + '</div>'
+    + '</div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="cerrarModalRol()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarRol(\'' + (rol.id||'') + '\')">' + (isNew?'Crear rol':'Guardar cambios') + '</button>'
+    + '</div></div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+}
+
+function cerrarModalRol() {
+  var m = document.getElementById('rolModalBg');
+  if(m) m.remove();
+}
+
+function guardarRol(existingId) {
+  var nombre = document.getElementById('rolNombre')?.value.trim();
+  if(!nombre) { alert('El nombre del rol es obligatorio.'); return; }
+
+  var perms = {};
+  PERMS_LIST.forEach(p => {
+    perms[p.key] = document.getElementById('rolPerm_' + p.key)?.checked || false;
+  });
+
+  var roles = getRoles();
+  var newId = existingId || nombre.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'') + '_' + Date.now();
+  var color = document.getElementById('rolColor')?.value || '#9CA3AF';
+
+  if(existingId) {
+    var idx = roles.findIndex(r => r.id === existingId);
+    if(idx >= 0) roles[idx] = {...roles[idx], label:nombre, color, perms};
+  } else {
+    roles.push({id: newId, label:nombre, color, perms});
+  }
+
+  saveRoles(roles);
+  cerrarModalRol();
+  renderRolesAdmin(document.getElementById('main-content'), null, null);
+}
+
+function eliminarRol(id) {
+  var users = getUsers();
+  var inUse = users.filter(u => u.rol === id && !u.hidden);
+  if(inUse.length > 0) {
+    alert('Este rol tiene ' + inUse.length + ' colaborador(es) asignado(s). Reasigna antes de eliminar.');
+    return;
+  }
+  if(!confirm('¿Eliminar el rol? Esta acción no se puede deshacer.')) return;
+  saveRoles(getRoles().filter(r => r.id !== id));
+  renderRolesAdmin(document.getElementById('main-content'), null, null);
+}
+/* ══ FIN ROLES DINÁMICOS ══ */
+
+
 function getUsers(){
   try{ return JSON.parse(localStorage.getItem('vk_users_v2')||'[]'); }catch(e){return [];}
 }
