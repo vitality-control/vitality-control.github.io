@@ -2338,6 +2338,238 @@ function actualizarScoreGlobal() {
 /* ══ FIN MOTOR DE SCORING ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   MÓDULO MERMA — Control de desperdicios y pérdidas
+   Registro por producto · Causas · Costos · Alertas
+══════════════════════════════════════════════════════ */
+
+var MERMA_CAUSAS = [
+  'Accidente / Daño',
+  'Vencimiento / Caducidad',
+  'Mala calidad del insumo',
+  'Sobreproducción',
+  'Error de receta',
+  'Proceso incorrecto',
+  'Robo / Pérdida',
+  'Otro'
+];
+
+function getMermaHoy() {
+  try {
+    var all = JSON.parse(localStorage.getItem('merma_registro') || '[]');
+    var hoy = new Date().toISOString().slice(0,10);
+    return all.filter(function(m){ return m.fecha === hoy; });
+  } catch(e){ return []; }
+}
+
+function saveMermaRegistro(registro) {
+  try {
+    var all = JSON.parse(localStorage.getItem('merma_registro') || '[]');
+    all.push(registro);
+    localStorage.setItem('merma_registro', JSON.stringify(all.slice(-500)));
+  } catch(e){}
+}
+
+/* ─ RENDER PRINCIPAL ────────────────────────────────── */
+function renderMerma(el, cat, sub) {
+  var mermaHoy = getMermaHoy();
+  var area     = cat ? cat.id : null;
+  var filtrada = area ? mermaHoy.filter(function(m){ return m.area === area; }) : mermaHoy;
+
+  var totalCosto = filtrada.reduce(function(s,m){ return s + (parseFloat(m.costo)||0); }, 0);
+  var totalItems = filtrada.length;
+
+  // Agrupar por causa
+  var porCausa = {};
+  filtrada.forEach(function(m) {
+    porCausa[m.causa] = (porCausa[m.causa]||0) + 1;
+  });
+  var causaTop = Object.entries(porCausa).sort(function(a,b){return b[1]-a[1];})[0];
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Control de Merma</span>'
+    + '<span class="usr-count">Hoy · ' + (area ? (cat.name) : 'Todas las áreas') + '</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="abrirRegistroMerma(\'' + (area||'cocina') + '\')"><i class="ti ti-plus" style="font-size:14px"></i> Registrar merma</button>'
+    + '</div>'
+
+    /* KPIs */
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'
+    + '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:' + (totalCosto>500?'#FFF5F5':'var(--surface-2)') + '">'
+    + '<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Costo total merma</div>'
+    + '<div style="font-size:24px;font-weight:700;color:' + (totalCosto>500?'#DC2626':'var(--text-primary)') + ';margin-top:4px">$' + totalCosto.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0}) + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">MXN del día</div></div>'
+
+    + '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:var(--surface-2)">'
+    + '<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Registros</div>'
+    + '<div style="font-size:24px;font-weight:700;color:var(--text-primary);margin-top:4px">' + totalItems + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">productos registrados</div></div>'
+
+    + '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:var(--surface-2)">'
+    + '<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Causa principal</div>'
+    + '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-top:4px">' + (causaTop ? causaTop[0].split(' ')[0] : '—') + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">' + (causaTop ? causaTop[1] + ' ocurrencias' : 'Sin registros') + '</div></div>'
+    + '</div>'
+
+    /* Lista */
+    + (filtrada.length
+        ? '<div class="usr-table-wrap"><div style="overflow-x:auto"><table class="usr-table"><thead><tr>'
+          + '<th>Producto</th><th>Área</th><th>Causa</th><th style="text-align:right">Cantidad</th>'
+          + '<th style="text-align:right">Costo</th><th>Responsable</th><th>Hora</th><th></th>'
+          + '</tr></thead><tbody>'
+          + filtrada.slice().reverse().map(function(m) {
+              return '<tr>'
+                + '<td style="font-weight:500">' + (m.producto||'—') + '</td>'
+                + '<td><span style="font-size:10px;background:var(--surface-1);padding:2px 8px;border-radius:10px;border:.5px solid var(--border)">' + (m.area||'—') + '</span></td>'
+                + '<td style="font-size:12px;color:var(--text-secondary)">' + (m.causa||'—') + '</td>'
+                + '<td style="text-align:right;font-family:var(--mono,monospace);font-size:12px">' + (m.cantidad||'—') + ' ' + (m.unidad||'') + '</td>'
+                + '<td style="text-align:right;font-family:var(--mono,monospace);font-size:12px;color:' + (parseFloat(m.costo)>100?'#DC2626':'var(--text-primary)') + '">$' + parseFloat(m.costo||0).toFixed(2) + '</td>'
+                + '<td style="font-size:12px;color:var(--text-secondary)">' + (m.responsable||'—') + '</td>'
+                + '<td style="font-size:11px;color:var(--text-muted)">' + (m.hora||'—') + '</td>'
+                + '<td><button class="usr-action-btn del" onclick="eliminarMerma(\'' + m.id + '\')"><i class="ti ti-x"></i></button></td>'
+                + '</tr>';
+            }).join('')
+          + '</tbody></table></div></div>'
+        : '<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px">Sin registros de merma hoy ✓</div>'
+    )
+    + '</div></div>';
+
+  el.innerHTML = html;
+  triggerFades();
+}
+
+/* ─ MODAL REGISTRO ──────────────────────────────────── */
+function abrirRegistroMerma(areaDefault) {
+  var areas  = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var user   = typeof CU !== 'undefined' && CU ? (CU.nombre||'')+' '+(CU.apellido||'') : '';
+  var areaOpts = areas.map(function(a) {
+    return '<option value="'+a.id+'"'+(a.id===areaDefault?' selected':'')+'>'+a.name+'</option>';
+  }).join('');
+  var causaOpts = MERMA_CAUSAS.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
+
+  var html = '<div class="usr-modal-bg" id="mermaModal" onclick="if(event.target.id===\'mermaModal\')document.getElementById(\'mermaModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:480px">'
+    + '<div class="usr-modal-head"><span class="usr-modal-title">Registrar Merma</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'mermaModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+
+    + '<div class="usr-field-grid" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Producto / Insumo <span>*</span></label>'
+    + '<input type="text" id="mrmProducto" placeholder="Ej: Pechuga de pollo, Leche, Pan..." autofocus></div>'
+    + '<div class="usr-field"><label>Área <span>*</span></label>'
+    + '<select id="mrmArea">'+areaOpts+'</select></div>'
+    + '</div>'
+
+    + '<div class="usr-field-grid cols3" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Cantidad <span>*</span></label>'
+    + '<input type="number" id="mrmCantidad" step="0.01" min="0" placeholder="0.00"></div>'
+    + '<div class="usr-field"><label>Unidad</label>'
+    + '<select id="mrmUnidad">'
+    + '<option>kg</option><option>g</option><option>lt</option><option>ml</option>'
+    + '<option>pza</option><option>caja</option><option>porción</option>'
+    + '</select></div>'
+    + '<div class="usr-field"><label>Costo MXN <span>*</span></label>'
+    + '<input type="number" id="mrmCosto" step="0.01" min="0" placeholder="0.00"></div>'
+    + '</div>'
+
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Causa <span>*</span></label>'
+    + '<select id="mrmCausa">'+causaOpts+'</select></div>'
+
+    + '<div class="usr-field-grid" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Responsable</label>'
+    + '<input type="text" id="mrmResponsable" value="'+user+'" placeholder="Nombre del responsable"></div>'
+    + '<div class="usr-field"><label>Supervisor</label>'
+    + '<input type="text" id="mrmSupervisor" placeholder="Nombre del supervisor"></div>'
+    + '</div>'
+
+    + '<div class="usr-field" style="margin-bottom:4px"><label>Observaciones</label>'
+    + '<input type="text" id="mrmObs" placeholder="Detalles adicionales..."></div>'
+
+    + '</div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'mermaModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarMerma()">Registrar merma</button>'
+    + '</div></div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+  setTimeout(function(){ document.getElementById('mrmProducto')?.focus(); }, 100);
+}
+
+function guardarMerma() {
+  var producto  = document.getElementById('mrmProducto')?.value.trim();
+  var cantidad  = parseFloat(document.getElementById('mrmCantidad')?.value) || 0;
+  var costo     = parseFloat(document.getElementById('mrmCosto')?.value) || 0;
+
+  if(!producto || costo <= 0) { alert('Producto y costo son obligatorios.'); return; }
+
+  var registro = {
+    id:           'mrm_' + Date.now(),
+    producto:     producto,
+    area:         document.getElementById('mrmArea')?.value || 'cocina',
+    cantidad:     cantidad,
+    unidad:       document.getElementById('mrmUnidad')?.value || 'kg',
+    costo:        costo,
+    causa:        document.getElementById('mrmCausa')?.value || 'Otro',
+    responsable:  document.getElementById('mrmResponsable')?.value || '',
+    supervisor:   document.getElementById('mrmSupervisor')?.value || '',
+    obs:          document.getElementById('mrmObs')?.value || '',
+    hora:         new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    fecha:        new Date().toISOString().slice(0,10),
+    usuario:      typeof CU !== 'undefined' && CU ? (CU.email||'') : ''
+  };
+
+  saveMermaRegistro(registro);
+
+  // Guardar en Supabase
+  if(typeof vkSB !== 'undefined' && vkSB) {
+    vkSB.from('merma').insert({
+      area: registro.area, producto: registro.producto,
+      cantidad: registro.cantidad, unidad: registro.unidad,
+      causa: registro.causa, notas: registro.obs,
+      registrado_por: registro.responsable,
+      supervisor: registro.supervisor,
+      fecha: registro.fecha
+    }).catch(function(){});
+  }
+
+  // Alerta si costo alto
+  if(costo > 300) {
+    if(typeof sbInsertAlerta === 'function') {
+      sbInsertAlerta('merma','importante',
+        'Merma elevada: ' + producto + ' ($' + costo.toFixed(0) + ' MXN)',
+        'Área: ' + registro.area.toUpperCase() + ' · Causa: ' + registro.causa + ' · Responsable: ' + registro.responsable,
+        'merma-' + registro.area
+      );
+    }
+  }
+
+  // Actualizar score
+  if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
+
+  document.getElementById('mermaModal')?.remove();
+
+  // Re-render
+  var mc = document.getElementById('main-content');
+  var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var cat = areas.find(function(a){return a.id===registro.area;});
+  if(mc) renderMerma(mc, cat, null);
+}
+
+function eliminarMerma(id) {
+  if(!confirm('¿Eliminar este registro de merma?')) return;
+  try {
+    var all = JSON.parse(localStorage.getItem('merma_registro') || '[]');
+    localStorage.setItem('merma_registro', JSON.stringify(all.filter(function(m){return m.id!==id;})));
+  } catch(e){}
+  var mc = document.getElementById('main-content');
+  if(mc) renderMerma(mc, null, null);
+}
+/* ══ FIN MÓDULO MERMA ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
@@ -2620,7 +2852,7 @@ function showSub(catId, subId){
     ]),
     'cocina-temperatura': ()=>renderTempFoto(mc,cat,sub),
     'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
-    'cocina-merma':       ()=>renderMerma(mc,cat,sub),
+    'cocina-merma': ()=>renderMerma(mc,cat,sub),cat,sub),
     'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
       {sec:'Verificación PEPS',items:['Revisar fechas de caducidad en todos los productos.','Colocar productos más viejos al frente.','Retirar y registrar productos caducados.','Verificar etiquetas con fecha de elaboración y caducidad.']},
       {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
@@ -2635,7 +2867,7 @@ function showSub(catId, subId){
       {sec:'Cierre Final',items:['Cerrar paso tolva molino (1 hr antes).','Limpiar máquina con rinzar / cafiza.','Desmontar tolva — guardar café restante.','Limpiar exterior del molino.','Barrer y trapear. Sacar basura. Apagar equipos.'],dark:true},
     ]),
     'barra-calibracion':  ()=>renderCalibration(mc,cat,sub),
-    'barra-merma':        ()=>renderMerma(mc,cat,sub),
+    'barra-merma': ()=>renderMerma(mc,cat,sub),cat,sub),
     'barra-espresso': ()=>renderChecklist(mc,cat,sub,'Cafe Espresso — Parametros','barra',[{sec:'Parametros de Extraccion',items:['Dosis: 18-19 g. Rendimiento: 36-40 g. Tiempo: 25-30 seg.','Temperatura de agua: 93-95 C. Presion: 9 bar.','Molienda: ajustar diario segun clima y humedad.','Calibracion: probar shot antes de servir al cliente.']},{sec:'Preparaciones Base',items:['Espresso — 18 g dosis, 36 g rendimiento, 28 seg.','Americano — espresso + agua caliente 150 ml.','Cappuccino — espresso + leche texturizada 120 ml, espuma densa.','Latte — espresso + leche vaporizada 200 ml, espuma fina.']},{sec:'Control de Calidad',items:['Probar primer shot de apertura y registrar parametros.','Verificar presion de maquina cada turno.','Purgar grupos antes de cada extraccion.','Registrar desviaciones en formato de calibracion.'],dark:true}]),
     'barra-frias': ()=>renderChecklist(mc,cat,sub,'Bebidas Frias y Matcha','barra',[{sec:'Matcha y Te',items:['Matcha latte frio — 4 g matcha, 30 ml agua 80C, batir, 200 ml leche fria, hielo.','Matcha latte caliente — misma base con leche vaporizada.','Cold brew matcha — matcha + agua fria 12 hrs refrigeracion.','London Fog frio — te earl grey, lavanda, leche de avena, hielo.']},{sec:'Lattes Frios',items:['Lavender latte — espresso, sirope lavanda, leche fria, hielo.','Chai latte frio — concentrado chai, leche fria, canela, hielo.','Latte de curcuma — curcuma, pimienta, leche vegetal, miel, hielo.','Horchata coffee — espresso, horchata casera, canela, hielo.']},{sec:'Cold Brew',items:['Cold brew: 100 g cafe grueso + 800 ml agua fria, 16-20 hrs, colar.','Ratio servicio: 150 ml cold brew + 50 ml agua + hielo.','Almacenar cold brew maximo 72 hrs en refrigeracion.'],dark:true}]),
     'barra-insumos':      ()=>renderChecklist(mc,cat,sub,'Control de Insumos de Barra','barra',[
