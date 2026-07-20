@@ -2852,7 +2852,7 @@ function showSub(catId, subId){
     ]),
     'cocina-temperatura': ()=>renderTempFoto(mc,cat,sub),
     'cocina-produccion':  ()=>renderProduccion(mc,cat,sub),
-    'cocina-merma': ()=>renderMerma(mc,cat,sub),cat,sub),
+    'cocina-merma': ()=>renderMerma(mc,cat,sub),
     'cocina-inocuidad':   ()=>renderChecklist(mc,cat,sub,'Inocuidad · PEPS · Trazabilidad','cocina',[
       {sec:'Verificación PEPS',items:['Revisar fechas de caducidad en todos los productos.','Colocar productos más viejos al frente.','Retirar y registrar productos caducados.','Verificar etiquetas con fecha de elaboración y caducidad.']},
       {sec:'Higiene de Manos',items:['Lavado de manos antes de manipular alimentos.','Uso de guantes para carnes crudas.','Cambio de guantes entre áreas diferentes.','Sin joyería durante la manipulación de alimentos.']},
@@ -2867,7 +2867,7 @@ function showSub(catId, subId){
       {sec:'Cierre Final',items:['Cerrar paso tolva molino (1 hr antes).','Limpiar máquina con rinzar / cafiza.','Desmontar tolva — guardar café restante.','Limpiar exterior del molino.','Barrer y trapear. Sacar basura. Apagar equipos.'],dark:true},
     ]),
     'barra-calibracion':  ()=>renderCalibration(mc,cat,sub),
-    'barra-merma': ()=>renderMerma(mc,cat,sub),cat,sub),
+    'barra-merma': ()=>renderMerma(mc,cat,sub),
     'barra-espresso': ()=>renderChecklist(mc,cat,sub,'Cafe Espresso — Parametros','barra',[{sec:'Parametros de Extraccion',items:['Dosis: 18-19 g. Rendimiento: 36-40 g. Tiempo: 25-30 seg.','Temperatura de agua: 93-95 C. Presion: 9 bar.','Molienda: ajustar diario segun clima y humedad.','Calibracion: probar shot antes de servir al cliente.']},{sec:'Preparaciones Base',items:['Espresso — 18 g dosis, 36 g rendimiento, 28 seg.','Americano — espresso + agua caliente 150 ml.','Cappuccino — espresso + leche texturizada 120 ml, espuma densa.','Latte — espresso + leche vaporizada 200 ml, espuma fina.']},{sec:'Control de Calidad',items:['Probar primer shot de apertura y registrar parametros.','Verificar presion de maquina cada turno.','Purgar grupos antes de cada extraccion.','Registrar desviaciones en formato de calibracion.'],dark:true}]),
     'barra-frias': ()=>renderChecklist(mc,cat,sub,'Bebidas Frias y Matcha','barra',[{sec:'Matcha y Te',items:['Matcha latte frio — 4 g matcha, 30 ml agua 80C, batir, 200 ml leche fria, hielo.','Matcha latte caliente — misma base con leche vaporizada.','Cold brew matcha — matcha + agua fria 12 hrs refrigeracion.','London Fog frio — te earl grey, lavanda, leche de avena, hielo.']},{sec:'Lattes Frios',items:['Lavender latte — espresso, sirope lavanda, leche fria, hielo.','Chai latte frio — concentrado chai, leche fria, canela, hielo.','Latte de curcuma — curcuma, pimienta, leche vegetal, miel, hielo.','Horchata coffee — espresso, horchata casera, canela, hielo.']},{sec:'Cold Brew',items:['Cold brew: 100 g cafe grueso + 800 ml agua fria, 16-20 hrs, colar.','Ratio servicio: 150 ml cold brew + 50 ml agua + hielo.','Almacenar cold brew maximo 72 hrs en refrigeracion.'],dark:true}]),
     'barra-insumos':      ()=>renderChecklist(mc,cat,sub,'Control de Insumos de Barra','barra',[
