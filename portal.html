@@ -2570,6 +2570,322 @@ function eliminarMerma(id) {
 /* ══ FIN MÓDULO MERMA ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   MÓDULO PEPS / INVENTARIO — Rotación y control de stock
+   Primero en Entrar · Primero en Salir · Caducidades
+══════════════════════════════════════════════════════ */
+
+function getInventario() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_inventario') || 'null');
+    if (stored && stored.length) return stored;
+  } catch(e){}
+  // Items de ejemplo para arrancar
+  var defaults = [
+    {id:'inv1',producto:'Pollo entero',categoria:'Proteína',area:'almacen',stock:15,unidad:'kg',minimo:5,maximo:30,costo_unit:85,proveedor:'Bachoco',caducidad:'',ubicacion:'Congelador 1'},
+    {id:'inv2',producto:'Lomo de res',categoria:'Proteína',area:'almacen',stock:8,unidad:'kg',minimo:3,maximo:20,costo_unit:180,proveedor:'La Europea',caducidad:'',ubicacion:'Congelador 1'},
+    {id:'inv3',producto:'Leche entera',categoria:'Lácteos',area:'barra',stock:20,unidad:'lt',minimo:10,maximo:40,costo_unit:24,proveedor:'Lala',caducidad:'',ubicacion:'Refrigerador Barra'},
+    {id:'inv4',producto:'Crema',categoria:'Lácteos',area:'cocina',stock:6,unidad:'lt',minimo:4,maximo:15,costo_unit:48,proveedor:'Lala',caducidad:'',ubicacion:'Refrigerador Cocina'},
+    {id:'inv5',producto:'Jitomate',categoria:'Verdura',area:'cocina',stock:12,unidad:'kg',minimo:5,maximo:25,costo_unit:28,proveedor:'Mercado',caducidad:'',ubicacion:'Línea Fría'},
+    {id:'inv6',producto:'Cebolla blanca',categoria:'Verdura',area:'cocina',stock:8,unidad:'kg',minimo:3,maximo:20,costo_unit:18,proveedor:'Mercado',caducidad:'',ubicacion:'Línea Fría'},
+    {id:'inv7',producto:'Café Veracruz',categoria:'Bebida',area:'barra',stock:5,unidad:'kg',minimo:2,maximo:10,costo_unit:320,proveedor:'Café Regional',caducidad:'',ubicacion:'Almacén seco'},
+    {id:'inv8',producto:'Azúcar',categoria:'Abarrote',area:'almacen',stock:25,unidad:'kg',minimo:10,maximo:50,costo_unit:19,proveedor:'La Costena',caducidad:'',ubicacion:'Almacén seco'},
+  ];
+  localStorage.setItem('vk_inventario', JSON.stringify(defaults));
+  return defaults;
+}
+function saveInventario(items) { localStorage.setItem('vk_inventario', JSON.stringify(items)); }
+
+function getMovimientos() {
+  try { return JSON.parse(localStorage.getItem('vk_movimientos') || '[]'); }
+  catch(e){ return []; }
+}
+function saveMovimiento(mov) {
+  try {
+    var all = getMovimientos();
+    all.unshift(mov);
+    localStorage.setItem('vk_movimientos', JSON.stringify(all.slice(0,200)));
+  } catch(e){}
+}
+
+/* ─ RENDER PEPS ─────────────────────────────────────── */
+function renderPEPS(el, cat, sub) {
+  var items   = getInventario();
+  var area    = cat ? cat.id : null;
+  var filtred = area ? items.filter(function(i){ return i.area === area; }) : items;
+
+  // Clasificar: OK / Bajo / Crítico
+  var criticos = filtred.filter(function(i){ return i.stock <= i.minimo; });
+  var bajos    = filtred.filter(function(i){ return i.stock > i.minimo && i.stock < i.minimo*1.5; });
+  var ok       = filtred.filter(function(i){ return i.stock >= i.minimo*1.5; });
+
+  var valorTotal = filtred.reduce(function(s,i){ return s+(i.stock*(i.costo_unit||0)); }, 0);
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">PEPS · Inventario</span>'
+    + '<span class="usr-count">' + filtred.length + ' productos</span></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-ghost btn-sm" onclick="renderMovimientos(document.getElementById(\'main-content\'))"><i class="ti ti-history" style="font-size:13px"></i> Movimientos</button>'
+    + '<button class="btn btn-kale btn-sm" onclick="abrirMovimiento(\'entrada\',\''+(area||'almacen')+'\')"><i class="ti ti-package-import" style="font-size:13px"></i> Entrada</button>'
+    + '<button class="btn btn-sm" style="background:#DC2626;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:12px" onclick="abrirMovimiento(\'salida\',\''+(area||'almacen')+'\')"><i class="ti ti-package-export" style="font-size:13px"></i> Salida</button>'
+    + '<button class="btn btn-ghost btn-sm" onclick="abrirAgregarProducto()"><i class="ti ti-plus" style="font-size:13px"></i> Producto</button>'
+    + '</div></div>'
+
+    /* KPIs */
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
+    + kpiBox('Críticos', criticos.length, criticos.length>0?'#DC2626':'#15803D', criticos.length>0?'#FEE2E2':'#DCFCE7')
+    + kpiBox('Stock bajo', bajos.length, '#D97706', '#FEF3C7')
+    + kpiBox('OK', ok.length, '#15803D', '#DCFCE7')
+    + kpiBox('Valor inventario', '$'+Math.round(valorTotal).toLocaleString('es-MX'), '#1D4ED8', '#DBEAFE')
+    + '</div>'
+
+    /* Alertas PEPS */
+    + (criticos.length ? '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:12px 14px;margin-bottom:12px">'
+        + '<div style="font-size:12px;font-weight:600;color:#DC2626;margin-bottom:4px">🚨 Stock crítico — reponer urgente</div>'
+        + criticos.map(function(i){ return '<div style="font-size:12px;color:#DC2626">· '+i.producto+': '+i.stock+' '+i.unidad+' (mínimo: '+i.minimo+')</div>'; }).join('')
+        + '</div>' : '')
+
+    /* Tabla */
+    + '<div class="usr-table-wrap"><div style="overflow-x:auto"><table class="usr-table"><thead><tr>'
+    + '<th>Producto</th><th>Categoría</th><th>Área</th>'
+    + '<th style="text-align:center">Stock</th><th style="text-align:center">Mínimo</th>'
+    + '<th style="text-align:right">Costo unit.</th><th style="text-align:right">Valor total</th>'
+    + '<th>Ubicación</th><th>Acciones</th>'
+    + '</tr></thead><tbody>'
+    + filtred.map(function(item) {
+        var pct    = item.minimo > 0 ? (item.stock/item.minimo) : 1;
+        var estado = pct <= 1 ? '#DC2626' : pct < 1.5 ? '#D97706' : '#15803D';
+        var bg     = pct <= 1 ? '#FEF2F2' : pct < 1.5 ? '#FFFBEB' : 'transparent';
+        return '<tr style="background:'+bg+'">'
+          + '<td style="font-weight:500">'+item.producto+'</td>'
+          + '<td style="font-size:11px;color:var(--text-muted)">'+item.categoria+'</td>'
+          + '<td><span style="font-size:10px;background:var(--surface-1);padding:2px 8px;border-radius:10px;border:.5px solid var(--border)">'+item.area+'</span></td>'
+          + '<td style="text-align:center;font-weight:700;color:'+estado+';font-family:var(--mono,monospace)">'+item.stock+' '+item.unidad+'</td>'
+          + '<td style="text-align:center;font-size:12px;color:var(--text-muted)">'+item.minimo+' '+item.unidad+'</td>'
+          + '<td style="text-align:right;font-family:var(--mono,monospace);font-size:12px">$'+Number(item.costo_unit||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+'</td>'
+          + '<td style="text-align:right;font-family:var(--mono,monospace);font-size:12px">$'+Math.round(item.stock*(item.costo_unit||0)).toLocaleString('es-MX')+'</td>'
+          + '<td style="font-size:12px;color:var(--text-muted)">'+item.ubicacion+'</td>'
+          + '<td><div style="display:flex;gap:4px">'
+          + '<button class="usr-action-btn edit" onclick="abrirMovimiento(\'entrada\',null,\''+item.id+'\')"><i class="ti ti-package-import"></i></button>'
+          + '<button class="usr-action-btn del" style="color:#D97706" onclick="abrirMovimiento(\'salida\',null,\''+item.id+'\')"><i class="ti ti-package-export"></i></button>'
+          + '<button class="usr-action-btn edit" onclick="editarProducto(\''+item.id+'\')"><i class="ti ti-pencil"></i></button>'
+          + '</div></td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table></div></div>'
+    + '</div></div>';
+
+  el.innerHTML = html;
+  triggerFades();
+
+  // Alerta si hay críticos
+  if(criticos.length > 0) {
+    criticos.forEach(function(item) {
+      if(typeof sbInsertAlerta === 'function') {
+        sbInsertAlerta('inventario','importante',
+          'Stock crítico: ' + item.producto + ' (' + item.stock + ' ' + item.unidad + ')',
+          'Stock actual por debajo del mínimo. Reponer urgente. Ubicación: ' + item.ubicacion,
+          'inventario-' + item.area
+        );
+      }
+    });
+  }
+}
+
+function kpiBox(label, value, color, bg) {
+  return '<div style="border:.5px solid var(--border);border-radius:10px;padding:12px;background:'+bg+';text-align:center">'
+    + '<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+label+'</div>'
+    + '<div style="font-size:20px;font-weight:700;color:'+color+'">'+value+'</div>'
+    + '</div>';
+}
+
+/* ─ MOVIMIENTOS (entrada / salida) ─────────────────── */
+function abrirMovimiento(tipo, areaDefault, itemId) {
+  var items   = getInventario();
+  var area    = areaDefault || 'almacen';
+  var itemsF  = items.filter(function(i){ return !areaDefault || i.area===areaDefault; });
+  var selected = itemId ? items.find(function(i){return i.id===itemId;}) : null;
+
+  var itemOpts = items.map(function(i) {
+    return '<option value="'+i.id+'"'+(i.id===itemId?' selected':'')+'>'+i.producto+' ('+i.stock+' '+i.unidad+')</option>';
+  }).join('');
+
+  var html = '<div class="usr-modal-bg" id="movModal" onclick="if(event.target.id===\'movModal\')document.getElementById(\'movModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:420px">'
+    + '<div class="usr-modal-head" style="background:'+(tipo==='entrada'?'#DCFCE7':'#FEE2E2')+'">'
+    + '<span class="usr-modal-title" style="color:'+(tipo==='entrada'?'#15803D':'#DC2626')+'">'
+    + (tipo==='entrada'?'📥 Entrada de producto':'📤 Salida de producto')+'</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'movModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Producto <span>*</span></label>'
+    + '<select id="movProducto">'+itemOpts+'</select></div>'
+    + '<div class="usr-field-grid" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Cantidad <span>*</span></label>'
+    + '<input type="number" id="movCantidad" step="0.01" min="0.01" placeholder="0.00" autofocus></div>'
+    + '<div class="usr-field"><label>Motivo</label>'
+    + '<input type="text" id="movMotivo" placeholder="Ej: Compra semanal, Servicio..."></div>'
+    + '</div>'
+    + '<div class="usr-field" style="margin-bottom:4px"><label>Proveedor / Notas</label>'
+    + '<input type="text" id="movNotas" placeholder="' + (tipo==='entrada'?'Proveedor, factura...':'Área que recibe...') + '"></div>'
+    + '</div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'movModal\').remove()">Cancelar</button>'
+    + '<button class="btn" style="background:'+(tipo==='entrada'?'#15803D':'#DC2626')+';color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer" onclick="guardarMovimiento(\''+tipo+'\')">'
+    + (tipo==='entrada'?'Registrar entrada':'Registrar salida')+'</button>'
+    + '</div></div></div>';
+
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+  setTimeout(function(){ document.getElementById('movCantidad')?.focus(); }, 100);
+}
+
+function guardarMovimiento(tipo) {
+  var productoId = document.getElementById('movProducto')?.value;
+  var cantidad   = parseFloat(document.getElementById('movCantidad')?.value) || 0;
+  if(!productoId || cantidad <= 0) { alert('Selecciona el producto y la cantidad.'); return; }
+
+  var items = getInventario();
+  var idx   = items.findIndex(function(i){return i.id===productoId;});
+  if(idx < 0) return;
+
+  var stockAntes = items[idx].stock;
+  if(tipo==='entrada') {
+    items[idx].stock = parseFloat((stockAntes + cantidad).toFixed(3));
+  } else {
+    if(cantidad > stockAntes) { alert('No hay suficiente stock. Stock actual: '+stockAntes+' '+items[idx].unidad); return; }
+    items[idx].stock = parseFloat((stockAntes - cantidad).toFixed(3));
+  }
+
+  saveInventario(items);
+  saveMovimiento({
+    id:        'mov_'+Date.now(),
+    tipo:      tipo,
+    producto:  items[idx].producto,
+    cantidad:  cantidad,
+    unidad:    items[idx].unidad,
+    motivo:    document.getElementById('movMotivo')?.value||'',
+    notas:     document.getElementById('movNotas')?.value||'',
+    stock_antes:  stockAntes,
+    stock_despues:items[idx].stock,
+    usuario:   typeof CU!=='undefined'&&CU?(CU.email||''):'',
+    hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    fecha:     new Date().toISOString().slice(0,10)
+  });
+
+  // Alerta si queda bajo mínimo
+  if(items[idx].stock <= items[idx].minimo && tipo==='salida') {
+    if(typeof sbInsertAlerta==='function') {
+      sbInsertAlerta('inventario','critica',
+        'Stock crítico: '+items[idx].producto+' ('+items[idx].stock+' '+items[idx].unidad+')',
+        'Stock por debajo del mínimo ('+items[idx].minimo+'). Reponer urgente.',
+        'inventario-'+items[idx].area);
+    }
+  }
+
+  document.getElementById('movModal')?.remove();
+  var mc=document.getElementById('main-content');
+  if(mc) renderPEPS(mc,null,null);
+}
+
+function renderMovimientos(el) {
+  var movs = getMovimientos().slice(0,50);
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Movimientos de inventario</span></div>'
+    + '<button class="btn btn-ghost btn-sm" onclick="renderPEPS(document.getElementById(\'main-content\'),null,null)">← Volver</button></div>'
+    + (movs.length
+        ? '<div class="usr-table-wrap"><div style="overflow-x:auto"><table class="usr-table"><thead><tr>'
+          + '<th>Tipo</th><th>Producto</th><th>Cantidad</th><th>Stock antes</th><th>Stock después</th><th>Motivo</th><th>Fecha</th><th>Hora</th>'
+          + '</tr></thead><tbody>'
+          + movs.map(function(m) {
+              var entrada = m.tipo==='entrada';
+              return '<tr><td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:'+(entrada?'#DCFCE7':'#FEE2E2')+';color:'+(entrada?'#15803D':'#DC2626')+'">'+(entrada?'▲ Entrada':'▼ Salida')+'</span></td>'
+                + '<td style="font-weight:500">'+m.producto+'</td>'
+                + '<td style="font-family:var(--mono,monospace);font-weight:600;color:'+(entrada?'#15803D':'#DC2626')+'">'+( entrada?'+':'-')+m.cantidad+' '+m.unidad+'</td>'
+                + '<td style="font-family:var(--mono,monospace);font-size:12px;color:var(--text-muted)">'+m.stock_antes+'</td>'
+                + '<td style="font-family:var(--mono,monospace);font-size:12px">'+m.stock_despues+'</td>'
+                + '<td style="font-size:12px;color:var(--text-muted)">'+(m.motivo||'—')+'</td>'
+                + '<td style="font-family:var(--mono,monospace);font-size:11px">'+m.fecha+'</td>'
+                + '<td style="font-size:11px;color:var(--text-muted)">'+m.hora+'</td>'
+                + '</tr>';
+            }).join('')
+          + '</tbody></table></div></div>'
+        : '<div style="padding:40px;text-align:center;color:var(--text-muted)">Sin movimientos registrados</div>')
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function abrirAgregarProducto() {
+  var areas = typeof ESTRUCTURA!=='undefined' ? ESTRUCTURA : [];
+  var areaOpts = areas.map(function(a){return '<option value="'+a.id+'">'+a.name+'</option>';}).join('');
+
+  var html = '<div class="usr-modal-bg" id="prodModal" onclick="if(event.target.id===\'prodModal\')document.getElementById(\'prodModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:500px"><div class="usr-modal-head"><span class="usr-modal-title">Agregar producto</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'prodModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field-grid" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Producto <span>*</span></label><input type="text" id="prNombre" placeholder="Nombre del producto" autofocus></div>'
+    + '<div class="usr-field"><label>Categoría</label><input type="text" id="prCategoria" placeholder="Proteína, Lácteos, Verdura..."></div>'
+    + '</div>'
+    + '<div class="usr-field-grid cols3" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Stock inicial</label><input type="number" id="prStock" step="0.01" value="0"></div>'
+    + '<div class="usr-field"><label>Unidad</label><select id="prUnidad"><option>kg</option><option>g</option><option>lt</option><option>ml</option><option>pza</option><option>caja</option></select></div>'
+    + '<div class="usr-field"><label>Costo unit. $</label><input type="number" id="prCosto" step="0.01" value="0"></div>'
+    + '</div>'
+    + '<div class="usr-field-grid cols3" style="margin-bottom:12px">'
+    + '<div class="usr-field"><label>Mínimo</label><input type="number" id="prMin" step="0.01" value="0"></div>'
+    + '<div class="usr-field"><label>Máximo</label><input type="number" id="prMax" step="0.01" value="0"></div>'
+    + '<div class="usr-field"><label>Área</label><select id="prArea">'+areaOpts+'</select></div>'
+    + '</div>'
+    + '<div class="usr-field-grid" style="margin-bottom:4px">'
+    + '<div class="usr-field"><label>Proveedor</label><input type="text" id="prProveedor" placeholder="Nombre del proveedor"></div>'
+    + '<div class="usr-field"><label>Ubicación</label><input type="text" id="prUbicacion" placeholder="Congelador, Almacén seco..."></div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="usr-modal-footer"><button class="btn btn-ghost" onclick="document.getElementById(\'prodModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarProducto()">Agregar producto</button>'
+    + '</div></div></div>';
+
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function guardarProducto() {
+  var nombre=document.getElementById('prNombre')?.value.trim();
+  if(!nombre){alert('El nombre es obligatorio.');return;}
+  var items=getInventario();
+  items.push({
+    id:'inv_'+Date.now(),
+    producto:nombre,
+    categoria:document.getElementById('prCategoria')?.value||'General',
+    area:document.getElementById('prArea')?.value||'almacen',
+    stock:parseFloat(document.getElementById('prStock')?.value)||0,
+    unidad:document.getElementById('prUnidad')?.value||'kg',
+    minimo:parseFloat(document.getElementById('prMin')?.value)||0,
+    maximo:parseFloat(document.getElementById('prMax')?.value)||100,
+    costo_unit:parseFloat(document.getElementById('prCosto')?.value)||0,
+    proveedor:document.getElementById('prProveedor')?.value||'',
+    ubicacion:document.getElementById('prUbicacion')?.value||'',
+    caducidad:''
+  });
+  saveInventario(items);
+  document.getElementById('prodModal')?.remove();
+  var mc=document.getElementById('main-content');
+  if(mc) renderPEPS(mc,null,null);
+}
+
+function editarProducto(id) {
+  var items=getInventario();
+  var item=items.find(function(i){return i.id===id;});
+  if(!item)return;
+  // Simple: usar abrirAgregarProducto pero pre-llenar (simplificado)
+  alert('Editar: '+item.producto+'\nStock actual: '+item.stock+' '+item.unidad+'\nUsa entrada/salida para ajustar stock.');
+}
+/* ══ FIN MÓDULO PEPS ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
