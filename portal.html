@@ -785,6 +785,18 @@ function mostrarAperturaTurno() {
 function confirmarApertura() {
   var pin     = document.getElementById('aptPin')?.value?.trim();
   var errEl   = document.getElementById('aptPinError');
+  // Validación server-side primero
+  if(typeof validarPinServidor === 'function' && typeof vkSB !== 'undefined' && vkSB) {
+    validarPinServidor(pin).then(function(srv) {
+      if(srv) { _confirmarAperturaCon(srv.nombre + ' ' + srv.apellido); }
+      else {
+        if(errEl) errEl.style.display = 'block';
+        var pinEl = document.getElementById('aptPin');
+        if(pinEl) pinEl.style.borderColor = '#DC2626';
+      }
+    });
+    return;
+  }
   var users   = typeof getUsers === 'function' ? getUsers() : [];
 
   // Verificar que el PIN pertenece a un supervisor/gerente/propietario/admin
@@ -893,6 +905,20 @@ function cerrarTurnoConPin() {
 function validarPinCierre() {
   var pin   = document.getElementById('pinCierre')?.value?.trim();
   var errEl = document.getElementById('pinCierreErr');
+  if(typeof validarPinServidor === 'function' && typeof vkSB !== 'undefined' && vkSB) {
+    validarPinServidor(pin).then(function(srv) {
+      if(srv) {
+        var m = document.getElementById('pinCierreModal');
+        if(m) m.remove();
+        if(typeof cerrarTurnoServidor === 'function') cerrarTurnoServidor();
+        if(typeof cerrarTurnoFinal === 'function') cerrarTurnoFinal();
+        limpiarTurnoActivo();
+      } else {
+        if(errEl) errEl.style.display = 'block';
+      }
+    });
+    return;
+  }
   var users = typeof getUsers === 'function' ? getUsers() : [];
 
   var autoriza = users.find(function(u) {
@@ -3971,6 +3997,109 @@ function closeMobileSidebar() {
 function isMobile() { return window.innerWidth <= 768; }
 
 
+
+
+/* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
+
+/* Login server-side: valida contra hash bcrypt en la base */
+async function loginServidor(email, pass) {
+  if(typeof vkSB === 'undefined' || !vkSB) return null;
+  try {
+    var r = await vkSB.rpc('rpc_login', { p_email: email, p_pass: pass });
+    if(r.error || !r.data || !r.data.ok) return null;
+    return r.data;
+  } catch(e) { return null; }
+}
+
+/* PIN server-side: valida contra hash bcrypt, solo autorizadores */
+async function validarPinServidor(pin) {
+  if(typeof vkSB === 'undefined' || !vkSB) return null;
+  try {
+    var r = await vkSB.rpc('rpc_validar_pin', { p_pin: pin });
+    if(r.error || !r.data || !r.data.ok) return null;
+    return r.data;
+  } catch(e) { return null; }
+}
+
+/* ══ ESTADO SERVER-SIDE — turno y progreso en Supabase ══ */
+
+/* Turno activo: Supabase primero, localStorage como caché */
+async function getTurnoActivoServidor() {
+  if(typeof vkSB === 'undefined' || !vkSB) return getTurnoActivo();
+  try {
+    var hoy = fechaMX();
+    var r = await vkSB.from('turno_estado').select('*')
+      .eq('fecha', hoy).eq('abierto', true).limit(1);
+    if(r.error || !r.data || !r.data.length) return null;
+    var t = r.data[0];
+    var turno = {
+      id: 'turno_' + t.fecha + '_' + t.turno_tipo,
+      fecha: t.fecha, tipo: t.turno_tipo,
+      hora_inicio: t.hora_inicio, abierto_por: t.abierto_por,
+      autorizado_por: t.autorizado_por,
+      observaciones: t.observaciones,
+      areas_activas: t.areas_activas || [],
+      cerrado: false
+    };
+    setTurnoActivo(turno); // caché local
+    return turno;
+  } catch(e) { return getTurnoActivo(); }
+}
+
+async function abrirTurnoServidor(turno) {
+  if(typeof vkSB === 'undefined' || !vkSB) return false;
+  try {
+    var r = await vkSB.from('turno_estado').upsert({
+      fecha: turno.fecha, turno_tipo: turno.tipo, abierto: true,
+      abierto_por: turno.abierto_por, autorizado_por: turno.autorizado_por,
+      hora_inicio: turno.hora_inicio, observaciones: turno.observaciones,
+      areas_activas: turno.areas_activas
+    }, {onConflict: 'fecha,turno_tipo'});
+    return !r.error;
+  } catch(e) { return false; }
+}
+
+async function cerrarTurnoServidor() {
+  if(typeof vkSB === 'undefined' || !vkSB) return false;
+  try {
+    var hoy = fechaMX();
+    await vkSB.from('turno_estado').update({abierto: false}).eq('fecha', hoy);
+    return true;
+  } catch(e) { return false; }
+}
+
+/* Progreso: escribir a Supabase con cada cambio, leer al iniciar */
+async function syncProgresoUp(moduloId, pct, items) {
+  if(typeof vkSB === 'undefined' || !vkSB) return;
+  try {
+    await vkSB.from('progreso_modulos').upsert({
+      fecha: fechaMX(), modulo_id: moduloId, pct: pct,
+      items: items || {},
+      updated_by: typeof CU !== 'undefined' && CU ? (CU.email||'') : '',
+      updated_at: new Date().toISOString()
+    }, {onConflict: 'fecha,modulo_id'});
+  } catch(e) {}
+}
+
+async function syncProgresoDown() {
+  if(typeof vkSB === 'undefined' || !vkSB) return;
+  try {
+    var r = await vkSB.from('progreso_modulos').select('modulo_id,pct,items').eq('fecha', fechaMX());
+    if(r.error || !r.data) return;
+    r.data.forEach(function(row) {
+      var localPct = parseInt(localStorage.getItem('prog_' + row.modulo_id) || '0');
+      // El servidor gana si tiene un valor más alto (trabajo hecho en otro dispositivo)
+      if(row.pct > localPct) {
+        localStorage.setItem('prog_' + row.modulo_id, String(row.pct));
+        if(row.items && Object.keys(row.items).length) {
+          localStorage.setItem('items_' + row.modulo_id, JSON.stringify(row.items));
+        }
+      }
+    });
+    if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
+  } catch(e) {}
+}
+/* ══ FIN AUTH + ESTADO SERVER-SIDE ══ */
 
 /* ══ FIX: FECHA MÉXICO + FOTOS A SUPABASE STORAGE ══ */
 function fechaMX() {
