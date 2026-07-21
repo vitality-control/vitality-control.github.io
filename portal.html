@@ -629,6 +629,26 @@ function launchApp(user){
   rp.className = 'role-pill '+(fam.pill||'rp-mesero');
   buildSidebar();
   showHome();
+  /* SYNC MULTI-DISPOSITIVO: turno + progreso del servidor */
+  setTimeout(function(){
+    try{
+      if(typeof getTurnoActivoServidor === 'function') {
+        getTurnoActivoServidor().then(function(){
+          if(typeof sbDownProgreso === 'function') {
+            sbDownProgreso().then(function(changed){ if(changed || _turnoActivo) showHome(); });
+          } else { if(_turnoActivo) showHome(); }
+        }).catch(function(){});
+      } else if(typeof sbDownProgreso === 'function') {
+        sbDownProgreso().then(function(changed){ if(changed) showHome(); });
+      }
+      /* Refresco periódico cada 60s: otros dispositivos aparecen solos */
+      if(!window._syncInterval) {
+        window._syncInterval = setInterval(function(){
+          if(typeof sbDownProgreso === 'function') sbDownProgreso().then(function(c){ if(c && typeof activeSub === 'undefined') showHome(); });
+        }, 60000);
+      }
+    }catch(e){}
+  }, 400);
 }
 
 function doLogout(){
