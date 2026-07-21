@@ -630,6 +630,8 @@ function launchApp(user){
   buildSidebar();
   showHome();
   /* SYNC MULTI-DISPOSITIVO: turno + progreso del servidor */
+  procesarDeepLink();
+  setTimeout(function(){ if(typeof checkReporteSemanal==='function') checkReporteSemanal(); }, 3000);
   setTimeout(function(){
     try{
       if(typeof getTurnoActivoServidor === 'function') {
@@ -1088,11 +1090,11 @@ function validarPinCierre() {
 var _origMostrarCierre = typeof mostrarCierreTurno === 'function' ? mostrarCierreTurno : null;
 function mostrarCierreTurnoFull() {
   mostrarCierreTurno();
-  // Patch del botón al abrirse
   setTimeout(function() {
     var btn = document.querySelector('#cierreTurnoModal .usr-modal-footer .btn-kale');
-    if(btn) btn.onclick = cerrarTurnoConPin;
-  }, 50);
+    if(btn) btn.onclick = function(){ if(typeof capturarFirma==='function') capturarFirma(); cerrarTurnoConPin(); };
+    if(typeof insertarFirmaEnModal === 'function') insertarFirmaEnModal();
+  }, 80);
 }
 
 /* ─ DASHBOARD HISTÓRICO ─────────────────────────────── */
