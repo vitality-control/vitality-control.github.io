@@ -4075,6 +4075,266 @@ function guardarRevisionBanos() {
 /* ══ FIN FOTOGRAFÍA + BAÑOS ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   NOTIFICACIONES POR ROL + FOTOS EN SCORING
+   Routing inteligente · Propietario / Gerente / DMZ
+══════════════════════════════════════════════════════ */
+
+/* ─ FOTOS → SCORING ────────────────────────────────── */
+var FOTO_CHECKPOINTS_REQUERIDOS = [
+  {id:'foto-vitrinas',    area:'vitrinas',  peso:8},
+  {id:'foto-estaciones',  area:'cocina',    peso:10},
+  {id:'foto-salon',       area:'salon',     peso:8},
+  {id:'foto-uniformados', area:'servicio',  peso:10},
+  {id:'foto-grab-and-go', area:'barra',     peso:6},
+  {id:'foto-banos',       area:'banos',     peso:8},
+];
+
+function calcBonusFotos() {
+  var bonus = 0;
+  var pendientes = [];
+  FOTO_CHECKPOINTS_REQUERIDOS.forEach(function(cp) {
+    var fotos = typeof getFotos === 'function' ? getFotos(cp.id) : [];
+    if(fotos.length > 0) {
+      bonus += cp.peso;
+    } else {
+      pendientes.push(cp.id.replace('foto-','').replace('-',' '));
+    }
+  });
+  return { bonus: Math.min(bonus, 40), pendientes: pendientes };
+}
+
+// Patch del motor de scoring para incluir bonus de fotos
+var _origCalcTurno2 = typeof calcTurnoScore === 'function' ? calcTurnoScore : null;
+if(_origCalcTurno2) {
+  calcTurnoScore = function() {
+    var score  = _origCalcTurno2();
+    var fBonus = calcBonusFotos();
+
+    // Las fotos no suman al score base — se muestran como indicador aparte
+    // pero sí penalizan si faltan fotos críticas al cierre
+    score.fotoBonus    = fBonus.bonus;
+    score.fotosPendientes = fBonus.pendientes;
+
+    // Agregar pendientes de fotos al reporte de mejoras
+    fBonus.pendientes.slice(0,3).forEach(function(p) {
+      score.mejoras.push({
+        area: 'Evidencia',
+        areaId: 'fotos',
+        modulo: 'Foto pendiente: ' + p,
+        pct: 0,
+        esFoto: true
+      });
+    });
+
+    return score;
+  };
+}
+
+/* ─ ROUTING DE NOTIFICACIONES POR ROL ───────────────── */
+var NOTIF_CONFIG = {
+  // Quién recibe qué
+  critica: {
+    dmz:         {email: true, wa: true,  resumen: 'completo'},
+    propietario: {email: true, wa: true,  resumen: 'completo'},
+    gerente:     {email: true, wa: true,  resumen: 'area'},
+    chef:        {email: false,wa: false, resumen: null},
+    supervisor:  {email: true, wa: false, resumen: 'area'},
+  },
+  importante: {
+    dmz:         {email: true, wa: false, resumen: 'completo'},
+    propietario: {email: true, wa: false, resumen: 'resumen'},
+    gerente:     {email: true, wa: false, resumen: 'area'},
+    chef:        {email: false,wa: false, resumen: null},
+    supervisor:  {email: false,wa: false, resumen: null},
+  },
+  informativa: {
+    dmz:         {email: true, wa: false, resumen: 'completo'},
+    propietario: {email: true, wa: false, resumen: 'resumen'},
+    gerente:     {email: false,wa: false, resumen: null},
+    chef:        {email: false,wa: false, resumen: null},
+    supervisor:  {email: false,wa: false, resumen: null},
+  }
+};
+
+/* ─ REPORTE POR ROL al cierre ───────────────────────── */
+function generarReportePorRol(score, destinatarios) {
+  var sc   = typeof scoreColor === 'function' ? scoreColor : function(){return '#333';};
+  var fecha = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long'});
+
+  // Reporte COMPLETO (DMZ y propietario en alertas críticas)
+  function reporteCompleto(dest) {
+    return {
+      to:      dest.email,
+      subject: (score.globalPct < 65 ? '🚨' : score.globalPct < 80 ? '⚠️' : '✅')
+               + ' Reporte de turno ' + fecha + ' · ' + score.globalLetter + ' (' + score.globalPct + '%)',
+      html: generarEmailTurno(score)
+    };
+  }
+
+  // Reporte RESUMEN (propietario en alertas normales)
+  function reporteResumen(dest) {
+    var areaHtml = Object.values(score.areaScores||{}).map(function(a) {
+      return '<tr><td style="padding:6px 12px;font-size:13px">'+a.name+'</td>'
+        + '<td style="padding:6px 12px;font-weight:700;color:'+sc(a.letter)+';text-align:center">'+a.letter+'</td>'
+        + '<td style="padding:6px 12px;text-align:right;color:#6b7280">'+a.pct+'%</td></tr>';
+    }).join('');
+    return {
+      to:      dest.email,
+      subject: '📊 Resumen del turno · ' + fecha + ' · ' + score.globalLetter,
+      html:    '<div style="font-family:sans-serif;max-width:480px"><div style="background:#1A1A18;padding:18px 24px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center">'
+        + '<div><h2 style="color:#fff;margin:0;font-size:16px">Resumen de turno</h2><p style="color:rgba(255,255,255,.5);margin:4px 0 0;font-size:11px">'+fecha+'</p></div>'
+        + '<div style="font-size:40px;font-weight:700;color:'+sc(score.globalLetter)+'">'+score.globalLetter+'</div>'
+        + '</div><div style="border:1px solid #e5e7eb;border-top:none;padding:16px;border-radius:0 0 8px 8px">'
+        + '<table style="width:100%;border-collapse:collapse;border:.5px solid #e5e7eb;border-radius:6px;overflow:hidden">'
+        + '<thead><tr style="background:#f9fafb"><th style="padding:6px 12px;font-size:10px;color:#6b7280;text-align:left">ÁREA</th><th style="text-align:center">NOTA</th><th style="text-align:right">%</th></tr></thead>'
+        + '<tbody>'+areaHtml+'</tbody></table>'
+        + '<p style="font-size:11px;color:#9ca3af;margin-top:14px;text-align:center">Reporte completo disponible en el portal</p>'
+        + '</div></div>'
+    };
+  }
+
+  // Reporte de ÁREA (gerente — solo su área de responsabilidad)
+  function reporteArea(dest, areaId) {
+    var area = score.areaScores && score.areaScores[areaId];
+    if(!area) return reporteResumen(dest);
+    return {
+      to:      dest.email,
+      subject: '📋 ' + area.name + ': ' + area.letter + ' (' + area.pct + '%) · ' + fecha,
+      html:    '<div style="font-family:sans-serif;max-width:420px"><div style="background:#1A1A18;padding:16px 20px;border-radius:8px 8px 0 0">'
+        + '<h2 style="color:#fff;margin:0;font-size:15px">'+area.name+'</h2>'
+        + '<div style="font-size:36px;font-weight:700;color:'+sc(area.letter)+';margin-top:6px">'+area.letter+'<span style="font-size:14px;color:rgba(255,255,255,.5)"> · '+area.pct+'%</span></div>'
+        + '</div><div style="border:1px solid #e5e7eb;border-top:none;padding:16px;border-radius:0 0 8px 8px">'
+        + '<p style="font-size:12px;color:#6b7280">Reporte de área del turno del '+fecha+'.</p>'
+        + '</div></div>'
+    };
+  }
+
+  var mensajes = [];
+  destinatarios.forEach(function(dest) {
+    if(!dest.email || !dest.rol) return;
+    var cfg = NOTIF_CONFIG[score.globalPct < 65 ? 'critica' : score.globalPct < 80 ? 'importante' : 'informativa'];
+    var rolCfg = cfg[dest.rol] || cfg['informativa'];
+    if(!rolCfg || !rolCfg.email) return;
+
+    if(rolCfg.resumen === 'completo') mensajes.push(reporteCompleto(dest));
+    else if(rolCfg.resumen === 'resumen') mensajes.push(reporteResumen(dest));
+    else if(rolCfg.resumen === 'area') mensajes.push(reporteArea(dest, dest.areaId));
+  });
+
+  return mensajes;
+}
+
+/* ─ CONFIGURACIÓN DE DESTINATARIOS ─────────────────── */
+function getDestinatarios() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_destinatarios')||'null');
+    if(stored && stored.length) return stored;
+  } catch(e){}
+  return [
+    {nombre:'Mario DMZ',  email:'mario@delamorazumaran.com',  rol:'dmz',        activo:true},
+    {nombre:'Blanca DMZ', email:'blanca@delamorazumaran.com', rol:'dmz',        activo:true},
+  ];
+}
+function saveDestinatarios(d) { localStorage.setItem('vk_destinatarios', JSON.stringify(d)); }
+
+/* ─ MÓDULO: CONFIGURACIÓN DE ALERTAS ───────────────── */
+function renderConfigAlertas(el, cat, sub) {
+  var destinatarios = getDestinatarios();
+  var roles = typeof getRoles === 'function' ? getRoles() : [];
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Configuración de Alertas</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="abrirAgregarDestinatario()"><i class="ti ti-plus" style="font-size:13px"></i> Destinatario</button>'
+    + '</div>'
+
+    // Tabla de routing
+    + '<div style="background:var(--surface-1);border:.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px">'
+    + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:10px">Qué recibe cada rol</div>'
+    + '<div style="display:grid;grid-template-columns:140px repeat(3,1fr);gap:6px;font-size:11px">'
+    + '<div style="font-weight:600;color:var(--text-muted)">Rol</div>'
+    + '<div style="font-weight:600;color:var(--text-muted);text-align:center">🚨 Crítica</div>'
+    + '<div style="font-weight:600;color:var(--text-muted);text-align:center">⚠️ Importante</div>'
+    + '<div style="font-weight:600;color:var(--text-muted);text-align:center">ℹ️ Informativa</div>'
+    + Object.entries(NOTIF_CONFIG.critica).map(function(e) {
+        var rol=e[0], crit=NOTIF_CONFIG.critica[rol], imp=NOTIF_CONFIG.importante[rol], info=NOTIF_CONFIG.informativa[rol];
+        return '<div style="font-size:12px;font-weight:500;padding:4px 0">' + rol + '</div>'
+          + ['E'+(crit.email?'✓':'✗')+' WA'+(crit.wa?'✓':'✗'),
+             'E'+(imp.email?'✓':'✗')+' WA'+(imp.wa?'✓':'✗'),
+             'E'+(info.email?'✓':'✗')+' WA'+(info.wa?'✓':'✗')]
+            .map(function(t){return '<div style="text-align:center;font-size:11px;color:var(--text-secondary)">'+t+'</div>';}).join('');
+      }).join('')
+    + '</div></div>'
+
+    // Lista de destinatarios
+    + '<div class="usr-field-section">Destinatarios configurados</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px">'
+    + destinatarios.map(function(d, idx) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:.5px solid var(--border);border-radius:8px;background:var(--surface-2);opacity:'+(d.activo?'1':'.5')+'">'
+          + '<div style="flex:1">'
+          + '<div style="font-size:13px;font-weight:500;color:var(--text-primary)">'+d.nombre+'</div>'
+          + '<div style="font-size:12px;color:var(--text-secondary)">'+d.email+'</div>'
+          + '</div>'
+          + '<span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:10px;background:var(--surface-1);border:.5px solid var(--border)">'+d.rol+'</span>'
+          + '<button onclick="toggleDestinatario('+idx+')" style="background:none;border:.5px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px;color:'+(d.activo?'#15803D':'#DC2626')+'">'+(d.activo?'Activo':'Inactivo')+'</button>'
+          + '<button onclick="eliminarDestinatario('+idx+')" style="background:none;border:none;cursor:pointer;color:#DC2626;padding:4px"><i class="ti ti-x"></i></button>'
+          + '</div>';
+      }).join('')
+    + '</div></div></div>';
+
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function abrirAgregarDestinatario() {
+  var html = '<div class="usr-modal-bg" id="destModal" onclick="if(event.target.id===\'destModal\')document.getElementById(\'destModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:420px"><div class="usr-modal-head"><span class="usr-modal-title">Agregar destinatario</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'destModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Nombre <span>*</span></label><input type="text" id="destNombre" placeholder="Nombre completo"></div>'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Email <span>*</span></label><input type="email" id="destEmail" placeholder="correo@ejemplo.com"></div>'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Rol</label>'
+    + '<select id="destRol"><option value="propietario">Propietario</option><option value="gerente">Gerente</option><option value="supervisor">Supervisor</option><option value="dmz">DMZ (control absoluto)</option></select></div>'
+    + '<div class="usr-field"><label>WhatsApp (con código país)</label><input type="tel" id="destWA" placeholder="+5255XXXXXXXX"></div>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'destModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarDestinatario()">Agregar</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function guardarDestinatario() {
+  var nombre=document.getElementById('destNombre')?.value.trim();
+  var email=document.getElementById('destEmail')?.value.trim();
+  if(!nombre||!email){alert('Nombre y email son obligatorios.');return;}
+  var dest=getDestinatarios();
+  dest.push({nombre,email,rol:document.getElementById('destRol')?.value||'gerente',wa:document.getElementById('destWA')?.value||'',activo:true});
+  saveDestinatarios(dest);
+  document.getElementById('destModal')?.remove();
+  var mc=document.getElementById('main-content');
+  if(mc)renderConfigAlertas(mc,null,null);
+}
+
+function toggleDestinatario(idx) {
+  var dest=getDestinatarios();
+  if(dest[idx])dest[idx].activo=!dest[idx].activo;
+  saveDestinatarios(dest);
+  var mc=document.getElementById('main-content');
+  if(mc)renderConfigAlertas(mc,null,null);
+}
+
+function eliminarDestinatario(idx) {
+  if(!confirm('¿Eliminar este destinatario?'))return;
+  var dest=getDestinatarios().filter(function(_,i){return i!==idx;});
+  saveDestinatarios(dest);
+  var mc=document.getElementById('main-content');
+  if(mc)renderConfigAlertas(mc,null,null);
+}
+/* ══ FIN NOTIFICACIONES POR ROL ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
