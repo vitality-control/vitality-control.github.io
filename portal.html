@@ -699,6 +699,17 @@ function limpiarTurnoActivo() {
 }
 
 /* ─ APERTURA DE TURNO — modal bloqueante ───────────── */
+
+async function verificarAperturaTurnoV2() {
+  if(typeof getTurnoActivoServidor === 'function') {
+    var srv = await getTurnoActivoServidor();
+    if(srv) { _turnoActivo = srv; mostrarBannerTurno(srv); return; }
+  }
+  var turno = getTurnoActivo();
+  if(turno) { _turnoActivo = turno; mostrarBannerTurno(turno); return; }
+  mostrarAperturaTurno();
+}
+
 function verificarAperturaTurno() {
   var turno = getTurnoActivo();
   if(turno) { _turnoActivo = turno; return; }
