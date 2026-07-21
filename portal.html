@@ -2886,6 +2886,514 @@ function editarProducto(id) {
 /* ══ FIN MÓDULO PEPS ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD MEJORADO — Score global · Áreas · Tendencia
+   Tiempo real · KPIs ejecutivos · Acciones rápidas
+══════════════════════════════════════════════════════ */
+
+function renderDashboard() {
+  var mc     = document.getElementById('main-content');
+  if(!mc) return;
+  var score  = typeof calcTurnoScore === 'function' ? calcTurnoScore() : {globalPct:0,globalLetter:'—',areaScores:{},correctas:[],mejoras:[],criticos:[]};
+  var turno  = typeof getTurnoActivo === 'function' ? getTurnoActivo() : null;
+  var areas  = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var alertas= typeof getTodayAlerts === 'function' ? getTodayAlerts() : [];
+  var temps  = typeof getTodayTemps === 'function' ? getTodayTemps() : [];
+  var merma  = typeof getMermaHoy === 'function' ? getMermaHoy() : [];
+  var totalMerma = merma.reduce(function(s,m){return s+(parseFloat(m.costo)||0);},0);
+  var tempsOutOfRange = temps.filter(function(t){return !t.en_rango;}).length;
+
+  var sc     = typeof scoreColor === 'function' ? scoreColor : function(l){return {
+    'A+':'#15803D','A':'#16A34A','B':'#D97706','C':'#EA580C','D':'#DC2626'}[l]||'#9CA3AF';};
+
+  // Banner de turno
+  var turnoHtml = turno
+    ? '<div style="background:linear-gradient(135deg,var(--kale,#146B4F),#0D4E39);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + '<div style="width:8px;height:8px;border-radius:50%;background:#4ADE80;animation:pulse 2s infinite"></div>'
+      + '<span style="color:#fff;font-size:13px;font-weight:500">Turno abierto · ' + turno.tipo + '</span>'
+      + '<span style="color:rgba(255,255,255,.6);font-size:12px">Abierto por ' + turno.abierto_por + ' a las ' + turno.hora_inicio + '</span>'
+      + '</div>'
+      + '<button onclick="mostrarCierreTurnoFull()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500">Cerrar turno →</button>'
+      + '</div>'
+    : '<div style="background:#FEF3C7;border:.5px solid #F59E0B;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<span style="color:#92400E;font-size:13px;font-weight:500">⚠ Sin turno activo — abre un turno para habilitar los módulos</span>'
+      + '<button onclick="mostrarAperturaTurno()" style="background:#D97706;color:#fff;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500">Abrir turno →</button>'
+      + '</div>';
+
+  // Alertas críticas activas
+  var alertasCrit = (typeof alertas === 'object' && alertas.length)
+    ? alertas.filter(function(a){return a.severidad==='critica'&&!a.leida;}).length : 0;
+
+  var html = '<div style="padding:16px 20px">'
+
+    // Banner turno
+    + turnoHtml
+
+    // KPIs superiores
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" class="dash-stats-row">'
+    + dashKpi('Score global',score.globalLetter,sc(score.globalLetter),'el turno actual',true)
+    + dashKpi('Módulos 100%',score.correctas?score.correctas.length+'':'0','#15803D','completados hoy',false)
+    + dashKpi('Alertas críticas',alertasCrit>0?alertasCrit:'0',alertasCrit>0?'#DC2626':'#15803D','requieren atención',false)
+    + dashKpi('Merma del día','$'+Math.round(totalMerma).toLocaleString('es-MX'),totalMerma>500?'#DC2626':'#15803D','MXN registrados',false)
+    + '</div>'
+
+    // Score global grande + áreas
+    + '<div style="display:grid;grid-template-columns:280px 1fr;gap:16px;margin-bottom:16px" class="dash-areas-grid">'
+
+    // Card score global
+    + '<div style="border:.5px solid var(--border);border-radius:12px;padding:20px;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">'
+    + '<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px">Calificación del turno</div>'
+    + '<div id="dash-score-letter" style="font-size:72px;font-weight:700;line-height:1;color:' + sc(score.globalLetter) + '">' + score.globalLetter + '</div>'
+    + '<div style="font-size:14px;color:var(--text-secondary);margin-top:8px">' + score.globalPct + '% completado</div>'
+    + '<div style="width:100%;height:6px;background:var(--border);border-radius:3px;margin-top:12px;overflow:hidden">'
+    + '<div style="height:6px;background:' + sc(score.globalLetter) + ';width:' + score.globalPct + '%;border-radius:3px;transition:width .5s"></div></div>'
+
+    // Conductas
+    + (score.mejoras && score.mejoras.length
+        ? '<div style="margin-top:14px;width:100%;text-align:left">'
+          + '<div style="font-size:10px;font-weight:600;color:#EA580C;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">↑ Deben mejorar</div>'
+          + score.mejoras.slice(0,3).map(function(m){
+              return '<div style="font-size:11px;color:var(--text-secondary);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">· '+m.area+' / '+m.modulo+'</div>';
+            }).join('')
+          + '</div>'
+        : '<div style="margin-top:14px;font-size:12px;color:#15803D">✓ Sin áreas de mejora</div>')
+    + '</div>'
+
+    // Grid de 6 áreas
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'
+    + areas.map(function(area) {
+        var asc = (score.areaScores && score.areaScores[area.id]) || {pct:0,letter:'—'};
+        var clr = sc(asc.letter);
+        var subs= area.subs || [];
+        var completados = subs.filter(function(s){
+          return (parseInt(localStorage.getItem('prog_'+s.id)||'0'))>=100;
+        }).length;
+        return '<div onclick="navegarArea(\''+area.id+'\')" style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:var(--surface-2);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor=\''+clr+'\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+          + '<div style="font-size:13px;font-weight:500;color:var(--text-primary)">' + area.name + '</div>'
+          + '<div id="area-score-'+area.id+'" style="font-size:18px;font-weight:700;color:'+clr+'">' + asc.letter + '</div>'
+          + '</div>'
+          + '<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px">'
+          + '<div style="height:4px;background:'+clr+';width:'+asc.pct+'%;border-radius:2px;transition:width .5s"></div></div>'
+          + '<div id="area-pct-'+area.id+'" style="font-size:11px;color:var(--text-muted)">' + asc.pct + '% · ' + completados + '/' + subs.length + ' módulos</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '</div>'
+
+    // Alertas del día + temperaturas out of range
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+
+    // Panel alertas
+    + '<div style="border:.5px solid var(--border);border-radius:10px;overflow:hidden">'
+    + '<div style="background:var(--surface-1);padding:10px 14px;border-bottom:.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.07em">Alertas recientes</div>'
+    + '<div id="dash-alertas-list" style="max-height:200px;overflow-y:auto">'
+    + '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Cargando...</div>'
+    + '</div></div>'
+
+    // Panel temperaturas
+    + '<div style="border:.5px solid var(--border);border-radius:10px;overflow:hidden">'
+    + '<div style="background:var(--surface-1);padding:10px 14px;border-bottom:.5px solid var(--border);font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.07em">Temperaturas hoy</div>'
+    + '<div style="max-height:200px;overflow-y:auto">'
+    + (temps.length
+        ? temps.slice().reverse().slice(0,8).map(function(t){
+            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:.5px solid var(--border2,#f0f0f0)">'
+              + '<span style="font-size:12px;color:var(--text-primary)">' + t.equipo + '</span>'
+              + '<div style="display:flex;align-items:center;gap:8px">'
+              + '<span style="font-family:var(--mono,monospace);font-size:13px;font-weight:600;color:'+(t.en_rango?'#15803D':'#DC2626')+'">'+t.valor+t.unidad+'</span>'
+              + '<span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;background:'+(t.en_rango?'#DCFCE7':'#FEE2E2')+';color:'+(t.en_rango?'#15803D':'#DC2626')+'">'+( t.en_rango?'OK':'⚠')+'</span>'
+              + '</div></div>';
+          }).join('')
+        : '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Sin registros de temperatura hoy</div>')
+    + '</div></div>'
+    + '</div>'
+
+    + '<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}</style>'
+    + '</div>';
+
+  mc.innerHTML = html;
+
+  // Cargar alertas del día desde Supabase
+  if(typeof vkSB !== 'undefined' && vkSB) {
+    vkSB.from('alertas')
+      .select('*')
+      .eq('fecha', new Date().toISOString().slice(0,10))
+      .order('created_at', {ascending:false})
+      .limit(8)
+      .then(function(res) {
+        var el = document.getElementById('dash-alertas-list');
+        if(!el) return;
+        var items = res.data || [];
+        if(!items.length) {
+          el.innerHTML = '<div style="padding:20px;text-align:center;color:#15803D;font-size:13px">✓ Sin alertas hoy</div>';
+          return;
+        }
+        var EMJ = {critica:'🚨',importante:'⚠️',informativa:'ℹ️'};
+        el.innerHTML = items.map(function(a) {
+          return '<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 14px;border-bottom:.5px solid var(--border2,#f0f0f0)'
+            + (a.leida?';opacity:.5':'') + '">'
+            + '<span style="font-size:14px;flex-shrink:0;margin-top:1px">' + (EMJ[a.severidad]||'ℹ️') + '</span>'
+            + '<div style="min-width:0">'
+            + '<div style="font-size:12px;font-weight:500;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.titulo + '</div>'
+            + '<div style="font-size:10px;color:var(--text-muted)">' + (a.modulo_id||'sistema') + '</div>'
+            + '</div></div>';
+        }).join('');
+      }).catch(function(){
+        var el = document.getElementById('dash-alertas-list');
+        if(el) el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px">Sin conexión</div>';
+      });
+  } else {
+    var el = document.getElementById('dash-alertas-list');
+    if(el) el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Sin conexión a base de datos</div>';
+  }
+}
+
+function dashKpi(label, value, color, sub, big) {
+  return '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:var(--surface-2)">'
+    + '<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">' + label + '</div>'
+    + '<div style="font-size:'+(big?'40px':'24px')+';font-weight:700;color:'+color+';line-height:1">' + value + '</div>'
+    + '<div style="font-size:11px;color:var(--text-secondary);margin-top:4px">' + sub + '</div>'
+    + '</div>';
+}
+
+function navegarArea(areaId) {
+  var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var area  = areas.find(function(a){return a.id===areaId;});
+  if(!area || !area.subs || !area.subs.length) return;
+  // Click en el sidebar item del área
+  var sidebarItem = document.querySelector('[data-cat="'+areaId+'"]');
+  if(sidebarItem) {
+    sidebarItem.click();
+  } else {
+    // Fallback: renderizar primer sub del área
+    var mc = document.getElementById('main-content');
+    if(mc && typeof renderModule === 'function') renderModule(mc, area, area.subs[0]);
+  }
+}
+
+function getTodayAlerts() { return []; } // será llamada desde Supabase async
+/* ══ FIN DASHBOARD MEJORADO ══ */
+
+
+
+/* ══════════════════════════════════════════════════════
+   MÓDULOS SALÓN & SERVICIO
+══════════════════════════════════════════════════════ */
+
+/* ─ SALÓN ───────────────────────────────────────────── */
+function renderSalon(el, cat, sub) {
+  var subId = sub ? sub.id : '';
+  if(subId.includes('mesas')) return renderMesas(el, cat, sub);
+  if(subId.includes('checklist')) return renderChecklistSalon(el, cat, sub);
+  if(subId.includes('mise')) return renderMiseEnPlace(el, cat, sub);
+  renderChecklistSalon(el, cat, sub);
+}
+
+function renderMesas(el, cat, sub) {
+  var mesas = getMesas();
+  var stats = {libres:0,ocupadas:0,reservadas:0,limpieza:0};
+  mesas.forEach(function(m){ stats[m.estado]=(stats[m.estado]||0)+1; });
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Control de Mesas</span><span class="usr-count">'+mesas.length+' mesas</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="agregarMesa()"><i class="ti ti-plus" style="font-size:13px"></i> Mesa</button>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
+    + mesaKpi('Libres',stats.libres,'#15803D','#DCFCE7')
+    + mesaKpi('Ocupadas',stats.ocupadas,'#D97706','#FEF3C7')
+    + mesaKpi('Reservadas',stats.reservadas,'#1D4ED8','#DBEAFE')
+    + mesaKpi('Limpieza',stats.limpieza,'#6B7280','#F3F4F6')
+    + '</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">'
+    + mesas.map(function(m) {
+        var colors = {libres:'#15803D',ocupadas:'#D97706',reservadas:'#1D4ED8',limpieza:'#6B7280'};
+        var bgs    = {libres:'#DCFCE7',ocupadas:'#FEF3C7',reservadas:'#DBEAFE',limpieza:'#F3F4F6'};
+        var c = colors[m.estado]||'#9CA3AF';
+        var bg = bgs[m.estado]||'#F9FAFB';
+        return '<div onclick="cambiarEstadoMesa(\''+m.id+'\')" style="border:1.5px solid '+c+';border-radius:10px;padding:14px 16px;background:'+bg+';cursor:pointer;min-width:90px;text-align:center;transition:all .15s" title="Click para cambiar estado">'
+          + '<div style="font-size:16px;font-weight:700;color:'+c+'">' + m.numero + '</div>'
+          + '<div style="font-size:10px;font-weight:500;color:'+c+';text-transform:capitalize;margin-top:2px">' + (m.estado==='libres'?'Libre':m.estado==='ocupadas'?'Ocupada':m.estado==='reservadas'?'Reservada':'Limpieza') + '</div>'
+          + (m.pax ? '<div style="font-size:10px;color:'+c+';margin-top:1px">'+m.pax+' pax</div>' : '')
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);text-align:center">Click en una mesa para cambiar su estado</div>'
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function getMesas() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_mesas')||'null');
+    if(stored&&stored.length) return stored;
+  } catch(e){}
+  var defaults = [];
+  for(var i=1;i<=12;i++) defaults.push({id:'m'+i,numero:'Mesa '+i,estado:'libres',pax:0});
+  localStorage.setItem('vk_mesas',JSON.stringify(defaults));
+  return defaults;
+}
+
+function cambiarEstadoMesa(id) {
+  var mesas  = getMesas();
+  var mesa   = mesas.find(function(m){return m.id===id;});
+  if(!mesa) return;
+  var estados = ['libres','ocupadas','reservadas','limpieza'];
+  var idx = estados.indexOf(mesa.estado);
+  mesa.estado = estados[(idx+1)%estados.length];
+  if(mesa.estado==='ocupadas') {
+    var pax = prompt('¿Cuántos comensales? (Enter para cancelar)', '2');
+    mesa.pax = parseInt(pax)||2;
+  } else { mesa.pax = 0; }
+  localStorage.setItem('vk_mesas', JSON.stringify(mesas));
+  var mc = document.getElementById('main-content');
+  if(mc) renderMesas(mc, null, {id:'salon-mesas'});
+}
+
+function agregarMesa() {
+  var mesas = getMesas();
+  var n = mesas.length + 1;
+  mesas.push({id:'m'+Date.now(),numero:'Mesa '+n,estado:'libres',pax:0});
+  localStorage.setItem('vk_mesas',JSON.stringify(mesas));
+  var mc = document.getElementById('main-content');
+  if(mc) renderMesas(mc, null, {id:'salon-mesas'});
+}
+
+function mesaKpi(label, value, color, bg) {
+  return '<div style="border:.5px solid var(--border);border-radius:8px;padding:12px;background:'+bg+';text-align:center">'
+    + '<div style="font-size:20px;font-weight:700;color:'+color+'">'+value+'</div>'
+    + '<div style="font-size:11px;color:'+color+';font-weight:500;margin-top:2px">'+label+'</div>'
+    + '</div>';
+}
+
+function renderChecklistSalon(el, cat, sub) {
+  var checklistId = sub ? sub.id : 'salon-checklist';
+  // Reutilizar el renderer genérico de módulos
+  if(typeof renderModuleGenerico === 'function') {
+    renderModuleGenerico(el, cat, sub);
+  } else {
+    el.innerHTML = '<div class="fp"><div style="padding:20px"><div class="mod-title">'+(sub?sub.name:'Checklist Salón')+'</div></div></div>';
+  }
+}
+
+function renderMiseEnPlace(el, cat, sub) {
+  var items = getMiseItems(cat ? cat.id : 'salon');
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Mise en Place</span><span class="usr-count">'+(cat?cat.name:'Salón')+'</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="agregarMiseItem(\''+(cat?cat.id:'salon')+'\')"><i class="ti ti-plus" style="font-size:13px"></i> Ítem</button>'
+    + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px">'
+    + items.map(function(item) {
+        var done = !!item.done;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:.5px solid var(--border);border-radius:8px;background:'+(done?'var(--bg-success,#F0FDF4)':'var(--surface-2)')+'">'
+          + '<input type="checkbox" '+(done?'checked':'')+' onclick="toggleMise(\''+item.id+'\',\''+(cat?cat.id:'salon')+'\')" style="accent-color:var(--kale,#146B4F);width:18px;height:18px;cursor:pointer;flex-shrink:0">'
+          + '<span style="flex:1;font-size:13px;color:var(--text-primary);'+(done?'text-decoration:line-through;opacity:.6':'')+'">' + item.nombre + '</span>'
+          + '<span style="font-size:10px;color:var(--text-muted)">' + (item.area||'') + '</span>'
+          + '<button onclick="eliminarMise(\''+item.id+'\',\''+(cat?cat.id:'salon')+'\')" style="background:none;border:none;cursor:pointer;color:#DC2626;padding:4px;font-size:13px">×</button>'
+          + '</div>';
+      }).join('')
+    + (items.length === 0 ? '<div style="padding:40px;text-align:center;color:var(--text-muted)">Sin ítems configurados</div>' : '')
+    + '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function getMiseItems(area) {
+  try {
+    var all = JSON.parse(localStorage.getItem('vk_mise_'+(area||'salon'))||'null');
+    if(all&&all.length) return all;
+  } catch(e){}
+  var defaults = {
+    salon:   ['Mesas limpias y montadas','Cubiertos en posición','Copas sin manchas','Servilletas dobladas','Carta en buenas condiciones','Música y clima configurados','Flores / centro de mesa','Iluminación ajustada'],
+    cocina:  ['Tablas limpias y sanitizadas','Cuchillos afilados','Mise en place de salsas','Fondos y salsas madre','Guarniciones preparadas','Estación limpia y organizada'],
+    barra:   ['Hielos suficientes','Frutas cortadas','Jarabe simple','Jugos frescos exprimidos','Vasos limpios y pulidos','Carta de bebidas actualizada'],
+    servicio:['Comandero con papel','Plumas disponibles','Uniforme limpio y completo','Conocimiento del menú del día','Briefing de alérgenos']
+  };
+  var items = (defaults[area]||defaults.salon).map(function(n,i){return {id:'mise_'+area+'_'+i,nombre:n,area:area,done:false};});
+  localStorage.setItem('vk_mise_'+(area||'salon'), JSON.stringify(items));
+  return items;
+}
+
+function toggleMise(id, area) {
+  var items = getMiseItems(area);
+  var item  = items.find(function(i){return i.id===id;});
+  if(item) item.done = !item.done;
+  localStorage.setItem('vk_mise_'+area, JSON.stringify(items));
+  var mc = document.getElementById('main-content');
+  var areas = typeof ESTRUCTURA!=='undefined'?ESTRUCTURA:[];
+  var cat = areas.find(function(a){return a.id===area;});
+  if(mc) renderMiseEnPlace(mc, cat, {id:area+'-mise'});
+}
+
+function eliminarMise(id, area) {
+  var items = getMiseItems(area).filter(function(i){return i.id!==id;});
+  localStorage.setItem('vk_mise_'+area, JSON.stringify(items));
+  var mc = document.getElementById('main-content');
+  if(mc) renderMiseEnPlace(mc, {id:area}, {id:area+'-mise'});
+}
+
+function agregarMiseItem(area) {
+  var nombre = prompt('Nombre del ítem de mise en place:');
+  if(!nombre||!nombre.trim()) return;
+  var items = getMiseItems(area);
+  items.push({id:'mise_'+Date.now(), nombre:nombre.trim(), area:area, done:false});
+  localStorage.setItem('vk_mise_'+area, JSON.stringify(items));
+  var mc = document.getElementById('main-content');
+  if(mc) renderMiseEnPlace(mc, {id:area}, {id:area+'-mise'});
+}
+
+/* ─ SERVICIO ─────────────────────────────────────────── */
+function renderServicio(el, cat, sub) {
+  var subId = sub ? sub.id : '';
+  if(subId.includes('satisfaccion')) return renderSatisfaccion(el, cat, sub);
+  if(subId.includes('tiempos')) return renderTiempos(el, cat, sub);
+  if(subId.includes('protocolo')) return renderProtocolo(el, cat, sub);
+  renderProtocolo(el, cat, sub);
+}
+
+function renderProtocolo(el, cat, sub) {
+  var protocolo = [
+    {titulo:'Bienvenida al cliente', desc:'Saludo en los primeros 30 segundos · Nombre del cliente si es frecuente · Ofrecimiento de lugar', check:false},
+    {titulo:'Presentación de carta', desc:'Carta sin manchas · Mencionar especiales del día · Dar tiempo suficiente', check:false},
+    {titulo:'Toma de orden', desc:'Repetir la orden · Confirmar temperatura y término · Anotar correctamente', check:false},
+    {titulo:'Seguimiento en mesa', desc:'Verificar satisfacción 2 min después · Ofrecer más bebida · No hacer esperar', check:false},
+    {titulo:'Manejo de quejas', desc:'Escuchar sin interrumpir · Disculparse · Solucionar o escalar a gerente', check:false},
+    {titulo:'Cierre de experiencia', desc:'Ofrecer postre y café · Verificar factura · Despedida cordial', check:false},
+  ];
+  var prk = 'vk_protocolo_' + new Date().toISOString().slice(0,10);
+  try {
+    var saved = JSON.parse(localStorage.getItem(prk)||'[]');
+    if(saved.length === protocolo.length) {
+      protocolo.forEach(function(p,i){ p.check = saved[i]||false; });
+    }
+  } catch(e){}
+
+  var done = protocolo.filter(function(p){return p.check;}).length;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Protocolo de Servicio</span>'
+    + '<span class="usr-count">'+done+'/'+protocolo.length+' verificados</span></div></div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px">'
+    + protocolo.map(function(item, idx) {
+        return '<label style="display:flex;align-items:flex-start;gap:12px;padding:14px;border:.5px solid var(--border);border-radius:10px;background:'+(item.check?'var(--bg-success,#F0FDF4)':'var(--surface-2)')+';cursor:pointer">'
+          + '<input type="checkbox" '+(item.check?'checked':'')+' data-idx="'+idx+'" onchange="toggleProtocolo('+idx+',\''+prk+'\',this.checked)" style="accent-color:var(--kale,#146B4F);width:18px;height:18px;flex-shrink:0;margin-top:2px">'
+          + '<div><div style="font-size:13px;font-weight:600;color:var(--text-primary);'+(item.check?'text-decoration:line-through;opacity:.6':'')+'">' + item.titulo + '</div>'
+          + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px">' + item.desc + '</div></div>'
+          + '</label>';
+      }).join('')
+    + '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function toggleProtocolo(idx, prk, val) {
+  try {
+    var data = JSON.parse(localStorage.getItem(prk)||'[]');
+    while(data.length <= idx) data.push(false);
+    data[idx] = val;
+    localStorage.setItem(prk, JSON.stringify(data));
+  } catch(e){}
+  if(typeof guardarProgreso==='function') guardarProgreso();
+}
+
+function renderSatisfaccion(el, cat, sub) {
+  var registros = [];
+  try { registros = JSON.parse(localStorage.getItem('vk_satisfaccion_'+new Date().toISOString().slice(0,10))||'[]'); } catch(e){}
+  var avg = registros.length ? Math.round(registros.reduce(function(s,r){return s+r.puntuacion;},0)/registros.length*10)/10 : null;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Satisfacción del Cliente</span><span class="usr-count">'+registros.length+' hoy</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="registrarSatisfaccion()"><i class="ti ti-plus" style="font-size:13px"></i> Registrar</button>'
+    + '</div>'
+    + (avg!==null ? '<div style="text-align:center;padding:24px;border:.5px solid var(--border);border-radius:12px;margin-bottom:16px">'
+        + '<div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Promedio del día</div>'
+        + '<div style="font-size:56px;font-weight:700;color:'+(avg>=4?'#15803D':avg>=3?'#D97706':'#DC2626');+'">'+avg+'<span style="font-size:20px;color:var(--text-muted)">/5</span></div>'
+        + '<div style="font-size:24px;margin-top:4px">' + '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg)) + '</div>'
+        + '</div>' : '')
+    + '<div style="display:flex;flex-direction:column;gap:6px">'
+    + registros.slice().reverse().map(function(r) {
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:.5px solid var(--border);border-radius:8px">'
+          + '<div style="font-size:18px">'+'★'.repeat(r.puntuacion)+'☆'.repeat(5-r.puntuacion)+'</div>'
+          + '<div style="flex:1"><div style="font-size:12px;font-weight:500">Mesa '+r.mesa+'</div>'
+          + (r.comentario?'<div style="font-size:11px;color:var(--text-muted)">'+r.comentario+'</div>':'')+  '</div>'
+          + '<div style="font-size:10px;color:var(--text-muted)">'+r.hora+'</div>'
+          + '</div>';
+      }).join('')
+    + (registros.length===0?'<div style="padding:40px;text-align:center;color:var(--text-muted)">Sin registros de satisfacción hoy</div>':'')
+    + '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function registrarSatisfaccion() {
+  var html = '<div class="usr-modal-bg" id="satModal" onclick="if(event.target.id===\'satModal\')document.getElementById(\'satModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:380px"><div class="usr-modal-head"><span class="usr-modal-title">Satisfacción del cliente</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'satModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:14px"><label>Mesa</label>'
+    + '<input type="text" id="satMesa" placeholder="Número o nombre de mesa" autofocus></div>'
+    + '<div class="usr-field" style="margin-bottom:14px"><label>Puntuación</label>'
+    + '<div style="display:flex;gap:8px;margin-top:6px">'
+    + [1,2,3,4,5].map(function(n){ return '<button onclick="selectStar('+n+')" id="star'+n+'" style="font-size:28px;background:none;border:none;cursor:pointer;transition:transform .1s;padding:4px">☆</button>'; }).join('')
+    + '</div></div>'
+    + '<div class="usr-field"><label>Comentario (opcional)</label><input type="text" id="satComentario" placeholder="¿Qué podemos mejorar?"></div>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'satModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarSatisfaccion()">Registrar</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+  window._satStars=0;
+}
+function selectStar(n) {
+  window._satStars=n;
+  [1,2,3,4,5].forEach(function(i){var b=document.getElementById('star'+i);if(b)b.textContent=i<=n?'★':'☆';});
+}
+function guardarSatisfaccion() {
+  var mesa=document.getElementById('satMesa')?.value.trim();
+  var puntuacion=window._satStars||0;
+  if(!puntuacion){alert('Selecciona una puntuación.');return;}
+  var key='vk_satisfaccion_'+new Date().toISOString().slice(0,10);
+  var registros=[];
+  try{registros=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  registros.push({mesa:mesa||'—',puntuacion,comentario:document.getElementById('satComentario')?.value||'',hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})});
+  localStorage.setItem(key,JSON.stringify(registros));
+  if(puntuacion<=2&&typeof sbInsertAlerta==='function'){sbInsertAlerta('satisfaccion','importante','Baja satisfacción registrada: '+(puntuacion)+'/5','Mesa: '+(mesa||'—')+'. Atender inmediatamente.','servicio-satisfaccion');}
+  document.getElementById('satModal')?.remove();
+  if(typeof guardarProgreso==='function')guardarProgreso();
+  var mc=document.getElementById('main-content');
+  if(mc)renderSatisfaccion(mc,null,{id:'servicio-satisfaccion'});
+}
+
+function renderTiempos(el, cat, sub) {
+  var tiempos = [
+    {etapa:'Bienvenida y sentada',meta:'< 1 min',critico:true},
+    {etapa:'Presentación de carta',meta:'< 2 min',critico:false},
+    {etapa:'Toma de orden',meta:'< 5 min',critico:false},
+    {etapa:'Bebidas en mesa',meta:'< 5 min',critico:true},
+    {etapa:'Entrada en mesa',meta:'< 10 min',critico:false},
+    {etapa:'Plato fuerte',meta:'< 20 min',critico:true},
+    {etapa:'Cobro y despedida',meta:'< 5 min',critico:false},
+  ];
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Tiempos de Servicio</span></div></div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px">'
+    + tiempos.map(function(t) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:.5px solid '+(t.critico?'#FECACA':'var(--border)')+';border-radius:8px;background:'+(t.critico?'#FFF5F5':'var(--surface-2)')+'">'
+          + '<div><div style="font-size:13px;font-weight:500;color:var(--text-primary)">' + t.etapa + '</div>'
+          + (t.critico?'<div style="font-size:10px;color:#DC2626;font-weight:600">CRÍTICO</div>':'') + '</div>'
+          + '<div style="font-size:14px;font-weight:600;color:var(--text-primary);font-family:var(--mono,monospace)">' + t.meta + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+/* ══ FIN SALÓN & SERVICIO ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
