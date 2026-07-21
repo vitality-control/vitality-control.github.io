@@ -4288,7 +4288,7 @@ function isMobile() { return window.innerWidth <= 768; }
 ══════════════════════════════════════════════════════ */
 
 var RECURSOS_MODULOS = [
-  {id:'rec-capacitaciones', nombre:'Capacitaciones', icono:'ti-school',        desc:'Manuales de entrenamiento, videos y programas de 15 días por puesto', bloqueado:true},
+  {id:'rec-capacitaciones', nombre:'Capacitaciones', icono:'ti-school',        desc:'Programa de entrenamiento de 15 días con avance por colaborador y certificación', bloqueado:false},
   {id:'rec-auditorias',     nombre:'Auditorías',      icono:'ti-clipboard-check', desc:'Auditorías operativas programadas con checklist fotográfico y calificación', bloqueado:true},
   {id:'rec-evaluaciones',   nombre:'Evaluaciones',    icono:'ti-user-check',   desc:'Evaluación de desempeño del personal por competencias y periodo', bloqueado:true},
   {id:'rec-infografias',    nombre:'Infografías',     icono:'ti-photo',        desc:'Material visual de referencia: FIFO, etiquetado, temperaturas, mise en place', bloqueado:true},
@@ -4331,6 +4331,7 @@ function renderRecursos(el, cat, sub) {
 function abrirRecurso(id) {
   var mc = document.getElementById('main-content');
   if(!mc) return;
+  if(id === 'rec-capacitaciones') return renderCapacitaciones(mc);
   if(id === 'rec-notas')  return renderNotas(mc);
   if(id === 'rec-avisos') return renderAvisos(mc);
 }
@@ -4877,6 +4878,116 @@ function agregarBotonVoz() {
   };
 }
 /* ══ FIN EVIDENCIA V3 ══ */
+
+
+/* ══════════ MÓDULO CAPACITACIONES — Programa 15 días ══════════ */
+var PLAN_CAPACITACION = [
+  {dia:1,  tema:'Inducción y filosofía de la casa', obj:'Conocer la marca, valores, organigrama y estándares de presentación personal', acts:['Recorrido por instalaciones','Presentación del equipo','Uniforme e higiene personal','Reglamento interno']},
+  {dia:2,  tema:'Seguridad e inocuidad I', obj:'Dominar las bases de manejo higiénico de alimentos', acts:['Lavado de manos correcto','Zonas de riesgo y contaminación cruzada','Uso de tablas por color','Temperaturas seguras']},
+  {dia:3,  tema:'Seguridad e inocuidad II', obj:'Aplicar PEPS, etiquetado y control de caducidades', acts:['Sistema PEPS en refrigeración','Etiquetado con fecha y responsable','Bitácora de temperaturas','Manejo de merma']},
+  {dia:4,  tema:'Conocimiento de estaciones', obj:'Identificar cada estación, su equipo y su mise en place', acts:['Mapa de estaciones','Equipos: encendido y apagado seguro','Mise en place por estación','Herramientas y su cuidado']},
+  {dia:5,  tema:'Recetario base I', obj:'Ejecutar las preparaciones fundamentales del menú', acts:['Lectura de fichas técnicas','Preparaciones madre','Porciones y gramajes','Práctica supervisada']},
+  {dia:6,  tema:'Recetario base II', obj:'Ejecutar los platillos principales con estándar de la casa', acts:['Platillos estrella','Tiempos de cocción','Emplatado y presentación','Práctica supervisada']},
+  {dia:7,  tema:'Evaluación semana 1', obj:'Demostrar dominio de inocuidad y preparaciones base', acts:['Examen teórico de inocuidad','Práctica evaluada de 2 preparaciones','Retroalimentación con supervisor']},
+  {dia:8,  tema:'Servicio y tiempos', obj:'Comprender el flujo de comanda y los tiempos de servicio', acts:['Flujo comanda-cocina-pase','Tiempos máximos por tipo de platillo','Comunicación en línea','Manejo de picos de servicio']},
+  {dia:9,  tema:'Apertura de turno', obj:'Ejecutar la apertura completa de su estación sin supervisión', acts:['Checklist de apertura','Verificación de temperaturas','Montaje de estación','Registro en el portal']},
+  {dia:10, tema:'Cierre de turno', obj:'Ejecutar el cierre completo: limpieza, almacenado y registro', acts:['Checklist de cierre','Almacenado y rotación','Limpieza profunda de estación','Registro y evidencia fotográfica']},
+  {dia:11, tema:'Uso del portal operativo', obj:'Registrar su operación diaria en el sistema LiTa', acts:['Login y navegación','Checklists y progreso','Evidencia fotográfica con motivo','Registro de temperaturas y merma']},
+  {dia:12, tema:'Manejo de incidencias', obj:'Reaccionar correctamente ante fallas, quejas y emergencias', acts:['Protocolo de equipo dañado','Producto fuera de temperatura','Queja de cliente','Registro de incidencia con foto']},
+  {dia:13, tema:'Práctica integral I', obj:'Operar un turno completo con acompañamiento', acts:['Turno real con mentor','Registro completo en portal','Autoevaluación al cierre']},
+  {dia:14, tema:'Práctica integral II', obj:'Operar un turno completo de forma autónoma', acts:['Turno real sin intervención','Supervisor solo observa','Registro y evidencias completas']},
+  {dia:15, tema:'Certificación final', obj:'Aprobar la evaluación integral y recibir su alta operativa', acts:['Examen final teórico-práctico','Revisión de expediente de avance','Firma de certificación','Alta en el sistema']}
+];
+
+function getCapacitaciones() {
+  try { return JSON.parse(localStorage.getItem('vk_capacitaciones')||'{}'); } catch(e){ return {}; }
+}
+function saveCapacitaciones(c) { localStorage.setItem('vk_capacitaciones', JSON.stringify(c)); }
+
+function renderCapacitaciones(el, personaSel) {
+  var data = getCapacitaciones();
+  var personas = Object.keys(data);
+  var sel = personaSel || personas[0] || null;
+  var reg = sel ? data[sel] : null;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><button onclick="renderRecursos(document.getElementById(\'main-content\'),null,null)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:0;margin-bottom:4px">← Recursos</button>'
+    + '<br><span class="usr-title">Capacitaciones — Programa 15 días</span>'
+    + '<span class="usr-count">' + personas.length + ' en entrenamiento</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="nuevoCapacitado()"><i class="ti ti-user-plus" style="font-size:13px"></i> Nuevo</button>'
+    + '</div>';
+
+  if(personas.length) {
+    html += '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">'
+      + personas.map(function(nm) {
+          var r = data[nm]; var done = (r.dias||[]).filter(Boolean).length;
+          var act = nm === sel;
+          return '<button onclick="renderCapacitaciones(document.getElementById(\'main-content\'),\''+nm.replace(/'/g,"\\'")+'\')" style="background:'+(act?'var(--kale,#146B4F)':'var(--surface-2)')+';color:'+(act?'#fff':'var(--text-secondary)')+';border:.5px solid '+(act?'var(--kale,#146B4F)':'var(--border)')+';border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit">'+nm+' · '+done+'/15</button>';
+        }).join('') + '</div>';
+  }
+
+  if(reg) {
+    var done = (reg.dias||[]).filter(Boolean).length;
+    var pct = Math.round(done/15*100);
+    html += '<div style="background:var(--surface-2);border:.5px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:16px">'
+      + '<div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--text-primary)">' + sel + '</div>'
+      + '<div style="font-size:11px;color:var(--text-muted)">Inició: ' + (reg.inicio||'—') + ' · Puesto: ' + (reg.puesto||'—') + '</div>'
+      + '<div style="height:7px;background:var(--surface-1);border-radius:4px;margin-top:8px"><div style="height:7px;background:var(--kale,#146B4F);width:'+pct+'%;border-radius:4px;transition:width .3s"></div></div></div>'
+      + '<div style="text-align:center"><div style="font-size:26px;font-weight:700;color:var(--kale,#146B4F)">'+pct+'%</div>'
+      + (done===15 ? '<div style="font-size:9px;font-weight:600;color:#15803D;background:#DCFCE7;border-radius:10px;padding:2px 8px;margin-top:2px">CERTIFICADO</div>' : '<div style="font-size:10px;color:var(--text-muted)">día '+Math.min(done+1,15)+' de 15</div>')
+      + '</div></div>';
+
+    html += PLAN_CAPACITACION.map(function(d, i) {
+      var ok = reg.dias && reg.dias[i];
+      var actual = !ok && (i === 0 || (reg.dias && reg.dias[i-1]));
+      return '<div style="display:flex;gap:12px;border:.5px solid '+(ok?'#BBF7D0':actual?'var(--kale,#146B4F)':'var(--border)')+';border-radius:10px;padding:12px 14px;margin-bottom:8px;background:'+(ok?'#F0FDF4':'var(--surface-2)')+';'+(!ok&&!actual?'opacity:.55':'')+'">'
+        + '<div style="width:34px;height:34px;border-radius:50%;background:'+(ok?'#15803D':actual?'var(--kale,#146B4F)':'var(--surface-1)')+';color:'+(ok||actual?'#fff':'var(--text-muted)')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">'+(ok?'✓':d.dia)+'</div>'
+        + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text-primary)">Día '+d.dia+' · '+d.tema+'</div>'
+        + '<div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">'+d.obj+'</div>'
+        + '<div style="font-size:11px;color:var(--text-muted);margin-top:4px">'+d.acts.join(' · ')+'</div></div>'
+        + (actual ? '<button onclick="completarDia(\''+sel.replace(/'/g,"\\'")+'\','+i+')" style="align-self:center;background:var(--kale,#146B4F);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;min-height:38px">Completar</button>' : '')
+        + '</div>';
+    }).join('');
+  } else {
+    html += '<div style="padding:50px;text-align:center;color:var(--text-muted);font-size:13px">Registra al primer colaborador en entrenamiento con el botón "Nuevo".</div>';
+  }
+  html += '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function nuevoCapacitado() {
+  var nombre = prompt('Nombre del colaborador en entrenamiento:');
+  if(!nombre || !nombre.trim()) return;
+  var puesto = prompt('Puesto (ej. Cocinero, Mesero, Barista):') || '—';
+  var data = getCapacitaciones();
+  data[nombre.trim()] = {inicio: fechaMX(), puesto: puesto.trim(), dias: []};
+  saveCapacitaciones(data);
+  renderCapacitaciones(document.getElementById('main-content'), nombre.trim());
+}
+
+function completarDia(nombre, idx) {
+  var pin = prompt('PIN de supervisor para validar el día ' + (idx+1) + ':');
+  if(!pin) return;
+  var aplicar = function() {
+    var data = getCapacitaciones();
+    if(!data[nombre]) return;
+    data[nombre].dias = data[nombre].dias || [];
+    data[nombre].dias[idx] = {fecha: fechaMX(), hora: horaMX()};
+    saveCapacitaciones(data);
+    if(idx === 14 && typeof sbInsertAlerta === 'function') {
+      sbInsertAlerta('capacitacion','informativa','🎓 Certificación completada: ' + nombre,
+        nombre + ' (' + (data[nombre].puesto||'') + ') completó el programa de capacitación de 15 días y queda certificado para operación.',
+        'certificacion-' + nombre.replace(/\W/g,'') );
+    }
+    renderCapacitaciones(document.getElementById('main-content'), nombre);
+  };
+  if(typeof validarPinServidor === 'function') {
+    validarPinServidor(pin).then(function(ok){ if(ok) aplicar(); else alert('PIN incorrecto.'); }).catch(function(){ aplicar(); });
+  } else { aplicar(); }
+}
+/* ══════════ FIN CAPACITACIONES ══════════ */
 
 /* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
 
