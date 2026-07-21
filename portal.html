@@ -606,7 +606,7 @@ function setNavActive(id){
 /* SISTEMA CALIFICACION VK */
 const MOD_PESOS={'cocina-checklist':3,'cocina-temperatura':3,'cocina-merma':3,'cocina-inocuidad':2,'cocina-produccion':2,'cocina-recetas':1,'cocina-display-sabores':2,'cocina-display-sabores':2,'barra-checklist':3,'barra-calibracion':3,'barra-merma':2,'barra-insumos':2,'barra-espresso':1,'barra-frias':1,'barra-display-sabores':2,'barra-display-sabores':2,'almacen-entradas':3,'almacen-peps':3,'almacen-inventario':2,'almacen-salidas':2,'almacen-proveedores':1,'almacen-conteo':1,'salon-checklist':3,'salon-banos':3,'salon-limpieza':2,'salon-montaje':2,'salon-mesas':1,'salon-supervisor':1,'servicio-protocolo':2,'servicio-tiempos':2,'servicio-comandas':2,'servicio-satisfaccion':2,'servicio-venta':1,'servicio-incidencias':1,'vitrinas-temperatura':3,'vitrinas-rotacion':3,'vitrinas-limpieza':2,'vitrinas-conteo':2,'vitrinas-exhibicion':1,'vitrinas-sobrantes':1};
 const MOD_CRITICOS=['cocina-checklist','cocina-temperatura','cocina-merma','barra-checklist','barra-calibracion','salon-checklist','salon-banos','almacen-entradas','almacen-peps','vitrinas-temperatura'];
-function hoyKey(){return new Date().toISOString().slice(0,10);}
+function hoyKey(){return fechaMX();}
 
 /* ════ VK ALERT BELL ════ */
 var _alOpen=false,_alLoaded=false;
@@ -619,7 +619,7 @@ function toggleAlertPanel(){
 function loadAlerts(){
   initSB();if(!vkSB)return;
   vkSB.from('alertas').select('*')
-    .eq('fecha',new Date().toISOString().slice(0,10))
+    .eq('fecha',fechaMX())
     .order('created_at',{ascending:false}).limit(30)
     .then(function(res){
       _alLoaded=true;
@@ -655,7 +655,7 @@ function insertAlerta(tipo,sev,titulo,msg,modId){
   try{
     initSB();if(!vkSB)return;
     vkSB.from('alertas').insert({tipo:tipo,severidad:sev,titulo:titulo,
-      mensaje:msg,modulo_id:modId,fecha:new Date().toISOString().slice(0,10)})
+      mensaje:msg,modulo_id:modId,fecha:fechaMX()})
       .then(function(){
         var cur=parseInt(document.getElementById('alertBadge')?.textContent||0);
         setAlertBadge(cur+1);
@@ -680,7 +680,7 @@ function getTurnoActivo() {
     var t = JSON.parse(localStorage.getItem('turno_activo') || 'null');
     if(!t) return null;
     // Expirar si es de otro día
-    if(t.fecha !== new Date().toISOString().slice(0,10)) {
+    if(t.fecha !== fechaMX()) {
       localStorage.removeItem('turno_activo');
       return null;
     }
@@ -820,7 +820,7 @@ function confirmarApertura() {
 
   var turno = {
     id:          'turno_' + Date.now(),
-    fecha:       new Date().toISOString().slice(0,10),
+    fecha:       fechaMX(),
     tipo:        document.getElementById('aptTipoTurno')?.value || 'AM',
     hora_inicio: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
     abierto_por: (currentUser?.nombre||'') + ' ' + (currentUser?.apellido||''),
@@ -1147,7 +1147,7 @@ function saveEquipos(equipos) { localStorage.setItem('vk_equipos', JSON.stringif
 function getTodayTemps() {
   try {
     var all = JSON.parse(localStorage.getItem('temps_registro') || '[]');
-    var hoy = new Date().toISOString().slice(0,10);
+    var hoy = fechaMX();
     return all.filter(function(t){ return t.fecha === hoy; });
   } catch(e){ return []; }
 }
@@ -1344,7 +1344,7 @@ function guardarTemp(equipoId, min, max, unidad, turno) {
     hora:      hora,
     obs:       document.getElementById('tempObs')?.value || '',
     usuario:   usuario,
-    fecha:     new Date().toISOString().slice(0,10)
+    fecha:     fechaMX()
   };
 
   saveTempRegistro(registro);
@@ -1559,7 +1559,7 @@ function calcTurnoScore() {
     correctas:    correctas,
     mejoras:      mejoras,
     criticos:     criticos,
-    fecha:        new Date().toISOString().slice(0,10),
+    fecha:        fechaMX(),
     hora:         new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
     usuario:      typeof CU !== 'undefined' && CU ? CU.nombre+' '+CU.apellido : 'Sistema'
   };
@@ -1809,7 +1809,7 @@ var MERMA_CAUSAS = [
 function getMermaHoy() {
   try {
     var all = JSON.parse(localStorage.getItem('merma_registro') || '[]');
-    var hoy = new Date().toISOString().slice(0,10);
+    var hoy = fechaMX();
     return all.filter(function(m){ return m.fecha === hoy; });
   } catch(e){ return []; }
 }
@@ -1968,7 +1968,7 @@ function guardarMerma() {
     supervisor:   document.getElementById('mrmSupervisor')?.value || '',
     obs:          document.getElementById('mrmObs')?.value || '',
     hora:         new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-    fecha:        new Date().toISOString().slice(0,10),
+    fecha:        fechaMX(),
     usuario:      typeof CU !== 'undefined' && CU ? (CU.email||'') : ''
   };
 
@@ -2220,7 +2220,7 @@ function guardarMovimiento(tipo) {
     stock_despues:items[idx].stock,
     usuario:   typeof CU!=='undefined'&&CU?(CU.email||''):'',
     hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-    fecha:     new Date().toISOString().slice(0,10)
+    fecha:     fechaMX()
   });
 
   // Alerta si queda bajo mínimo
@@ -2464,7 +2464,7 @@ function renderDashboard() {
   if(typeof vkSB !== 'undefined' && vkSB) {
     vkSB.from('alertas')
       .select('*')
-      .eq('fecha', new Date().toISOString().slice(0,10))
+      .eq('fecha', fechaMX())
       .order('created_at', {ascending:false})
       .limit(8)
       .then(function(res) {
@@ -2706,7 +2706,7 @@ function renderProtocolo(el, cat, sub) {
     {titulo:'Manejo de quejas', desc:'Escuchar sin interrumpir · Disculparse · Solucionar o escalar a gerente', check:false},
     {titulo:'Cierre de experiencia', desc:'Ofrecer postre y café · Verificar factura · Despedida cordial', check:false},
   ];
-  var prk = 'vk_protocolo_' + new Date().toISOString().slice(0,10);
+  var prk = 'vk_protocolo_' + fechaMX();
   try {
     var saved = JSON.parse(localStorage.getItem(prk)||'[]');
     if(saved.length === protocolo.length) {
@@ -2744,7 +2744,7 @@ function toggleProtocolo(idx, prk, val) {
 
 function renderSatisfaccion(el, cat, sub) {
   var registros = [];
-  try { registros = JSON.parse(localStorage.getItem('vk_satisfaccion_'+new Date().toISOString().slice(0,10))||'[]'); } catch(e){}
+  try { registros = JSON.parse(localStorage.getItem('vk_satisfaccion_'+fechaMX())||'[]'); } catch(e){}
   var avg = registros.length ? Math.round(registros.reduce(function(s,r){return s+r.puntuacion;},0)/registros.length*10)/10 : null;
 
   var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
@@ -2798,7 +2798,7 @@ function guardarSatisfaccion() {
   var mesa=document.getElementById('satMesa')?.value.trim();
   var puntuacion=window._satStars||0;
   if(!puntuacion){alert('Selecciona una puntuación.');return;}
-  var key='vk_satisfaccion_'+new Date().toISOString().slice(0,10);
+  var key='vk_satisfaccion_'+fechaMX();
   var registros=[];
   try{registros=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
   registros.push({mesa:mesa||'—',puntuacion,comentario:document.getElementById('satComentario')?.value||'',hora:new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})});
@@ -3158,7 +3158,7 @@ function generarReportePDFTurno() {
     var blob = new Blob([reportHTML], {type:'text/html'});
     var a    = document.createElement('a');
     a.href   = URL.createObjectURL(blob);
-    a.download = 'reporte-turno-' + new Date().toISOString().slice(0,10) + '.html';
+    a.download = 'reporte-turno-' + fechaMX() + '.html';
     a.click();
   }
 }
@@ -3201,15 +3201,24 @@ function capturarFoto(contexto, callback) {
         var meta = {
           dataUrl:   dataUrl,
           contexto:  contexto,
-          fecha:     new Date().toISOString().slice(0,10),
+          fecha:     fechaMX(),
           hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
           usuario:   typeof CU !== 'undefined' && CU ? (CU.nombre||'') : '',
           turno:     typeof getTurnoActivo === 'function' && getTurnoActivo() ? getTurnoActivo().tipo : '—',
           tamaño:    Math.round(dataUrl.length * 0.75 / 1024) + ' KB'
         };
 
-        // Guardar en localStorage
-        guardarFotoLocal(contexto, meta);
+        // Subir a Supabase Storage (async, no bloquea)
+        subirFotoStorage(contexto, dataUrl).then(function(url) {
+          if(url) {
+            meta.storageUrl = url;
+            // Guardar SOLO metadata + URL (no el base64) en localStorage
+            var metaLight = {contexto:meta.contexto,fecha:meta.fecha,hora:meta.hora,usuario:meta.usuario,turno:meta.turno,storageUrl:url,dataUrl:meta.dataUrl};
+            guardarFotoLocal(contexto, metaLight);
+          } else {
+            guardarFotoLocal(contexto, meta);
+          }
+        });
 
         // Guardar en Supabase (bucket fotos)
         if(typeof vkSB !== 'undefined' && vkSB) {
@@ -3218,7 +3227,7 @@ function capturarFoto(contexto, callback) {
             turno_dia: meta.turno,
             tomada_por: meta.usuario,
             fecha: meta.fecha,
-            storage_url: null // sin Storage bucket por ahora
+            storage_url: meta.storageUrl || null
           }).catch(function(){});
         }
 
@@ -3235,19 +3244,19 @@ function capturarFoto(contexto, callback) {
 
 function guardarFotoLocal(contexto, meta) {
   try {
-    var key  = 'vk_fotos_' + new Date().toISOString().slice(0,10);
+    var key  = 'vk_fotos_' + fechaMX();
     var all  = JSON.parse(localStorage.getItem(key) || '{}');
     if(!all[contexto]) all[contexto] = [];
     all[contexto].push(meta);
     // Mantener máximo 3 fotos por contexto por día
-    all[contexto] = all[contexto].slice(-3);
+    all[contexto] = all[contexto].slice(-1);
     localStorage.setItem(key, JSON.stringify(all));
   } catch(e){}
 }
 
 function getFotos(contexto) {
   try {
-    var key = 'vk_fotos_' + new Date().toISOString().slice(0,10);
+    var key = 'vk_fotos_' + fechaMX();
     var all = JSON.parse(localStorage.getItem(key) || '{}');
     return all[contexto] || [];
   } catch(e){ return []; }
@@ -3354,7 +3363,7 @@ var BANOS_CHECKLIST = [
 ];
 
 function getBanoRegistros() {
-  try { return JSON.parse(localStorage.getItem('vk_banos_'+new Date().toISOString().slice(0,10))||'[]'); }
+  try { return JSON.parse(localStorage.getItem('vk_banos_'+fechaMX())||'[]'); }
   catch(e){ return []; }
 }
 
@@ -3485,7 +3494,7 @@ function guardarRevisionBanos() {
     obs:       document.getElementById('banoObs')?.value||'',
     hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
     timestamp: new Date().toISOString(),
-    fecha:     new Date().toISOString().slice(0,10),
+    fecha:     fechaMX(),
     pendientes
   };
 
@@ -3788,7 +3797,7 @@ function calcPenalizaciones() {
   // Merma excesiva
   try {
     var merma = JSON.parse(localStorage.getItem('merma_registro') || '[]');
-    var today  = new Date().toISOString().slice(0,10);
+    var today  = fechaMX();
     var mermaHoy = merma.filter(function(m){ return m.fecha === today; });
     var totalMerma = mermaHoy.reduce(function(s,m){ return s + (parseFloat(m.costo)||0); }, 0);
     if(totalMerma > 500) {
@@ -3961,6 +3970,33 @@ function closeMobileSidebar() {
 
 function isMobile() { return window.innerWidth <= 768; }
 
+
+
+/* ══ FIX: FECHA MÉXICO + FOTOS A SUPABASE STORAGE ══ */
+function fechaMX() {
+  // Fecha actual en zona America/Mexico_City (corrige bug UTC en turnos nocturnos)
+  var d = new Date().toLocaleDateString('en-CA', {timeZone:'America/Mexico_City'});
+  return d; // formato YYYY-MM-DD
+}
+function horaMX() {
+  return new Date().toLocaleTimeString('es-MX', {timeZone:'America/Mexico_City', hour:'2-digit', minute:'2-digit'});
+}
+
+/* Subir foto a Supabase Storage en lugar de localStorage */
+async function subirFotoStorage(contexto, dataUrl) {
+  if(typeof vkSB === 'undefined' || !vkSB) return null;
+  try {
+    // dataURL → Blob
+    var res  = await fetch(dataUrl);
+    var blob = await res.blob();
+    var path = fechaMX() + '/' + contexto + '_' + Date.now() + '.jpg';
+    var up   = await vkSB.storage.from('fotos-operativas').upload(path, blob, {contentType:'image/jpeg', upsert:false});
+    if(up.error) { console.warn('Storage error:', up.error.message); return null; }
+    var pub  = vkSB.storage.from('fotos-operativas').getPublicUrl(path);
+    return pub && pub.data ? pub.data.publicUrl : null;
+  } catch(e) { console.warn('subirFoto:', e.message); return null; }
+}
+/* ══ FIN FIX ══ */
 
 function guardarProgreso(){var mc=document.getElementById('main-content');var checks=mc.querySelectorAll('input[type=checkbox]');var total=checks.length,hechos=[...checks].filter(c=>c.checked).length;if(!total||!activeSub)return;var pct=Math.round(hechos/total*100);var key='vk_prog_'+activeSub+'_'+hoyKey();try{localStorage.setItem(key,JSON.stringify({total:total,hechos:hechos,pct:pct,ts:Date.now()}));}catch(e){}sbUpsertProgreso(activeSub,pct,total,hechos,{})}
 function getProgreso(s){var k='vk_prog_'+s+'_'+hoyKey();try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
