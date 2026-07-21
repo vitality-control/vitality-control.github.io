@@ -3121,6 +3121,7 @@ function renderMesas(el, cat, sub) {
       }).join('')
     + '</div>'
     + '<div style="font-size:11px;color:var(--text-muted);text-align:center">Click en una mesa para cambiar su estado</div>'
+    + '<div style="margin-top:16px">' + buildFotoCard('foto-salon','Foto: Salón listo para servicio',null) + '</div>'
     + '</div></div>';
   el.innerHTML = html;
   triggerFades();
@@ -3729,6 +3730,351 @@ function kpiPDF(label, value, color) {
 /* ══ FIN VITRINAS + PDF ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   SISTEMA DE FOTOGRAFÍA OPERATIVA
+   Evidencia por turno · Compresión · Preview · Supabase
+══════════════════════════════════════════════════════ */
+
+/* ─ Motor de captura ───────────────────────────────── */
+function capturarFoto(contexto, callback) {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.setAttribute('capture', 'environment'); // cámara trasera en mobile
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if(!file) { document.body.removeChild(input); return; }
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var img = new Image();
+      img.onload = function() {
+        // Comprimir a máximo 900px
+        var MAX = 900, w = img.width, h = img.height;
+        if(w > h && w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+        else if(h > MAX) { w = Math.round(w*MAX/h); h = MAX; }
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+
+        var meta = {
+          dataUrl:   dataUrl,
+          contexto:  contexto,
+          fecha:     new Date().toISOString().slice(0,10),
+          hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+          usuario:   typeof CU !== 'undefined' && CU ? (CU.nombre||'') : '',
+          turno:     typeof getTurnoActivo === 'function' && getTurnoActivo() ? getTurnoActivo().tipo : '—',
+          tamaño:    Math.round(dataUrl.length * 0.75 / 1024) + ' KB'
+        };
+
+        // Guardar en localStorage
+        guardarFotoLocal(contexto, meta);
+
+        // Guardar en Supabase (bucket fotos)
+        if(typeof vkSB !== 'undefined' && vkSB) {
+          vkSB.from('fotos').insert({
+            modulo_id: contexto,
+            turno_dia: meta.turno,
+            tomada_por: meta.usuario,
+            fecha: meta.fecha,
+            storage_url: null // sin Storage bucket por ahora
+          }).catch(function(){});
+        }
+
+        if(callback) callback(meta);
+        document.body.removeChild(input);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  input.click();
+}
+
+function guardarFotoLocal(contexto, meta) {
+  try {
+    var key  = 'vk_fotos_' + new Date().toISOString().slice(0,10);
+    var all  = JSON.parse(localStorage.getItem(key) || '{}');
+    if(!all[contexto]) all[contexto] = [];
+    all[contexto].push(meta);
+    // Mantener máximo 3 fotos por contexto por día
+    all[contexto] = all[contexto].slice(-3);
+    localStorage.setItem(key, JSON.stringify(all));
+  } catch(e){}
+}
+
+function getFotos(contexto) {
+  try {
+    var key = 'vk_fotos_' + new Date().toISOString().slice(0,10);
+    var all = JSON.parse(localStorage.getItem(key) || '{}');
+    return all[contexto] || [];
+  } catch(e){ return []; }
+}
+
+/* ─ Componente foto card (reutilizable) ────────────── */
+function buildFotoCard(contexto, label, onTaken) {
+  var fotos   = getFotos(contexto);
+  var ultima  = fotos.length ? fotos[fotos.length-1] : null;
+  var taken   = !!ultima;
+
+  return '<div style="border:.5px solid '+(taken?'#16A34A':'var(--border)')+';border-radius:10px;overflow:hidden;background:'+(taken?'#F0FDF4':'var(--surface-2)')+'">'
+
+    // Header
+    + '<div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;background:'+(taken?'rgba(22,163,74,.08)':'transparent')+'">'
+    + '<div>'
+    + '<div style="font-size:13px;font-weight:500;color:var(--text-primary)">' + label + '</div>'
+    + (taken ? '<div style="font-size:10px;color:#15803D;margin-top:1px">✓ Foto tomada · ' + ultima.hora + ' · ' + ultima.usuario + '</div>'
+             : '<div style="font-size:10px;color:var(--text-muted);margin-top:1px">Pendiente</div>')
+    + '</div>'
+    + '<button onclick="capturarFotoContexto(\'' + contexto + '\',\'' + label.replace(/'/g,"\\'") + '\')" '
+    + 'style="background:'+(taken?'#15803D':'var(--kale,#146B4F)')+';color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;min-height:36px">'
+    + '<i class="ti ti-camera" style="font-size:15px"></i>'+(taken?'Retomar':'Tomar foto')+'</button>'
+    + '</div>'
+
+    // Preview de la foto
+    + (taken && ultima.dataUrl ? '<div style="position:relative"><img src="' + ultima.dataUrl + '" style="width:100%;max-height:200px;object-fit:cover;display:block">'
+        + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:8px 12px;font-size:11px;color:#fff">'
+        + 'Turno ' + ultima.turno + ' · ' + ultima.fecha + '</div></div>' : '')
+    + '</div>';
+}
+
+function capturarFotoContexto(contexto, label) {
+  capturarFoto(contexto, function(meta) {
+    // Re-render el módulo activo
+    var mc = document.getElementById('main-content');
+    if(mc) {
+      // Trigger re-render del contexto actual
+      var event = new CustomEvent('foto-tomada', {detail:{contexto, meta}});
+      document.dispatchEvent(event);
+      // Actualizar scoring
+      if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
+    }
+  });
+}
+
+/* ─ MÓDULO FOTOS OPERATIVAS ────────────────────────── */
+function renderFotosOperativas(el, cat, sub) {
+  var CHECKPOINTS = [
+    {id:'foto-vitrinas',      label:'Vitrinas al inicio del turno',       area:'vitrinas'},
+    {id:'foto-estaciones',    label:'Estaciones de cocina preparadas',     area:'cocina'},
+    {id:'foto-salon',         label:'Salón listo para servicio',           area:'salon'},
+    {id:'foto-uniformados',   label:'Equipo uniformado completo',          area:'servicio'},
+    {id:'foto-grab-and-go',   label:'Refrigerador Grab & Go',             area:'barra'},
+    {id:'foto-almacen',       label:'Almacén organizado (PEPS)',           area:'almacen'},
+    {id:'foto-limpieza',      label:'Limpieza general de cocina',          area:'cocina'},
+    {id:'foto-banos',         label:'Baños limpios y abastecidos',         area:'banos'},
+  ];
+
+  // Filtrar por área si aplica
+  var areaFilt = cat ? cat.id : null;
+  var lista    = areaFilt
+    ? CHECKPOINTS.filter(function(c){return c.area===areaFilt;})
+    : CHECKPOINTS;
+
+  var totalTaken = lista.filter(function(c){return getFotos(c.id).length > 0;}).length;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Evidencia Fotográfica</span>'
+    + '<span class="usr-count">' + totalTaken + '/' + lista.length + ' tomadas</span></div>'
+    + '</div>'
+    + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Toma la foto desde tu celular. Se guarda automáticamente con hora, turno y nombre del responsable.</p>'
+    + '<div style="display:flex;flex-direction:column;gap:12px">'
+    + lista.map(function(cp) { return buildFotoCard(cp.id, cp.label, null); }).join('')
+    + '</div></div></div>';
+
+  el.innerHTML = html;
+  triggerFades();
+
+  // Actualizar si se toma una foto
+  document.addEventListener('foto-tomada', function handler() {
+    document.removeEventListener('foto-tomada', handler);
+    setTimeout(function(){ renderFotosOperativas(el, cat, sub); }, 300);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   MÓDULO BAÑOS
+   Limpieza · Abastecimiento · Foto · Registro cada 2h
+══════════════════════════════════════════════════════ */
+
+var BANOS_CHECKLIST = [
+  {id:'b1',  item:'WC limpio y desinfectado',         critico:true},
+  {id:'b2',  item:'Lavabo limpio sin manchas',         critico:true},
+  {id:'b3',  item:'Espejo limpio y sin manchas',       critico:false},
+  {id:'b4',  item:'Papel higiénico abastecido',        critico:true},
+  {id:'b5',  item:'Jabón líquido disponible',          critico:true},
+  {id:'b6',  item:'Toallas de mano / secador activo',  critico:false},
+  {id:'b7',  item:'Papelera con bolsa limpia',         critico:false},
+  {id:'b8',  item:'Piso seco y sin residuos',          critico:true},
+  {id:'b9',  item:'Sin malos olores / desodorante',    critico:false},
+  {id:'b10', item:'Puerta y cerrojo funcionando',      critico:false},
+];
+
+function getBanoRegistros() {
+  try { return JSON.parse(localStorage.getItem('vk_banos_'+new Date().toISOString().slice(0,10))||'[]'); }
+  catch(e){ return []; }
+}
+
+function renderBanos(el, cat, sub) {
+  var registros = getBanoRegistros();
+  var ultima    = registros.length ? registros[registros.length-1] : null;
+  var minutosDesde = ultima
+    ? Math.round((Date.now() - new Date(ultima.timestamp)) / 60000)
+    : null;
+  var vencido  = minutosDesde !== null && minutosDesde > 120;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Control de Baños</span>'
+    + '<span class="usr-count">' + registros.length + ' revisiones hoy</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="abrirRevisionBanos()"><i class="ti ti-check" style="font-size:13px"></i> Nueva revisión</button>'
+    + '</div>'
+
+    // Estado de última revisión
+    + '<div style="border:.5px solid '+(vencido?'#DC2626':ultima?'#15803D':'#F59E0B')+';border-radius:10px;padding:14px 16px;margin-bottom:16px;background:'+(vencido?'#FEF2F2':ultima?'#F0FDF4':'#FFFBEB')+'">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between">'
+    + '<div>'
+    + '<div style="font-size:14px;font-weight:600;color:'+(vencido?'#DC2626':ultima?'#15803D':'#92400E')+'">'
+    + (vencido ? '🚨 Revisión VENCIDA — ' + minutosDesde + ' min sin revisar'
+       : ultima ? '✓ Última revisión: hace ' + minutosDesde + ' min · ' + ultima.hora
+       : '⚠ Sin revisiones registradas hoy')
+    + '</div>'
+    + (ultima ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Revisó: ' + ultima.responsable + ' · Score: ' + ultima.score + '/' + BANOS_CHECKLIST.length + '</div>' : '')
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<div style="font-size:10px;color:var(--text-muted)">Revisión cada</div>'
+    + '<div style="font-size:16px;font-weight:700;color:var(--text-primary)">2 horas</div>'
+    + '</div></div></div>'
+
+    // Próximas revisiones del día
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'
+    + ['08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'].slice(0,8).map(function(hora) {
+        var done = registros.some(function(r){ return r.hora && r.hora.startsWith(hora.slice(0,2)); });
+        return '<div style="text-align:center;padding:8px;border:.5px solid '+(done?'#15803D':'var(--border)')+';border-radius:8px;background:'+(done?'#F0FDF4':'var(--surface-2)')+'">'
+          + '<div style="font-size:14px;'+(done?'color:#15803D':'color:var(--text-muted)')+'">'+(done?'✓':hora)+'</div>'
+          + '<div style="font-size:9px;color:var(--text-muted)">'+hora+'</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+
+    // Foto de baños
+    + '<div style="margin-bottom:16px">'
+    + buildFotoCard('foto-banos', 'Foto del estado del baño', null)
+    + '</div>'
+
+    // Historial
+    + (registros.length ? '<div>'
+        + '<div class="usr-field-section">Revisiones de hoy</div>'
+        + '<div class="usr-table-wrap"><div style="overflow-x:auto"><table class="usr-table"><thead><tr>'
+        + '<th>Hora</th><th>Responsable</th><th>Score</th><th>Observaciones</th><th>Estado</th>'
+        + '</tr></thead><tbody>'
+        + registros.slice().reverse().map(function(r) {
+            var pct = Math.round((r.score/BANOS_CHECKLIST.length)*100);
+            var clr = pct===100?'#15803D':pct>=70?'#D97706':'#DC2626';
+            return '<tr><td style="font-family:var(--mono,monospace)">'+r.hora+'</td>'
+              + '<td>'+r.responsable+'</td>'
+              + '<td style="font-weight:700;color:'+clr+'">'+r.score+'/'+BANOS_CHECKLIST.length+'</td>'
+              + '<td style="font-size:11px;color:var(--text-muted)">'+( r.obs||'—')+'</td>'
+              + '<td><span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:'+(pct===100?'#DCFCE7':'#FEF3C7')+';color:'+(pct===100?'#15803D':'#92400E')+'">'+(pct===100?'Completo':'Parcial')+'</span></td>'
+              + '</tr>';
+          }).join('')
+        + '</tbody></table></div></div></div>' : '')
+    + '</div></div>';
+
+  el.innerHTML = html;
+  triggerFades();
+
+  // Alerta si vencido
+  if(vencido && typeof sbInsertAlerta === 'function') {
+    sbInsertAlerta('banos','importante','Baños sin revisión · ' + minutosDesde + ' minutos',
+      'Los baños no han sido revisados en más de 2 horas. Último responsable: ' + (ultima?ultima.responsable:'—'),
+      'banos-revision');
+  }
+
+  // Re-render en foto
+  document.addEventListener('foto-tomada', function handler(e) {
+    if(e.detail && e.detail.contexto === 'foto-banos') {
+      document.removeEventListener('foto-tomada', handler);
+      setTimeout(function(){ renderBanos(el, cat, sub); }, 300);
+    }
+  });
+}
+
+function abrirRevisionBanos() {
+  var user = typeof CU !== 'undefined' && CU ? (CU.nombre||'')+ ' '+(CU.apellido||'') : '';
+  var html = '<div class="usr-modal-bg" id="banosModal" onclick="if(event.target.id===\'banosModal\')document.getElementById(\'banosModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:480px"><div class="usr-modal-head"><span class="usr-modal-title">Revisión de Baños</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'banosModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:14px"><label>Responsable</label>'
+    + '<input type="text" id="banoResp" value="'+user+'" placeholder="Nombre del responsable"></div>'
+    + '<div class="usr-field-section">Checklist de baños</div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">'
+    + BANOS_CHECKLIST.map(function(item) {
+        return '<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--surface-1)">'
+          + '<input type="checkbox" id="bch_'+item.id+'" style="accent-color:var(--kale,#146B4F);width:16px;height:16px">'
+          + '<span style="font-size:13px;flex:1">'+item.item+'</span>'
+          + (item.critico?'<span style="font-size:9px;font-weight:600;color:#DC2626;padding:1px 6px;border-radius:8px;background:#FEE2E2">CRÍTICO</span>':'')
+          + '</label>';
+      }).join('')
+    + '</div>'
+    + '<div class="usr-field"><label>Observaciones</label>'
+    + '<input type="text" id="banoObs" placeholder="Ej: Falta papel en baño 2, goteo en llave..."></div>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'banosModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarRevisionBanos()">Guardar revisión</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function guardarRevisionBanos() {
+  var responsable = document.getElementById('banoResp')?.value.trim() || 'Sin asignar';
+  var score = 0;
+  var pendientes = [];
+  BANOS_CHECKLIST.forEach(function(item) {
+    var cb = document.getElementById('bch_'+item.id);
+    if(cb && cb.checked) score++;
+    else if(item.critico) pendientes.push(item.item);
+  });
+
+  var registro = {
+    responsable, score,
+    obs:       document.getElementById('banoObs')?.value||'',
+    hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    timestamp: new Date().toISOString(),
+    fecha:     new Date().toISOString().slice(0,10),
+    pendientes
+  };
+
+  var key = 'vk_banos_'+registro.fecha;
+  var all = [];
+  try{ all=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
+  all.push(registro);
+  localStorage.setItem(key, JSON.stringify(all));
+
+  // Alerta si quedan críticos sin revisar
+  if(pendientes.length && typeof sbInsertAlerta === 'function') {
+    sbInsertAlerta('banos','critica',
+      'Baños con ítems críticos pendientes',
+      'Pendientes: ' + pendientes.join(', ') + '. Responsable: ' + responsable,
+      'banos-critico');
+  }
+
+  document.getElementById('banosModal')?.remove();
+  if(typeof guardarProgreso === 'function') guardarProgreso();
+  var mc = document.getElementById('main-content');
+  if(mc) renderBanos(mc, {id:'banos'}, null);
+}
+/* ══ FIN FOTOGRAFÍA + BAÑOS ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
@@ -4089,6 +4435,7 @@ function showSub(catId, subId){
     'cocina-display-sabores': ()=>renderDisplaySabores(mc,cat,sub,'cocina'),
     'supervisor-usuarios': ()=>renderUsuariosAdmin(mc,cat,sub),
     'supervisor-historial':  ()=>renderDashboardHistorico(mc),
+    'supervisor-fotos':     ()=>renderFotosOperativas(mc,cat,sub),
     'supervisor-roles':    ()=>renderRolesAdmin(mc,cat,sub),
     'barra-display-sabores':  ()=>renderDisplaySabores(mc,cat,sub,'barra'),
   };
