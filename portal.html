@@ -978,7 +978,7 @@ function cargarHistorial() {
 
   var hace14 = new Date();
   hace14.setDate(hace14.getDate()-14);
-  var desde = hace14.toISOString().slice(0,10);
+  var desde = hace14.toLocaleDateString('en-CA',{timeZone:'America/Mexico_City'});
 
   Promise.all([
     vkSB.from('scores_diarios').select('*').gte('fecha',desde).order('fecha',{ascending:true}),
