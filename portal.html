@@ -645,6 +645,7 @@ function launchApp(user){
       /* Refresco periódico cada 60s: otros dispositivos aparecen solos */
       if(!window._syncInterval) {
         window._syncInterval = setInterval(function(){
+          if(typeof checkCorrecciones === 'function') checkCorrecciones();
           if(typeof sbDownProgreso === 'function') sbDownProgreso().then(function(c){ if(c && typeof activeSub === 'undefined') showHome(); });
         }, 60000);
       }
@@ -1093,7 +1094,7 @@ function mostrarCierreTurnoFull() {
   mostrarCierreTurno();
   setTimeout(function() {
     var btn = document.querySelector('#cierreTurnoModal .usr-modal-footer .btn-kale');
-    if(btn) btn.onclick = function(){ if(typeof capturarFirma==='function') capturarFirma(); cerrarTurnoConPin(); };
+    if(btn) btn.onclick = function(){ if(typeof capturarFirma==='function') capturarFirma(); if(typeof enviarResumenFotografico==='function') enviarResumenFotografico(); cerrarTurnoConPin(); };
     }, 80);
 }
 
@@ -3409,7 +3410,7 @@ function abrirModalMotivo(contexto, canvas, callback) {
   var bg = document.createElement('div');
   bg.innerHTML = html;
   document.body.appendChild(bg.firstElementChild);
-  setTimeout(function(){ document.getElementById('evMotivo')?.focus(); }, 100);
+  setTimeout(function(){ document.getElementById('evMotivo')?.focus(); if(typeof agregarBotonVoz==='function') agregarBotonVoz(); }, 100);
 
   document.getElementById('evConfirm').onclick = function() {
     var motivo = document.getElementById('evMotivo')?.value.trim();
@@ -3577,6 +3578,7 @@ function renderGaleriaEvidencias(el, filtro) {
   };
 
   var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + (typeof buildBannerCorrecciones==='function' ? buildBannerCorrecciones() : '')
     + '<div class="usr-header">'
     + '<div><span class="usr-title">Galería de evidencias</span>'
     + '<span class="usr-count">' + fotos.length + ' hoy</span></div>'
@@ -4675,6 +4677,205 @@ async function checkWeeklyReport() {
 }
 /* ══ FIN LANZAMIENTO+ ══ */
 
+
+
+/* ══════════════════════════════════════════════════════
+   EVIDENCIA V3: ciclo hallazgo→corrección · resumen foto en cierre
+   · muro semanal antes/después · dictado por voz
+══════════════════════════════════════════════════════ */
+
+/* ─ 1. CICLO HALLAZGO → CORRECCIÓN (deadline 2h) ────── */
+function getPendientesCorreccion() {
+  try { return JSON.parse(localStorage.getItem('vk_correcciones')||'[]'); } catch(e){ return []; }
+}
+function savePendientesCorreccion(l) { localStorage.setItem('vk_correcciones', JSON.stringify(l.slice(-60))); }
+
+function registrarPendienteCorreccion(meta) {
+  var lista = getPendientesCorreccion();
+  lista.push({
+    id: 'corr_' + Date.now(),
+    contexto: meta.contexto, motivo: meta.motivo, tipo: meta.tipo,
+    fotoAntes: meta.storageUrl || null, dataAntes: meta.dataUrl || null,
+    ts: Date.now(), deadline: Date.now() + 2*3600*1000,
+    resuelto: false, escalado: false, fecha: meta.fecha
+  });
+  savePendientesCorreccion(lista);
+}
+
+function checkCorrecciones() {
+  var lista = getPendientesCorreccion();
+  var cambio = false;
+  lista.forEach(function(c) {
+    if(!c.resuelto && !c.escalado && Date.now() > c.deadline) {
+      c.escalado = true; cambio = true;
+      if(typeof sbInsertAlerta === 'function') {
+        sbInsertAlerta('correccion','critica',
+          '🚨 Corrección VENCIDA sin resolver: ' + c.contexto.replace('foto-','').replace(/-/g,' '),
+          'El hallazgo "' + c.motivo + '" lleva más de 2 horas sin foto de corrección. Requiere intervención inmediata.',
+          'correccion-vencida-' + c.id);
+      }
+    }
+  });
+  if(cambio) savePendientesCorreccion(lista);
+}
+
+function resolverCorreccion(corrId) {
+  window._corrEnCurso = corrId;
+  capturarFoto('correccion-' + corrId, function(meta) {
+    var lista = getPendientesCorreccion();
+    var c = lista.find(function(x){ return x.id === corrId; });
+    if(c) {
+      c.resuelto = true;
+      c.fotoDespues = meta.storageUrl || null;
+      c.dataDespues = meta.dataUrl || null;
+      c.motivoDespues = meta.motivo;
+      c.resueltoTs = Date.now();
+      savePendientesCorreccion(lista);
+      if(typeof sbInsertAlerta === 'function') {
+        sbInsertAlerta('correccion','informativa',
+          '✅ Corrección registrada: ' + c.contexto.replace('foto-','').replace(/-/g,' '),
+          'Hallazgo: "' + c.motivo + '" — Corrección: "' + meta.motivo + '"' + (meta.storageUrl ? ' — Evidencia: ' + meta.storageUrl : ''),
+          'correccion-ok-' + corrId);
+      }
+    }
+    var mc = document.getElementById('main-content');
+    if(mc) renderGaleriaEvidencias(mc, 'todas');
+  });
+}
+
+function buildBannerCorrecciones() {
+  var pendientes = getPendientesCorreccion().filter(function(c){ return !c.resuelto; });
+  if(!pendientes.length) return '';
+  return '<div style="margin-bottom:16px">'
+    + pendientes.map(function(c) {
+        var minsLeft = Math.round((c.deadline - Date.now()) / 60000);
+        var vencido = minsLeft <= 0;
+        return '<div style="display:flex;align-items:center;gap:12px;background:' + (vencido?'#FEF2F2':'#FFFBEB') + ';border:.5px solid ' + (vencido?'#DC2626':'#F59E0B') + ';border-radius:10px;padding:12px 14px;margin-bottom:8px">'
+          + '<i class="ti ' + (vencido?'ti-alert-octagon':'ti-clock-exclamation') + '" style="font-size:20px;color:' + (vencido?'#DC2626':'#D97706') + ';flex-shrink:0"></i>'
+          + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:' + (vencido?'#DC2626':'#92400E') + '">' + (vencido ? 'CORRECCIÓN VENCIDA' : 'Corrección pendiente · ' + minsLeft + ' min restantes') + '</div>'
+          + '<div style="font-size:12px;color:' + (vencido?'#991B1B':'#78350F') + ';margin-top:2px">' + c.motivo + '</div></div>'
+          + '<button onclick="resolverCorreccion(\'' + c.id + '\')" style="background:' + (vencido?'#DC2626':'#D97706') + ';color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;min-height:38px"><i class="ti ti-camera" style="font-size:14px"></i> Corregir</button>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+/* ─ 2. RESUMEN FOTOGRÁFICO EN EL CIERRE ──────────────── */
+function enviarResumenFotografico() {
+  try {
+    var fotos = typeof getTodasFotosHoy === 'function' ? getTodasFotosHoy() : [];
+    if(!fotos.length) return;
+    var orden = {incidencia:0, hallazgo:1, cumplimiento:2};
+    var top = fotos.slice().sort(function(a,b){ return (orden[a.tipo]||2) - (orden[b.tipo]||2); }).slice(0,3);
+    var lineas = top.map(function(f,i) {
+      return (i+1) + ') [' + (f.tipo||'cumplimiento').toUpperCase() + '] ' + (f.motivo||'') + (f.storageUrl ? ' → ' + f.storageUrl : '');
+    }).join('  ·  ');
+    if(typeof sbInsertAlerta === 'function') {
+      sbInsertAlerta('cierre','informativa',
+        '📸 Evidencias destacadas del turno (' + fotos.length + ' fotos)',
+        lineas, 'resumen-foto-cierre');
+    }
+  } catch(e) {}
+}
+
+/* ─ 3. MURO SEMANAL ANTES/DESPUÉS ────────────────────── */
+function renderMuroSemanal(el) {
+  var dias = [];
+  for(var i=0; i<7; i++) {
+    var d = new Date(Date.now() - i*86400000);
+    dias.push(d.toLocaleDateString('en-CA',{timeZone:'America/Mexico_City'}));
+  }
+  var porDia = {};
+  dias.forEach(function(f) {
+    try {
+      var all = JSON.parse(localStorage.getItem('vk_fotos_' + f)||'{}');
+      var lista = [];
+      Object.keys(all).forEach(function(ctx){ (all[ctx]||[]).forEach(function(x){ x._ctx=ctx; lista.push(x); }); });
+      if(lista.length) porDia[f] = lista;
+    } catch(e){}
+  });
+  var pares = getPendientesCorreccion().filter(function(c){ return c.resuelto && (c.dataAntes || c.fotoAntes); });
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Muro semanal</span>'
+    + '<span class="usr-count">últimos 7 días</span></div>'
+    + '<button class="btn btn-ghost btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px"></i> Imprimir</button>'
+    + '</div>'
+    // Pares antes/después
+    + (pares.length ? '<div class="usr-field-section">Hallazgos corregidos — antes / después</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:24px">'
+      + pares.slice(-8).reverse().map(function(c) {
+          var mins = c.resueltoTs ? Math.round((c.resueltoTs - c.ts)/60000) : null;
+          return '<div style="border:.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-2);page-break-inside:avoid">'
+            + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)">'
+            + '<div style="position:relative;background:#000">' + (c.dataAntes ? '<img src="'+c.dataAntes+'" style="width:100%;height:130px;object-fit:cover;display:block;opacity:.95">' : '<div style="height:130px"></div>')
+            + '<span style="position:absolute;top:6px;left:6px;background:#DC2626;color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:8px">ANTES</span></div>'
+            + '<div style="position:relative;background:#000">' + (c.dataDespues ? '<img src="'+c.dataDespues+'" style="width:100%;height:130px;object-fit:cover;display:block">' : '<div style="height:130px"></div>')
+            + '<span style="position:absolute;top:6px;left:6px;background:#15803D;color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:8px">DESPUÉS</span></div>'
+            + '</div>'
+            + '<div style="padding:10px 14px">'
+            + '<div style="font-size:12px;font-weight:500;color:var(--text-primary)">' + c.motivo + '</div>'
+            + '<div style="font-size:10px;color:var(--text-muted);margin-top:4px">' + c.fecha + (mins !== null ? ' · corregido en ' + mins + ' min' : '') + '</div>'
+            + '</div></div>';
+        }).join('')
+      + '</div>' : '')
+    // Grid por día
+    + '<div class="usr-field-section">Evidencias por día</div>'
+    + (Object.keys(porDia).length
+      ? Object.keys(porDia).sort().reverse().map(function(f) {
+          var fotos = porDia[f];
+          return '<div style="margin-bottom:18px">'
+            + '<div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;text-transform:capitalize">' + new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) + ' · ' + fotos.length + ' evidencias</div>'
+            + '<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px">'
+            + fotos.slice(0,12).map(function(x) {
+                var tc = x.tipo==='incidencia'?'#DC2626':x.tipo==='hallazgo'?'#D97706':'#15803D';
+                return '<div style="flex-shrink:0;width:150px;border:.5px solid var(--border);border-top:3px solid '+tc+';border-radius:8px;overflow:hidden;background:var(--surface-2)">'
+                  + (x.dataUrl ? '<img src="'+x.dataUrl+'" style="width:100%;height:90px;object-fit:cover;display:block">' : '')
+                  + '<div style="padding:6px 8px;font-size:10px;color:var(--text-secondary);line-height:1.3;height:44px;overflow:hidden">' + (x.motivo||'') + '</div>'
+                  + '</div>';
+              }).join('')
+            + '</div></div>';
+        }).join('')
+      : '<div style="padding:40px;text-align:center;color:var(--text-muted);font-size:13px">Sin evidencias en los últimos 7 días en este dispositivo.</div>')
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+/* ─ 4. DICTADO POR VOZ EN EL MOTIVO ──────────────────── */
+function agregarBotonVoz() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var ta = document.getElementById('evMotivo');
+  if(!SR || !ta || document.getElementById('btnVoz')) return;
+  var btn = document.createElement('button');
+  btn.id = 'btnVoz'; btn.type = 'button';
+  btn.innerHTML = '<i class="ti ti-microphone" style="font-size:15px"></i> Dictar';
+  btn.style.cssText = 'margin-top:8px;background:var(--surface-1);border:.5px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px';
+  ta.parentNode.insertBefore(btn, ta.nextSibling);
+  var rec = null, activo = false;
+  btn.onclick = function() {
+    if(activo) { try{rec.stop();}catch(e){} return; }
+    rec = new SR();
+    rec.lang = 'es-MX'; rec.continuous = false; rec.interimResults = true;
+    activo = true;
+    btn.innerHTML = '<i class="ti ti-player-stop" style="font-size:15px;color:#DC2626"></i> Escuchando...';
+    btn.style.borderColor = '#DC2626';
+    rec.onresult = function(ev) {
+      var txt = '';
+      for(var i=0;i<ev.results.length;i++) txt += ev.results[i][0].transcript;
+      ta.value = txt;
+    };
+    rec.onend = function() {
+      activo = false;
+      btn.innerHTML = '<i class="ti ti-microphone" style="font-size:15px"></i> Dictar';
+      btn.style.borderColor = 'var(--border)';
+    };
+    rec.onerror = rec.onend;
+    try { rec.start(); } catch(e) { rec.onend(); }
+  };
+}
+/* ══ FIN EVIDENCIA V3 ══ */
 
 /* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
 
