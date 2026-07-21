@@ -3315,6 +3315,10 @@ function generarReportePDFTurno() {
         + merma.map(function(m){return '<tr><td>'+m.producto+'</td><td>'+m.area+'</td><td>'+m.cantidad+' '+m.unidad+'</td><td>'+m.causa+'</td><td class="'+(parseFloat(m.costo)>100?'err':'')+'">$'+parseFloat(m.costo||0).toFixed(2)+'</td></tr>';}).join('')
         + '</tbody></table>' : '')
 
+    + (typeof getTodasFotosHoy==='function' && getTodasFotosHoy().length
+        ? '<h2>Evidencias del turno</h2><table><thead><tr><th>Hora</th><th>Tipo</th><th>Módulo</th><th>Motivo</th><th>Responsable</th></tr></thead><tbody>'
+          + getTodasFotosHoy().slice(0,20).map(function(f){var tc=f.tipo==='incidencia'?'#DC2626':f.tipo==='hallazgo'?'#D97706':'#15803D';return '<tr><td>'+(f.hora||'')+'</td><td style="color:'+tc+';font-weight:600">'+(f.tipo||'cumplimiento')+'</td><td>'+(f._ctx||'').replace('foto-','')+'</td><td>'+(f.motivo||'—')+'</td><td>'+(f.usuario||'—')+'</td></tr>';}).join('')
+          + '</tbody></table>' : '')
     + (typeof getFirmaHoy==='function' && getFirmaHoy() ? '<div style="margin-top:28px;text-align:right"><img src="'+getFirmaHoy()+'" style="height:60px"><div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;display:inline-block;padding-top:4px;min-width:180px;text-align:center">Firma del supervisor</div></div>' : '')
     + (function(){try{var f=localStorage.getItem('vk_firma_'+fechaMX());return f?'<h2>Firma de cierre</h2><img src="'+f+'" style="max-width:260px;border-bottom:1px solid #ccc">':'';}catch(e){return '';}})()
     + '<div class="footer">Generado automáticamente · De la Mora Zumarán Kitchen Support · ' + new Date().toLocaleString('es-MX') + '</div>'
@@ -3353,69 +3357,137 @@ function capturarFoto(contexto, callback) {
   var input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  input.setAttribute('capture', 'environment'); // cámara trasera en mobile
+  input.setAttribute('capture', 'environment');
   input.style.display = 'none';
   document.body.appendChild(input);
 
   input.onchange = function(e) {
     var file = e.target.files[0];
     if(!file) { document.body.removeChild(input); return; }
-
     var reader = new FileReader();
     reader.onload = function(ev) {
       var img = new Image();
       img.onload = function() {
-        // Comprimir a máximo 900px
         var MAX = 900, w = img.width, h = img.height;
         if(w > h && w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
         else if(h > MAX) { w = Math.round(w*MAX/h); h = MAX; }
         var canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        var dataUrl = canvas.toDataURL('image/jpeg', 0.78);
-
-        var meta = {
-          dataUrl:   dataUrl,
-          contexto:  contexto,
-          fecha:     fechaMX(),
-          hora:      new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-          usuario:   typeof CU !== 'undefined' && CU ? (CU.nombre||'') : '',
-          turno:     typeof getTurnoActivo === 'function' && getTurnoActivo() ? getTurnoActivo().tipo : '—',
-          tamaño:    Math.round(dataUrl.length * 0.75 / 1024) + ' KB'
-        };
-
-        // Subir a Supabase Storage (async, no bloquea)
-        subirFotoStorage(contexto, dataUrl).then(function(url) {
-          if(url) {
-            meta.storageUrl = url;
-            // Guardar SOLO metadata + URL (no el base64) en localStorage
-            var metaLight = {contexto:meta.contexto,fecha:meta.fecha,hora:meta.hora,usuario:meta.usuario,turno:meta.turno,storageUrl:url,dataUrl:meta.dataUrl};
-            guardarFotoLocal(contexto, metaLight);
-          } else {
-            guardarFotoLocal(contexto, meta);
-          }
-        });
-
-        // Guardar en Supabase (bucket fotos)
-        if(typeof vkSB !== 'undefined' && vkSB) {
-          vkSB.from('fotos').insert({
-            modulo_id: contexto,
-            turno_dia: meta.turno,
-            tomada_por: meta.usuario,
-            fecha: meta.fecha,
-            storage_url: meta.storageUrl || null
-          }).catch(function(){});
-        }
-
-        if(callback) callback(meta);
+        // Abrir modal de MOTIVO antes de guardar — sin motivo no hay evidencia
+        abrirModalMotivo(contexto, canvas, callback);
         document.body.removeChild(input);
       };
       img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   };
-
   input.click();
+}
+
+/* ─ Modal de motivo (obligatorio) + tipo de evidencia ─ */
+function abrirModalMotivo(contexto, canvas, callback) {
+  var preview = canvas.toDataURL('image/jpeg', 0.6);
+  var html = '<div class="usr-modal-bg" id="motivoModal" style="z-index:9999">'
+    + '<div class="usr-modal" style="max-width:440px"><div class="usr-modal-head"><span class="usr-modal-title">Motivo de la evidencia</span></div>'
+    + '<div class="usr-modal-body">'
+    + '<img src="' + preview + '" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:14px">'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Tipo de evidencia <span>*</span></label>'
+    + '<select id="evTipo">'
+    + '<option value="cumplimiento">✓ Cumplimiento — todo en orden</option>'
+    + '<option value="hallazgo">⚠ Hallazgo — requiere atención</option>'
+    + '<option value="incidencia">🚨 Incidencia — problema activo</option>'
+    + '</select></div>'
+    + '<div class="usr-field"><label>Motivo / descripción <span>*</span></label>'
+    + '<textarea id="evMotivo" rows="3" placeholder="Ej: Vitrinas montadas completas antes de apertura / Congelador C1 con escarcha acumulada..." style="width:100%;border:.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;background:var(--surface-2);color:var(--text-primary)"></textarea>'
+    + '<div id="evError" style="display:none;font-size:11px;color:#DC2626;margin-top:6px">El motivo es obligatorio — describe qué evidencia estás registrando.</div>'
+    + '</div></div>'
+    + '<div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'motivoModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" id="evConfirm">Guardar evidencia</button>'
+    + '</div></div></div>';
+  var bg = document.createElement('div');
+  bg.innerHTML = html;
+  document.body.appendChild(bg.firstElementChild);
+  setTimeout(function(){ document.getElementById('evMotivo')?.focus(); }, 100);
+
+  document.getElementById('evConfirm').onclick = function() {
+    var motivo = document.getElementById('evMotivo')?.value.trim();
+    var tipo   = document.getElementById('evTipo')?.value || 'cumplimiento';
+    if(!motivo || motivo.length < 5) {
+      document.getElementById('evError').style.display = 'block';
+      return;
+    }
+    document.getElementById('motivoModal')?.remove();
+    finalizarEvidencia(contexto, canvas, motivo, tipo, callback);
+  };
+}
+
+/* ─ Watermark: la foto queda autocontenida como evidencia ─ */
+function finalizarEvidencia(contexto, canvas, motivo, tipo, callback) {
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  var usuario = typeof CU !== 'undefined' && CU ? (CU.name || CU.nombre || '') : '';
+  var turnoObj = typeof getTurnoActivo === 'function' ? getTurnoActivo() : null;
+  var turno = turnoObj ? turnoObj.tipo : '—';
+  var sello = 'LITA SUPPORT · ' + fechaMX() + ' ' + horaMX() + ' · ' + usuario + ' · Turno ' + turno;
+  var tipoLabel = tipo === 'incidencia' ? 'INCIDENCIA' : tipo === 'hallazgo' ? 'HALLAZGO' : 'CUMPLIMIENTO';
+  var tipoColor = tipo === 'incidencia' ? '#DC2626' : tipo === 'hallazgo' ? '#D97706' : '#15803D';
+
+  // Banda inferior semi-transparente con metadata
+  var bandH = Math.max(52, Math.round(h * 0.09));
+  ctx.fillStyle = 'rgba(0,0,0,0.62)';
+  ctx.fillRect(0, h - bandH, w, bandH);
+  // Etiqueta de tipo
+  ctx.fillStyle = tipoColor;
+  ctx.fillRect(0, h - bandH, 6, bandH);
+  var fs1 = Math.max(11, Math.round(w * 0.018));
+  var fs2 = Math.max(12, Math.round(w * 0.021));
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = '600 ' + fs1 + 'px sans-serif';
+  ctx.fillText(tipoLabel + '  ·  ' + sello, 16, h - bandH + fs1 + 8);
+  ctx.fillStyle = '#fff';
+  ctx.font = fs2 + 'px sans-serif';
+  var motivoCorto = motivo.length > 90 ? motivo.slice(0, 87) + '...' : motivo;
+  ctx.fillText(motivoCorto, 16, h - bandH + fs1 + fs2 + 16);
+
+  var dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+  var meta = {
+    dataUrl: dataUrl, contexto: contexto, motivo: motivo, tipo: tipo,
+    fecha: fechaMX(), hora: horaMX(), usuario: usuario, turno: turno,
+    ts: Date.now()
+  };
+
+  guardarFotoLocal(contexto, meta);
+
+  // Subir a Storage con el tipo en el path
+  if(typeof subirFotoStorage === 'function') {
+    subirFotoStorage(tipo + '_' + contexto, dataUrl).then(function(url) {
+      if(url) {
+        meta.storageUrl = url;
+        guardarFotoLocal(contexto, meta);
+        // Registro en tabla fotos
+        if(typeof vkSB !== 'undefined' && vkSB) {
+          vkSB.from('fotos').insert({
+            modulo_id: contexto, turno_dia: turno, tomada_por: usuario,
+            fecha: meta.fecha, storage_url: url
+          }).then(function(){}).catch(function(){});
+        }
+        // Incidencia o hallazgo → alerta automática con la foto
+        if((tipo === 'incidencia' || tipo === 'hallazgo') && typeof sbInsertAlerta === 'function') {
+          sbInsertAlerta('evidencia',
+            tipo === 'incidencia' ? 'critica' : 'importante',
+            (tipo === 'incidencia' ? '🚨 Incidencia fotográfica: ' : '⚠ Hallazgo fotográfico: ') + contexto.replace('foto-','').replace(/-/g,' '),
+            motivo + ' — Evidencia: ' + url + ' — Registró: ' + usuario,
+            'evidencia-' + tipo + '-' + Date.now());
+        }
+      }
+    });
+  }
+
+  if(callback) callback(meta);
+  document.dispatchEvent(new CustomEvent('foto-tomada', {detail:{contexto: contexto, meta: meta}}));
+  if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
 }
 
 function guardarFotoLocal(contexto, meta) {
@@ -3459,9 +3531,8 @@ function buildFotoCard(contexto, label, onTaken) {
     + '</div>'
 
     // Preview de la foto
-    + (taken && ultima.dataUrl ? '<div style="position:relative"><img src="' + ultima.dataUrl + '" style="width:100%;max-height:200px;object-fit:cover;display:block">'
-        + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:8px 12px;font-size:11px;color:#fff">'
-        + 'Turno ' + ultima.turno + ' · ' + ultima.fecha + '</div></div>' : '')
+    + (taken && ultima.dataUrl ? '<div style="position:relative"><img src="' + ultima.dataUrl + '" style="width:100%;max-height:200px;object-fit:cover;display:block"></div>'
+        + (ultima.motivo ? '<div style="padding:8px 14px;border-top:.5px solid var(--border);font-size:11.5px;color:var(--text-secondary);line-height:1.4"><b style="color:var(--text-primary)">Motivo:</b> ' + ultima.motivo + '</div>' : '') : '')
     + '</div>';
 }
 
@@ -3477,6 +3548,63 @@ function capturarFotoContexto(contexto, label) {
       if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
     }
   });
+}
+
+
+/* ─ GALERÍA DE EVIDENCIAS DEL DÍA ────────────────────── */
+function getTodasFotosHoy() {
+  try {
+    var key = 'vk_fotos_' + fechaMX();
+    var all = JSON.parse(localStorage.getItem(key) || '{}');
+    var lista = [];
+    Object.keys(all).forEach(function(ctx) {
+      (all[ctx]||[]).forEach(function(f){ f._ctx = ctx; lista.push(f); });
+    });
+    return lista.sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  } catch(e) { return []; }
+}
+
+function renderGaleriaEvidencias(el, filtro) {
+  var fotos = getTodasFotosHoy();
+  if(filtro && filtro !== 'todas') fotos = fotos.filter(function(f){ return (f.tipo||'cumplimiento') === filtro; });
+  var counts = {cumplimiento:0, hallazgo:0, incidencia:0};
+  getTodasFotosHoy().forEach(function(f){ counts[f.tipo||'cumplimiento']++; });
+
+  var tipoBadge = function(t) {
+    var m = {cumplimiento:['✓ Cumplimiento','#DCFCE7','#15803D'], hallazgo:['⚠ Hallazgo','#FEF3C7','#92400E'], incidencia:['🚨 Incidencia','#FEE2E2','#DC2626']};
+    var x = m[t||'cumplimiento'];
+    return '<span style="font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;background:'+x[1]+';color:'+x[2]+'">'+x[0]+'</span>';
+  };
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Galería de evidencias</span>'
+    + '<span class="usr-count">' + fotos.length + ' hoy</span></div>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">'
+    + [['todas','Todas',getTodasFotosHoy().length],['cumplimiento','✓ Cumplimiento',counts.cumplimiento],['hallazgo','⚠ Hallazgos',counts.hallazgo],['incidencia','🚨 Incidencias',counts.incidencia]].map(function(f) {
+        var act = (filtro||'todas') === f[0];
+        return '<button onclick="renderGaleriaEvidencias(document.getElementById(\'main-content\'),\''+f[0]+'\')" style="background:'+(act?'var(--kale,#146B4F)':'var(--surface-2)')+';color:'+(act?'#fff':'var(--text-secondary)')+';border:.5px solid '+(act?'var(--kale,#146B4F)':'var(--border)')+';border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:inherit">'+f[1]+' ('+f[2]+')</button>';
+      }).join('')
+    + '</div>'
+    + (fotos.length
+      ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">'
+        + fotos.map(function(f) {
+            return '<div style="border:.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-2)">'
+              + (f.dataUrl ? '<img src="'+f.dataUrl+'" style="width:100%;height:160px;object-fit:cover;display:block">' : '')
+              + '<div style="padding:10px 12px">'
+              + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+              + tipoBadge(f.tipo)
+              + '<span style="font-size:10px;color:var(--text-muted)">'+(f.hora||'')+'</span></div>'
+              + '<div style="font-size:12px;color:var(--text-primary);line-height:1.45;font-weight:500">'+(f.motivo||'Sin motivo registrado')+'</div>'
+              + '<div style="font-size:10px;color:var(--text-muted);margin-top:5px">'+(f._ctx||'').replace('foto-','').replace(/-/g,' ')+' · '+(f.usuario||'—')+'</div>'
+              + '</div></div>';
+          }).join('')
+        + '</div>'
+      : '<div style="padding:50px;text-align:center;color:var(--text-muted);font-size:13px">Sin evidencias' + (filtro && filtro!=='todas' ? ' de este tipo' : '') + ' registradas hoy.</div>')
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
 }
 
 /* ─ MÓDULO FOTOS OPERATIVAS ────────────────────────── */
