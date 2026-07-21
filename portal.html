@@ -4306,14 +4306,14 @@ function renderRecursos(el, cat, sub) {
     + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">'
     + RECURSOS_MODULOS.map(function(m) {
         var locked = m.bloqueado;
-        return '<div ' + (locked ? '' : 'onclick="abrirRecurso(\''+m.id+'\')"') + ' style="border:.5px solid var(--border);border-radius:12px;padding:18px;background:var(--surface-2);position:relative;'
-          + (locked ? 'opacity:.65;cursor:default' : 'cursor:pointer;transition:all .15s') + '"'
-          + (locked ? '' : ' onmouseover="this.style.borderColor=\'var(--kale,#146B4F)\'" onmouseout="this.style.borderColor=\'var(--border)\'"') + '>'
+        return '<div ' + 'onclick="abrirRecurso(\''+m.id+'\')"' + ' style="border:.5px solid var(--border);border-radius:12px;padding:18px;background:var(--surface-2);position:relative;'
+          + 'cursor:pointer;transition:all .15s' + '"'
+          + ' onmouseover="this.style.borderColor=\'var(--kale,#146B4F)\'" onmouseout="this.style.borderColor=\'var(--border)\'"' + '>'
           + (locked
-              ? '<div style="position:absolute;top:12px;right:12px;background:var(--surface-1);border:.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:11px"></i> Próximamente</div>'
+              ? '<div style="position:absolute;top:12px;right:12px;background:#FEF3C7;border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;color:#92400E;letter-spacing:.06em;text-transform:uppercase">USD $450</div>'
               : '<div style="position:absolute;top:12px;right:12px;background:#DCFCE7;border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;color:#15803D;letter-spacing:.06em;text-transform:uppercase">Activo</div>')
-          + '<div style="width:44px;height:44px;border-radius:11px;background:' + (locked ? 'var(--surface-1)' : 'var(--kale-bg,#E8F3EE)') + ';display:flex;align-items:center;justify-content:center;margin-bottom:12px">'
-          + '<i class="ti ' + m.icono + '" style="font-size:22px;color:' + (locked ? 'var(--text-muted)' : 'var(--kale,#146B4F)') + '"></i></div>'
+          + '<div style="width:44px;height:44px;border-radius:11px;background:var(--kale-bg,#E8F3EE);display:flex;align-items:center;justify-content:center;margin-bottom:12px">'
+          + '<i class="ti ' + m.icono + '" style="font-size:22px;color:var(--kale,#146B4F)"></i></div>'
           + '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:5px">' + m.nombre + '</div>'
           + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5">' + m.desc + '</div>'
           + '</div>';
@@ -4321,7 +4321,7 @@ function renderRecursos(el, cat, sub) {
     + '</div>'
     + '<div style="margin-top:20px;background:var(--surface-1);border:.5px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">'
     + '<i class="ti ti-info-circle" style="font-size:18px;color:var(--text-muted);flex-shrink:0"></i>'
-    + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Los módulos marcados como <b>Próximamente</b> se activarán conforme avance la implementación del programa. Notas y Avisos ya están disponibles para todo el equipo.</div>'
+    + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Los módulos con etiqueta <b>USD $450</b> están disponibles bajo desarrollo: toca cualquiera para ver su contenido y solicitar la activación (costo único, listo en 5-7 días hábiles).</div>'
     + '</div>'
     + '</div></div>';
   el.innerHTML = html;
@@ -4332,6 +4332,7 @@ function abrirRecurso(id) {
   var mc = document.getElementById('main-content');
   if(!mc) return;
   if(id === 'rec-capacitaciones') return renderCapacitaciones(mc);
+  if(CATALOGO_MODULOS[id]) return renderPreviewModulo(mc, id);
   if(id === 'rec-notas')  return renderNotas(mc);
   if(id === 'rec-avisos') return renderAvisos(mc);
 }
@@ -4988,6 +4989,71 @@ function completarDia(nombre, idx) {
   } else { aplicar(); }
 }
 /* ══════════ FIN CAPACITACIONES ══════════ */
+
+
+/* == CATALOGO DE MODULOS EXTRA (USD $450 c/u) == */
+var CATALOGO_MODULOS = {
+  'rec-auditorias': {nombre:'Auditorías', icono:'ti-clipboard-check', incluye:[
+    'Auditorías operativas programadas (semanal, quincenal o mensual) con metodología profesional de 6 áreas',
+    'Checklist fotográfico obligatorio por punto auditado con calificación 1-5',
+    'Score comparable mes a mes con gráfica de evolución',
+    'Reporte PDF automático con hallazgos, evidencias y plan de acción',
+    'Alertas automáticas cuando un punto crítico reprueba'
+  ]},
+  'rec-evaluaciones': {nombre:'Evaluaciones de personal', icono:'ti-user-check', incluye:[
+    'Evaluación de desempeño por competencias adaptada a cada puesto',
+    'Datos objetivos del portal: registros, cumplimiento y evidencias de cada colaborador',
+    'Periodos configurables (mensual, trimestral) con historial completo',
+    'Comparativo del equipo y detección de necesidades de recapacitación',
+    'Reporte individual imprimible para la retroalimentación'
+  ]},
+  'rec-infografias': {nombre:'Infografías', icono:'ti-photo', incluye:[
+    'Biblioteca visual: PEPS, etiquetado, jerarquía de refrigeración, mise en place, estación auxiliar',
+    'Diseño profesional con la identidad del establecimiento',
+    'Formato imprimible por estación + versión digital en el portal',
+    'Actualizaciones cuando cambien procesos o normativa',
+    'Material nuevo bajo pedido para temas específicos de tu operación'
+  ]}
+};
+
+function renderPreviewModulo(el, id) {
+  var m = CATALOGO_MODULOS[id];
+  if(!m) return renderRecursos(el);
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px;max-width:680px">'
+    + '<button onclick="renderRecursos(document.getElementById(\'main-content\'),null,null)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:0;margin-bottom:10px">← Recursos</button>'
+    + '<div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">'
+    + '<div style="width:52px;height:52px;border-radius:13px;background:var(--kale-bg,#E8F3EE);display:flex;align-items:center;justify-content:center"><i class="ti '+m.icono+'" style="font-size:26px;color:var(--kale,#146B4F)"></i></div>'
+    + '<div><div style="font-size:19px;font-weight:600;color:var(--text-primary)">'+m.nombre+'</div>'
+    + '<div style="font-size:11px;font-weight:600;color:#92400E;background:#FEF3C7;border-radius:12px;padding:3px 10px;display:inline-block;margin-top:3px">Módulo bajo desarrollo · USD $450 activación única</div></div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--text-secondary);margin:14px 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Qué incluye</div>'
+    + m.incluye.map(function(x){
+        return '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border)">'
+          + '<i class="ti ti-circle-check" style="font-size:17px;color:var(--kale,#146B4F);flex-shrink:0;margin-top:1px"></i>'
+          + '<div style="font-size:13px;color:var(--text-primary);line-height:1.5">'+x+'</div></div>';
+      }).join('')
+    + '<div style="background:var(--surface-2);border:.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">'
+    + '<div><div style="font-size:13px;font-weight:600;color:var(--text-primary)">¿Quieres activar este módulo?</div>'
+    + '<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">Desarrollo e integración: USD $450 · Listo en tu portal en 5-7 días hábiles</div></div>'
+    + '<button class="btn btn-kale" onclick="solicitarModulo(\''+id+'\')">Solicitar activación</button>'
+    + '</div>'
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function solicitarModulo(id) {
+  var m = CATALOGO_MODULOS[id];
+  var quien = typeof CU!=='undefined'&&CU ? (CU.name||CU.email||'') : '';
+  if(typeof sbInsertAlerta === 'function') {
+    sbInsertAlerta('modulo','informativa',
+      'Solicitud de módulo: ' + m.nombre + ' (USD $450)',
+      quien + ' solicitó activar el módulo "' + m.nombre + '". Contactar para confirmar desarrollo (5-7 días hábiles).',
+      'solicitud-' + id + '-' + fechaMX());
+  }
+  alert('Solicitud enviada.\n\nLiTa Support te contactará para confirmar la activación de "' + m.nombre + '".');
+}
+/* == FIN CATALOGO == */
 
 /* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
 
