@@ -3475,6 +3475,7 @@ function finalizarEvidencia(contexto, canvas, motivo, tipo, callback) {
           }).then(function(){}).catch(function(){});
         }
         // Incidencia o hallazgo → alerta automática con la foto
+        if((tipo === 'incidencia' || tipo === 'hallazgo') && contexto.indexOf('correccion-') !== 0 && typeof registrarPendienteCorreccion === 'function') { registrarPendienteCorreccion(meta); }
         if((tipo === 'incidencia' || tipo === 'hallazgo') && typeof sbInsertAlerta === 'function') {
           sbInsertAlerta('evidencia',
             tipo === 'incidencia' ? 'critica' : 'importante',
