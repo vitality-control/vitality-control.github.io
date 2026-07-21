@@ -630,8 +630,7 @@ function launchApp(user){
   buildSidebar();
   showHome();
   /* SYNC MULTI-DISPOSITIVO: turno + progreso del servidor */
-  procesarDeepLink();
-  setTimeout(function(){ if(typeof checkReporteSemanal==='function') checkReporteSemanal(); }, 3000);
+  
   setTimeout(function(){
     try{
       if(typeof getTurnoActivoServidor === 'function') {
@@ -1095,8 +1094,7 @@ function mostrarCierreTurnoFull() {
   setTimeout(function() {
     var btn = document.querySelector('#cierreTurnoModal .usr-modal-footer .btn-kale');
     if(btn) btn.onclick = function(){ if(typeof capturarFirma==='function') capturarFirma(); cerrarTurnoConPin(); };
-    if(typeof insertarFirmaEnModal === 'function') insertarFirmaEnModal();
-  }, 80);
+    }, 80);
 }
 
 /* ─ DASHBOARD HISTÓRICO ─────────────────────────────── */
@@ -4840,7 +4838,7 @@ function showSub(catId, subId){
     'supervisor-usuarios': ()=>renderUsuariosAdmin(mc,cat,sub),
     'supervisor-historial':  ()=>renderDashboardHistorico(mc),
     'supervisor-fotos':     ()=>renderFotosOperativas(mc,cat,sub),
-    'supervisor-qrs':       ()=>renderQRs(mc),
+    'supervisor-qrs':       ()=>renderQRCodes(mc),
     'supervisor-roles':    ()=>renderRolesAdmin(mc,cat,sub),
     'barra-display-sabores':  ()=>renderDisplaySabores(mc,cat,sub,'barra'),
   };
