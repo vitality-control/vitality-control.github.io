@@ -637,11 +637,11 @@ function launchApp(user){
       if(typeof getTurnoActivoServidor === 'function') {
         getTurnoActivoServidor().then(function(){
           if(typeof sbDownProgreso === 'function') {
-            sbDownProgreso().then(function(changed){ if(changed || _turnoActivo) showHome(); });
+            sbDownProgreso().then(function(changed){ if((changed || _turnoActivo) && !window._deepLinked) showHome(); });
           } else { if(_turnoActivo) showHome(); }
         }).catch(function(){});
       } else if(typeof sbDownProgreso === 'function') {
-        sbDownProgreso().then(function(changed){ if(changed) showHome(); });
+        sbDownProgreso().then(function(changed){ if(changed && !window._deepLinked) showHome(); });
       }
       /* Refresco periódico cada 60s: otros dispositivos aparecen solos */
       if(!window._syncInterval) {
@@ -4467,7 +4467,8 @@ function procesarDeepLink() {
     if(!go) return;
     var parts = decodeURIComponent(go).split('|');
     if(parts.length === 2 && typeof showSub === 'function') {
-      setTimeout(function(){ try{ showSub(parts[0], parts[1]); }catch(e){} }, 600);
+      window._deepLinked = true;
+      setTimeout(function(){ try{ showSub(parts[0], parts[1]); }catch(e){} }, 900);
     }
   } catch(e) {}
 }
