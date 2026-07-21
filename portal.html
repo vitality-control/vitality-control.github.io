@@ -3917,6 +3917,7 @@ function initMobileNav() {
   + '<i class="ti ti-users-group"></i>Usuarios & Roles</button>'
   + '<button class="mmore-item" onclick="mnavGoSupervisor(\'supervisor-historial\');closeMobileMore()">'
   + '<i class="ti ti-chart-bar"></i>Historial de Turnos</button>'
+  + '<button class="mmore-item" onclick="renderRecursos(document.getElementById(\'main-content\'),null,null);closeMobileMore()"><i class="ti ti-folder"></i>Recursos & Gestión</button>'
   + '<button class="mmore-item" onclick="mnavGoSupervisor(\'supervisor-alertas\');closeMobileMore()">'
   + '<i class="ti ti-bell"></i>Alertas & Reportes</button>'
   + '<div style="height:.5px;background:var(--border);margin:8px 16px"></div>'
@@ -4009,6 +4010,214 @@ function isMobile() { return window.innerWidth <= 768; }
 
 
 
+
+
+/* ══════════════════════════════════════════════════════
+   APARTADO: RECURSOS & GESTIÓN — Módulos bloqueados
+   Capacitaciones · Auditorías · Evaluaciones · Infografías · Notas · Avisos
+══════════════════════════════════════════════════════ */
+
+var RECURSOS_MODULOS = [
+  {id:'rec-capacitaciones', nombre:'Capacitaciones', icono:'ti-school',        desc:'Manuales de entrenamiento, videos y programas de 15 días por puesto', bloqueado:true},
+  {id:'rec-auditorias',     nombre:'Auditorías',      icono:'ti-clipboard-check', desc:'Auditorías operativas programadas con checklist fotográfico y calificación', bloqueado:true},
+  {id:'rec-evaluaciones',   nombre:'Evaluaciones',    icono:'ti-user-check',   desc:'Evaluación de desempeño del personal por competencias y periodo', bloqueado:true},
+  {id:'rec-infografias',    nombre:'Infografías',     icono:'ti-photo',        desc:'Material visual de referencia: FIFO, etiquetado, temperaturas, mise en place', bloqueado:true},
+  {id:'rec-notas',          nombre:'Notas',           icono:'ti-notes',        desc:'Bitácora interna del equipo: pendientes, acuerdos y seguimiento entre turnos', bloqueado:false},
+  {id:'rec-avisos',         nombre:'Avisos',          icono:'ti-speakerphone', desc:'Comunicados oficiales de gerencia y dirección para todo el equipo', bloqueado:false},
+];
+
+function renderRecursos(el, cat, sub) {
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Recursos & Gestión</span>'
+    + '<span class="usr-count">' + RECURSOS_MODULOS.filter(function(m){return !m.bloqueado;}).length + ' activos · '
+    + RECURSOS_MODULOS.filter(function(m){return m.bloqueado;}).length + ' próximamente</span></div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">'
+    + RECURSOS_MODULOS.map(function(m) {
+        var locked = m.bloqueado;
+        return '<div ' + (locked ? '' : 'onclick="abrirRecurso(\''+m.id+'\')"') + ' style="border:.5px solid var(--border);border-radius:12px;padding:18px;background:var(--surface-2);position:relative;'
+          + (locked ? 'opacity:.65;cursor:default' : 'cursor:pointer;transition:all .15s') + '"'
+          + (locked ? '' : ' onmouseover="this.style.borderColor=\'var(--kale,#146B4F)\'" onmouseout="this.style.borderColor=\'var(--border)\'"') + '>'
+          + (locked
+              ? '<div style="position:absolute;top:12px;right:12px;background:var(--surface-1);border:.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:4px"><i class="ti ti-lock" style="font-size:11px"></i> Próximamente</div>'
+              : '<div style="position:absolute;top:12px;right:12px;background:#DCFCE7;border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;color:#15803D;letter-spacing:.06em;text-transform:uppercase">Activo</div>')
+          + '<div style="width:44px;height:44px;border-radius:11px;background:' + (locked ? 'var(--surface-1)' : 'var(--kale-bg,#E8F3EE)') + ';display:flex;align-items:center;justify-content:center;margin-bottom:12px">'
+          + '<i class="ti ' + m.icono + '" style="font-size:22px;color:' + (locked ? 'var(--text-muted)' : 'var(--kale,#146B4F)') + '"></i></div>'
+          + '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:5px">' + m.nombre + '</div>'
+          + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5">' + m.desc + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '<div style="margin-top:20px;background:var(--surface-1);border:.5px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px">'
+    + '<i class="ti ti-info-circle" style="font-size:18px;color:var(--text-muted);flex-shrink:0"></i>'
+    + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Los módulos marcados como <b>Próximamente</b> se activarán conforme avance la implementación del programa. Notas y Avisos ya están disponibles para todo el equipo.</div>'
+    + '</div>'
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function abrirRecurso(id) {
+  var mc = document.getElementById('main-content');
+  if(!mc) return;
+  if(id === 'rec-notas')  return renderNotas(mc);
+  if(id === 'rec-avisos') return renderAvisos(mc);
+}
+
+/* ─ NOTAS — bitácora del equipo ─────────────────────── */
+function getNotas() {
+  try { return JSON.parse(localStorage.getItem('vk_notas')||'[]'); } catch(e){ return []; }
+}
+function saveNotas(n) { localStorage.setItem('vk_notas', JSON.stringify(n.slice(0,100))); }
+
+function renderNotas(el) {
+  var notas = getNotas();
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><button onclick="renderRecursos(document.getElementById(\'main-content\'),null,null)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:0;margin-bottom:4px">← Recursos</button>'
+    + '<br><span class="usr-title">Notas del equipo</span>'
+    + '<span class="usr-count">' + notas.length + ' notas</span></div>'
+    + '<button class="btn btn-kale btn-sm" onclick="nuevaNota()"><i class="ti ti-plus" style="font-size:13px"></i> Nota</button>'
+    + '</div>'
+    + (notas.length
+        ? '<div style="display:flex;flex-direction:column;gap:8px">'
+          + notas.map(function(n) {
+              return '<div style="border:.5px solid var(--border);border-left:3px solid ' + (n.prioridad==='alta'?'#DC2626':n.prioridad==='media'?'#D97706':'var(--kale,#146B4F)') + ';border-radius:8px;padding:12px 16px;background:var(--surface-2)">'
+                + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+                + '<div style="flex:1"><div style="font-size:13px;color:var(--text-primary);line-height:1.5;white-space:pre-wrap">' + (n.texto||'') + '</div>'
+                + '<div style="font-size:10px;color:var(--text-muted);margin-top:6px">' + (n.autor||'—') + ' · ' + (n.fecha||'') + ' ' + (n.hora||'') + '</div></div>'
+                + '<button onclick="eliminarNota(\'' + n.id + '\')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;flex-shrink:0"><i class="ti ti-x" style="font-size:14px"></i></button>'
+                + '</div></div>';
+            }).join('')
+          + '</div>'
+        : '<div style="padding:50px;text-align:center;color:var(--text-muted);font-size:13px">Sin notas todavía. Crea la primera para el equipo.</div>')
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function nuevaNota() {
+  var html = '<div class="usr-modal-bg" id="notaModal" onclick="if(event.target.id===\'notaModal\')document.getElementById(\'notaModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:440px"><div class="usr-modal-head"><span class="usr-modal-title">Nueva nota</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'notaModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Nota <span>*</span></label>'
+    + '<textarea id="notaTexto" rows="4" placeholder="Pendientes, acuerdos, seguimiento entre turnos..." style="width:100%;border:.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;background:var(--surface-2);color:var(--text-primary)"></textarea></div>'
+    + '<div class="usr-field"><label>Prioridad</label>'
+    + '<select id="notaPrio"><option value="normal">Normal</option><option value="media">Media</option><option value="alta">Alta</option></select></div>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'notaModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarNota()">Publicar nota</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+  setTimeout(function(){document.getElementById('notaTexto')?.focus();},100);
+}
+
+function guardarNota() {
+  var texto = document.getElementById('notaTexto')?.value.trim();
+  if(!texto) { alert('Escribe la nota.'); return; }
+  var notas = getNotas();
+  notas.unshift({
+    id: 'nota_'+Date.now(), texto: texto,
+    prioridad: document.getElementById('notaPrio')?.value||'normal',
+    autor: typeof CU!=='undefined'&&CU ? (CU.nombre||'')+' '+(CU.apellido||'') : '',
+    fecha: fechaMX(), hora: horaMX()
+  });
+  saveNotas(notas);
+  document.getElementById('notaModal')?.remove();
+  renderNotas(document.getElementById('main-content'));
+}
+
+function eliminarNota(id) {
+  if(!confirm('¿Eliminar esta nota?')) return;
+  saveNotas(getNotas().filter(function(n){return n.id!==id;}));
+  renderNotas(document.getElementById('main-content'));
+}
+
+/* ─ AVISOS — comunicados oficiales ──────────────────── */
+function getAvisos() {
+  try { return JSON.parse(localStorage.getItem('vk_avisos')||'[]'); } catch(e){ return []; }
+}
+function saveAvisos(a) { localStorage.setItem('vk_avisos', JSON.stringify(a.slice(0,50))); }
+
+function renderAvisos(el) {
+  var avisos = getAvisos();
+  var user = typeof CU !== 'undefined' ? CU : null;
+  var esAdmin = user && (user.rol === 'admin' || user.rol === 'gerente' || user.rol === 'propietario');
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><button onclick="renderRecursos(document.getElementById(\'main-content\'),null,null)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;padding:0;margin-bottom:4px">← Recursos</button>'
+    + '<br><span class="usr-title">Avisos oficiales</span>'
+    + '<span class="usr-count">' + avisos.length + ' publicados</span></div>'
+    + (esAdmin ? '<button class="btn btn-kale btn-sm" onclick="nuevoAviso()"><i class="ti ti-speakerphone" style="font-size:13px"></i> Publicar aviso</button>' : '')
+    + '</div>'
+    + (avisos.length
+        ? '<div style="display:flex;flex-direction:column;gap:10px">'
+          + avisos.map(function(a) {
+              var esImportante = a.tipo === 'importante';
+              return '<div style="border:.5px solid ' + (esImportante?'#F59E0B':'var(--border)') + ';border-radius:10px;overflow:hidden;background:var(--surface-2)">'
+                + (esImportante ? '<div style="background:#FEF3C7;padding:6px 16px;font-size:10px;font-weight:600;color:#92400E;letter-spacing:.06em;text-transform:uppercase">📌 Aviso importante</div>' : '')
+                + '<div style="padding:14px 16px">'
+                + '<div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:6px">' + (a.titulo||'') + '</div>'
+                + '<div style="font-size:13px;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap">' + (a.mensaje||'') + '</div>'
+                + '<div style="font-size:10px;color:var(--text-muted);margin-top:10px;display:flex;align-items:center;justify-content:space-between">'
+                + '<span>' + (a.autor||'Gerencia') + ' · ' + (a.fecha||'') + '</span>'
+                + (esAdmin ? '<button onclick="eliminarAviso(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:11px">Eliminar</button>' : '')
+                + '</div></div></div>';
+            }).join('')
+          + '</div>'
+        : '<div style="padding:50px;text-align:center;color:var(--text-muted);font-size:13px">Sin avisos publicados.</div>')
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function nuevoAviso() {
+  var html = '<div class="usr-modal-bg" id="avisoModal" onclick="if(event.target.id===\'avisoModal\')document.getElementById(\'avisoModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:460px"><div class="usr-modal-head"><span class="usr-modal-title">Publicar aviso oficial</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'avisoModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Título <span>*</span></label>'
+    + '<input type="text" id="avisoTitulo" placeholder="Ej: Cambio de horario este viernes"></div>'
+    + '<div class="usr-field" style="margin-bottom:12px"><label>Mensaje <span>*</span></label>'
+    + '<textarea id="avisoMensaje" rows="4" placeholder="Comunicado para todo el equipo..." style="width:100%;border:.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:inherit;font-size:13px;resize:vertical;background:var(--surface-2);color:var(--text-primary)"></textarea></div>'
+    + '<div class="usr-field"><label>Tipo</label>'
+    + '<select id="avisoTipo"><option value="normal">Normal</option><option value="importante">📌 Importante (destacado)</option></select></div>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'avisoModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="publicarAviso()">Publicar</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function publicarAviso() {
+  var titulo  = document.getElementById('avisoTitulo')?.value.trim();
+  var mensaje = document.getElementById('avisoMensaje')?.value.trim();
+  if(!titulo || !mensaje) { alert('Título y mensaje son obligatorios.'); return; }
+  var avisos = getAvisos();
+  avisos.unshift({
+    id: 'aviso_'+Date.now(), titulo: titulo, mensaje: mensaje,
+    tipo: document.getElementById('avisoTipo')?.value||'normal',
+    autor: typeof CU!=='undefined'&&CU ? (CU.nombre||'')+' '+(CU.apellido||'') : 'Gerencia',
+    fecha: fechaMX()
+  });
+  saveAvisos(avisos);
+  // Aviso importante genera alerta en el sistema
+  if(document.getElementById('avisoTipo')?.value === 'importante' && typeof sbInsertAlerta === 'function') {
+    sbInsertAlerta('aviso','informativa','📌 Nuevo aviso: '+titulo, mensaje.slice(0,200), 'recursos-avisos');
+  }
+  document.getElementById('avisoModal')?.remove();
+  renderAvisos(document.getElementById('main-content'));
+}
+
+function eliminarAviso(id) {
+  if(!confirm('¿Eliminar este aviso?')) return;
+  saveAvisos(getAvisos().filter(function(a){return a.id!==id;}));
+  renderAvisos(document.getElementById('main-content'));
+}
+/* ══ FIN RECURSOS & GESTIÓN ══ */
 
 /* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
 
