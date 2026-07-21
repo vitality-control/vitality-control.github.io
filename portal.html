@@ -4361,101 +4361,38 @@ function eliminarAviso(id) {
 /* ══ FIN RECURSOS & GESTIÓN ══ */
 
 
+
 /* ══════════════════════════════════════════════════════
-   LANZAMIENTO+ : Reporte semanal · QR estaciones · Firma cierre
+   LANZAMIENTO+ : QR por estación · Firma de cierre · Reporte semanal
 ══════════════════════════════════════════════════════ */
 
-/* ─ 1. REPORTE SEMANAL AUTOMÁTICO ────────────────────
-   Se dispara solo: primer login de la semana (lunes en adelante)
-   consolida los últimos 7 días y envía email vía trigger de alertas */
-function semanaISO() {
-  var d = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Mexico_City'}));
-  var jan = new Date(d.getFullYear(),0,1);
-  var week = Math.ceil((((d - jan) / 86400000) + jan.getDay() + 1) / 7);
-  return d.getFullYear() + '-S' + String(week).padStart(2,'0');
-}
-
-async function checkReporteSemanal() {
-  try {
-    if(typeof vkSB === 'undefined' || !vkSB) return;
-    var hoy = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Mexico_City'}));
-    if(hoy.getDay() !== 1 && hoy.getDay() !== 2) return; // solo lunes o martes (respaldo)
-    var marca = 'reporte-semanal-' + semanaISO();
-
-    // ¿Ya se envió esta semana? (flag global en la tabla alertas)
-    var check = await vkSB.from('alertas').select('id').eq('modulo_id', marca).limit(1);
-    if(check.data && check.data.length) return;
-
-    // Consolidar últimos 7 días desde el servidor
-    var desde = new Date(Date.now() - 7*86400000).toLocaleDateString('en-CA',{timeZone:'America/Mexico_City'});
-    var prog  = await vkSB.from('progreso_modulos').select('fecha,modulo_id,pct').gte('fecha', desde);
-    var alr   = await vkSB.from('alertas').select('severidad,titulo,fecha').gte('fecha', desde);
-    var trn   = await vkSB.from('turno_estado').select('fecha,turno_tipo,abierto_por').gte('fecha', desde);
-
-    var rows = prog.data || [];
-    var promedio = rows.length ? Math.round(rows.reduce(function(s,r){return s+(r.pct||0);},0) / rows.length) : 0;
-    var porDia = {};
-    rows.forEach(function(r){ if(!porDia[r.fecha]) porDia[r.fecha]=[]; porDia[r.fecha].push(r.pct||0); });
-    var dias = Object.keys(porDia).sort();
-    var mejorDia = '', mejorPct = -1, peorDia = '', peorPct = 101;
-    dias.forEach(function(d){
-      var avg = Math.round(porDia[d].reduce(function(a,b){return a+b;},0)/porDia[d].length);
-      if(avg > mejorPct){ mejorPct = avg; mejorDia = d; }
-      if(avg < peorPct){ peorPct = avg; peorDia = d; }
-    });
-    var criticas = (alr.data||[]).filter(function(a){return a.severidad==='critica';}).length;
-    var turnos = (trn.data||[]).length;
-
-    var letra = promedio>=95?'A+':promedio>=85?'A':promedio>=75?'B':promedio>=60?'C':'D';
-    var mensaje = 'RESUMEN SEMANAL — Semana ' + semanaISO().split('-S')[1]
-      + ' · Calificación promedio: ' + letra + ' (' + promedio + '%)'
-      + ' · Turnos operados: ' + turnos
-      + ' · Módulos registrados: ' + rows.length
-      + ' · Alertas críticas: ' + criticas
-      + (mejorDia ? ' · Mejor día: ' + mejorDia + ' (' + mejorPct + '%)' : '')
-      + (peorDia && peorDia !== mejorDia ? ' · Día a reforzar: ' + peorDia + ' (' + peorPct + '%)' : '')
-      + ' · Reporte generado automáticamente cada lunes.';
-
-    // Insertar alerta → trigger → Edge Function → email premium a todos
-    await vkSB.from('alertas').insert({
-      tipo: 'reporte', severidad: 'informativa',
-      titulo: '📊 Resumen semanal — ' + letra + ' (' + promedio + '%)',
-      mensaje: mensaje, modulo_id: marca,
-      fecha: fechaMX(), leida: false
-    });
-  } catch(e) {}
-}
-
-/* ─ 2. QR POR ESTACIÓN ───────────────────────────────
-   Generador imprimible + router ?go= al cargar */
-function renderQRs(el) {
+/* ─ 1. QR POR ESTACIÓN ──────────────────────────────── */
+function renderQRCodes(el) {
+  var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+  var base  = location.origin + location.pathname;
   var targets = [];
-  // Un QR por cada submódulo operativo clave
-  if(typeof ESTRUCTURA !== 'undefined') {
-    ESTRUCTURA.forEach(function(cat) {
-      if(cat.id === 'recursos') return;
-      (cat.subs||[]).forEach(function(sub) {
-        targets.push({id: cat.id + '|' + sub.id, area: cat.name, nombre: sub.name});
-      });
+  areas.forEach(function(cat){
+    if(cat.id === 'recursos') return;
+    (cat.subs||[]).forEach(function(sub){
+      targets.push({id: sub.id, nombre: sub.name, area: cat.name});
     });
-  }
-  var base = location.origin + location.pathname;
+  });
 
   var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
     + '<div class="usr-header">'
     + '<div><span class="usr-title">Códigos QR por estación</span>'
     + '<span class="usr-count">' + targets.length + ' módulos</span></div>'
-    + '<button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px"></i> Imprimir todos</button>'
+    + '<button class="btn btn-kale btn-sm" onclick="window.print()"><i class="ti ti-printer" style="font-size:13px"></i> Imprimir hoja</button>'
     + '</div>'
-    + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Imprime y pega cada QR en su estación física. El personal escanea con la cámara del celular y cae directo al módulo — sin navegar menús.</p>'
-    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px" class="qr-grid">'
-    + targets.map(function(t) {
+    + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Imprime y pega cada QR en su estación. El personal escanea con la cámara del celular y cae directo al módulo — sin navegar menús.</p>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px" id="qrGrid">'
+    + targets.map(function(t){
         var url = base + '?go=' + encodeURIComponent(t.id);
-        var qr  = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=' + encodeURIComponent(url);
-        return '<div style="border:.5px solid var(--border);border-radius:12px;padding:16px;text-align:center;background:#fff;page-break-inside:avoid">'
-          + '<img src="' + qr + '" style="width:130px;height:130px" loading="lazy">'
-          + '<div style="font-size:9px;color:#9a9a95;text-transform:uppercase;letter-spacing:.07em;margin-top:8px">' + t.area + '</div>'
-          + '<div style="font-size:13px;font-weight:600;color:#1a1a18;margin-top:2px">' + t.nombre + '</div>'
+        var img = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + encodeURIComponent(url);
+        return '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;text-align:center;background:#fff;page-break-inside:avoid">'
+          + '<img src="' + img + '" width="130" height="130" style="display:block;margin:0 auto 8px" loading="lazy">'
+          + '<div style="font-size:12px;font-weight:600;color:#1a1a18">' + t.nombre + '</div>'
+          + '<div style="font-size:10px;color:#9a9a95;text-transform:uppercase;letter-spacing:.06em;margin-top:2px">' + t.area + '</div>'
           + '</div>';
       }).join('')
     + '</div></div></div>';
@@ -4463,70 +4400,155 @@ function renderQRs(el) {
   triggerFades();
 }
 
-/* Router: ?go=cat|sub abre el módulo directo tras login */
-function procesarDeepLink() {
+/* Deep-link: ?go=<subId> abre directo el módulo tras el login */
+function aplicarDeepLink() {
   try {
-    var go = new URLSearchParams(location.search).get('go');
-    if(!go) return;
-    var parts = decodeURIComponent(go).split('|');
-    if(parts.length === 2 && typeof showSub === 'function') {
-      window._deepLinked = true;
-      setTimeout(function(){ try{ showSub(parts[0], parts[1]); }catch(e){} }, 900);
+    var params = new URLSearchParams(location.search);
+    var go = params.get('go') || sessionStorage.getItem('vk_deeplink');
+    if(!go) return false;
+    sessionStorage.removeItem('vk_deeplink');
+    if(history.replaceState) history.replaceState(null,'',location.pathname);
+    var areas = typeof ESTRUCTURA !== 'undefined' ? ESTRUCTURA : [];
+    for(var i=0;i<areas.length;i++){
+      var sub = (areas[i].subs||[]).find(function(s){return s.id===go;});
+      if(sub && typeof showSub === 'function' && canCat(areas[i].id)) {
+        try{ if(typeof toggleCat==='function') toggleCat(areas[i].id); }catch(e){}
+        showSub(areas[i].id, go);
+        return true;
+      }
     }
-  } catch(e) {}
+  } catch(e){}
+  return false;
 }
+/* Guardar deep-link si llega sin sesión */
+try {
+  var _dl = new URLSearchParams(location.search).get('go');
+  if(_dl) sessionStorage.setItem('vk_deeplink', _dl);
+} catch(e){}
 
-/* ─ 3. FIRMA DE CIERRE DE TURNO ──────────────────────
-   Canvas táctil, guarda en Storage, va al PDF */
+/* ─ 2. FIRMA DE CIERRE ──────────────────────────────── */
 var _firmaCtx = null, _firmaDirty = false;
 
-function insertarFirmaEnModal() {
-  var modal = document.querySelector('#cierreTurnoModal .usr-modal-body');
-  if(!modal || document.getElementById('firmaCanvas')) return;
-  var wrap = document.createElement('div');
-  wrap.innerHTML = '<div style="margin-top:14px">'
-    + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px">Firma del supervisor</div>'
-    + '<div style="border:1.5px dashed var(--border);border-radius:10px;background:#fff;position:relative">'
-    + '<canvas id="firmaCanvas" width="380" height="120" style="width:100%;height:120px;display:block;touch-action:none;cursor:crosshair"></canvas>'
-    + '<button onclick="limpiarFirma()" type="button" style="position:absolute;top:6px;right:6px;background:var(--surface-1);border:.5px solid var(--border);border-radius:6px;padding:3px 8px;font-size:10px;cursor:pointer;color:var(--text-muted)">Borrar</button>'
-    + '<div id="firmaHint" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:#c8c8c3;pointer-events:none">Firma aquí con el dedo</div>'
-    + '</div></div>';
-  modal.appendChild(wrap);
+function mostrarModalFirma(onDone) {
+  var html = '<div class="usr-modal-bg" id="firmaModal">'
+    + '<div class="usr-modal" style="max-width:420px"><div class="usr-modal-head">'
+    + '<span class="usr-modal-title">Firma del supervisor</span></div>'
+    + '<div class="usr-modal-body">'
+    + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Firma dentro del recuadro para formalizar el cierre del turno. La firma queda en el reporte.</p>'
+    + '<canvas id="firmaCanvas" width="360" height="150" style="border:1.5px dashed var(--border);border-radius:10px;background:#fff;touch-action:none;width:100%;display:block;cursor:crosshair"></canvas>'
+    + '<button onclick="limpiarFirma()" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;margin-top:6px;padding:0">↺ Limpiar y volver a firmar</button>'
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'firmaModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" id="firmaOkBtn">Confirmar cierre</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+
   var cv = document.getElementById('firmaCanvas');
   _firmaCtx = cv.getContext('2d');
-  _firmaCtx.strokeStyle = '#1a1a18'; _firmaCtx.lineWidth = 2; _firmaCtx.lineCap = 'round';
+  _firmaCtx.strokeStyle = '#1a1a18'; _firmaCtx.lineWidth = 2.2; _firmaCtx.lineCap = 'round';
   _firmaDirty = false;
   var drawing = false, last = null;
   function pos(e) {
     var r = cv.getBoundingClientRect();
     var t = e.touches ? e.touches[0] : e;
-    return { x: (t.clientX - r.left) * (cv.width / r.width), y: (t.clientY - r.top) * (cv.height / r.height) };
+    return { x: (t.clientX - r.left) * (cv.width/r.width), y: (t.clientY - r.top) * (cv.height/r.height) };
   }
-  function start(e){ drawing = true; last = pos(e); document.getElementById('firmaHint')?.remove(); e.preventDefault(); }
-  function move(e){ if(!drawing) return; var p = pos(e); _firmaCtx.beginPath(); _firmaCtx.moveTo(last.x,last.y); _firmaCtx.lineTo(p.x,p.y); _firmaCtx.stroke(); last = p; _firmaDirty = true; e.preventDefault(); }
+  function start(e){ drawing = true; last = pos(e); e.preventDefault(); }
+  function move(e){
+    if(!drawing) return;
+    var p = pos(e);
+    _firmaCtx.beginPath(); _firmaCtx.moveTo(last.x,last.y); _firmaCtx.lineTo(p.x,p.y); _firmaCtx.stroke();
+    last = p; _firmaDirty = true; e.preventDefault();
+  }
   function end(){ drawing = false; }
-  cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
-  cv.addEventListener('touchstart', start, {passive:false}); cv.addEventListener('touchmove', move, {passive:false}); cv.addEventListener('touchend', end);
+  cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); document.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',end);
+
+  document.getElementById('firmaOkBtn').onclick = function(){
+    if(!_firmaDirty){ alert('Firma requerida para cerrar el turno.'); return; }
+    var dataUrl = cv.toDataURL('image/png');
+    document.getElementById('firmaModal')?.remove();
+    // Guardar firma en el turno local + subir a Storage
+    try {
+      var t = getTurnoActivo();
+      if(t){ t.firma = dataUrl; setTurnoActivo(t); }
+      localStorage.setItem('vk_firma_' + fechaMX(), dataUrl);
+      if(typeof subirFotoStorage === 'function') subirFotoStorage('firma-cierre', dataUrl);
+    } catch(e){}
+    if(onDone) onDone(dataUrl);
+  };
 }
 
 function limpiarFirma() {
-  var cv = document.getElementById('firmaCanvas');
-  if(cv && _firmaCtx) { _firmaCtx.clearRect(0,0,cv.width,cv.height); _firmaDirty = false; }
+  if(_firmaCtx){ _firmaCtx.clearRect(0,0,360,150); _firmaDirty = false; }
 }
 
-function capturarFirma() {
-  var cv = document.getElementById('firmaCanvas');
-  if(!cv || !_firmaDirty) return null;
-  var dataUrl = cv.toDataURL('image/png');
-  try { localStorage.setItem('vk_firma_' + fechaMX(), dataUrl); } catch(e) {}
-  if(typeof subirFotoStorage === 'function') subirFotoStorage('firma-cierre', dataUrl);
-  return dataUrl;
+/* ─ 3. REPORTE SEMANAL (client-triggered con lock atómico) ── */
+function _lunesDeEstaSemana() {
+  var now = new Date(new Date().toLocaleString('en-US',{timeZone:'America/Mexico_City'}));
+  var day = now.getDay(); // 0=dom
+  var diff = day === 0 ? 6 : day - 1;
+  now.setDate(now.getDate() - diff);
+  return now.toISOString().slice(0,10);
 }
 
-function getFirmaHoy() {
-  try { return localStorage.getItem('vk_firma_' + fechaMX()); } catch(e) { return null; }
+async function checkWeeklyReport() {
+  try {
+    if(typeof vkSB === 'undefined' || !vkSB) return;
+    var lunes = _lunesDeEstaSemana();
+    // Lock atómico: INSERT sin upsert — si ya existe, otro dispositivo lo envió
+    var lock = await vkSB.from('progreso_modulos').insert({
+      fecha: lunes, modulo_id: 'sys-weekly-report', pct: 100,
+      items: {tipo:'weekly-lock'}, updated_by: 'sistema'
+    });
+    if(lock.error) return; // ya enviado esta semana
+
+    // Rango: 7 días previos al lunes
+    var desde = new Date(lunes); desde.setDate(desde.getDate()-7);
+    var desdeISO = desde.toISOString().slice(0,10);
+
+    var [prog, alertas] = await Promise.all([
+      vkSB.from('progreso_modulos').select('modulo_id,pct,fecha').gte('fecha',desdeISO).lt('fecha',lunes).neq('modulo_id','sys-weekly-report'),
+      vkSB.from('alertas').select('severidad,titulo,fecha').gte('fecha',desdeISO).lt('fecha',lunes)
+    ]);
+
+    var registros = (prog.data||[]);
+    var alts = (alertas.data||[]);
+    var avg  = registros.length ? Math.round(registros.reduce(function(s,r){return s+(r.pct||0);},0)/registros.length) : 0;
+    var criticas = alts.filter(function(a){return a.severidad==='critica';}).length;
+
+    // Mejores y peores módulos
+    var porModulo = {};
+    registros.forEach(function(r){
+      if(!porModulo[r.modulo_id]) porModulo[r.modulo_id] = [];
+      porModulo[r.modulo_id].push(r.pct||0);
+    });
+    var promedios = Object.entries(porModulo).map(function(e){
+      return {mod: e[1] && e[0], id: e[0], avg: Math.round(e[1].reduce(function(a,b){return a+b;},0)/e[1].length)};
+    }).sort(function(a,b){return b.avg-a.avg;});
+    var top = promedios.slice(0,3).map(function(m){return m.id.replace(/-/g,' ') + ' (' + m.avg + '%)';}).join(' · ') || 'sin datos';
+    var low = promedios.slice(-3).reverse().map(function(m){return m.id.replace(/-/g,' ') + ' (' + m.avg + '%)';}).join(' · ') || 'sin datos';
+
+    var mensaje = 'RESUMEN SEMANAL (' + desdeISO + ' al ' + lunes + '). '
+      + 'Cumplimiento promedio: ' + avg + '%. '
+      + 'Registros capturados: ' + registros.length + '. '
+      + 'Alertas de la semana: ' + alts.length + (criticas ? ' (' + criticas + ' criticas). ' : '. ')
+      + 'Mejores modulos: ' + top + '. '
+      + 'Requieren atencion: ' + low + '.';
+
+    // Enviar via Edge Function existente
+    fetch(VK_SB_URL + '/functions/v1/' + (VK_SB_URL.indexOf('nivlopt')>=0 ? 'vk-send-alert' : 'cj-send-alert'), {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+VK_SB_KEY},
+      body: JSON.stringify({
+        titulo: 'Reporte semanal — cumplimiento ' + avg + '%',
+        mensaje: mensaje, severidad: 'informativa', modulo_id: 'weekly'
+      })
+    }).catch(function(){});
+  } catch(e){}
 }
 /* ══ FIN LANZAMIENTO+ ══ */
+
 
 /* ══ AUTH SERVER-SIDE — RPCs Supabase (protocolo pasos 5-6) ══ */
 
