@@ -1048,9 +1048,11 @@ function validarPinCierre() {
       if(srv) {
         var m = document.getElementById('pinCierreModal');
         if(m) m.remove();
-        if(typeof cerrarTurnoServidor === 'function') cerrarTurnoServidor();
-        if(typeof cerrarTurnoFinal === 'function') cerrarTurnoFinal();
-        limpiarTurnoActivo();
+        mostrarModalFirma(function() {
+          if(typeof cerrarTurnoServidor === 'function') cerrarTurnoServidor();
+          if(typeof cerrarTurnoFinal === 'function') cerrarTurnoFinal();
+          limpiarTurnoActivo();
+        });
       } else {
         if(errEl) errEl.style.display = 'block';
       }
@@ -3316,6 +3318,7 @@ function generarReportePDFTurno() {
         + '</tbody></table>' : '')
 
     + (typeof getFirmaHoy==='function' && getFirmaHoy() ? '<div style="margin-top:28px;text-align:right"><img src="'+getFirmaHoy()+'" style="height:60px"><div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;display:inline-block;padding-top:4px;min-width:180px;text-align:center">Firma del supervisor</div></div>' : '')
+    + (function(){try{var f=localStorage.getItem('vk_firma_'+fechaMX());return f?'<h2>Firma de cierre</h2><img src="'+f+'" style="max-width:260px;border-bottom:1px solid #ccc">':'';}catch(e){return '';}})()
     + '<div class="footer">Generado automáticamente · De la Mora Zumarán Kitchen Support · ' + new Date().toLocaleString('es-MX') + '</div>'
     + '<div class="no-print" style="margin-top:24px;text-align:center">'
     + '<button onclick="window.print()" style="background:#1A1A18;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:14px;cursor:pointer;margin-right:10px">🖨 Imprimir / Guardar PDF</button>'
