@@ -3394,6 +3394,341 @@ function renderTiempos(el, cat, sub) {
 /* ══ FIN SALÓN & SERVICIO ══ */
 
 
+
+/* ══════════════════════════════════════════════════════
+   MÓDULO VITRINAS — Display · Rotación · Presentación
+   REPORTE PDF — Exportación de turno completo
+══════════════════════════════════════════════════════ */
+
+/* ─ VITRINAS ─────────────────────────────────────────── */
+function renderVitrinas(el, cat, sub) {
+  var subId = sub ? sub.id : '';
+  if(subId.includes('display'))   return renderDisplayVitrinas(el, cat, sub);
+  if(subId.includes('rotacion'))  return renderRotacionVitrinas(el, cat, sub);
+  if(subId.includes('checklist')) return renderChecklistVitrinas(el, cat, sub);
+  renderDisplayVitrinas(el, cat, sub);
+}
+
+function getProductosVitrina() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('vk_vitrina')||'null');
+    if(stored && stored.length) return stored;
+  } catch(e){}
+  var defaults = [
+    {id:'v1',nombre:'Croissant',categoria:'Laminados',cantidad:0,capacidad:12,unidad:'pza',orden:1,visible:true,precio:55},
+    {id:'v2',nombre:'Chocolatine',categoria:'Laminados',cantidad:0,capacidad:10,unidad:'pza',orden:2,visible:true,precio:60},
+    {id:'v3',nombre:'Rol de canela',categoria:'Laminados',cantidad:0,capacidad:8,unidad:'pza',orden:3,visible:true,precio:65},
+    {id:'v4',nombre:'Pain au chocolat',categoria:'Panadería',cantidad:0,capacidad:15,unidad:'pza',orden:4,visible:true,precio:48},
+    {id:'v5',nombre:'Eclair café',categoria:'Pastelería',cantidad:0,capacidad:8,unidad:'pza',orden:5,visible:true,precio:75},
+    {id:'v6',nombre:'Tarta de frutos',categoria:'Pastelería',cantidad:0,capacidad:6,unidad:'rebanadas',orden:6,visible:true,precio:95},
+  ];
+  localStorage.setItem('vk_vitrina', JSON.stringify(defaults));
+  return defaults;
+}
+function saveProductosVitrina(items) { localStorage.setItem('vk_vitrina', JSON.stringify(items)); }
+
+function renderDisplayVitrinas(el, cat, sub) {
+  var productos = getProductosVitrina();
+  var visibles  = productos.filter(function(p){return p.visible;});
+  var totalPzas = visibles.reduce(function(s,p){return s+p.cantidad;},0);
+  var ocupacion = visibles.length ? Math.round(visibles.reduce(function(s,p){
+    return s + (p.capacidad>0 ? p.cantidad/p.capacidad*100 : 0);
+  },0)/visibles.length) : 0;
+
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header">'
+    + '<div><span class="usr-title">Vitrinas</span>'
+    + '<span class="usr-count">' + Math.round(ocupacion) + '% ocupación</span></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button class="btn btn-ghost btn-sm" onclick="abrirConfigVitrina()"><i class="ti ti-settings" style="font-size:13px"></i> Productos</button>'
+    + '<button class="btn btn-kale btn-sm" onclick="actualizarConteoVitrina()"><i class="ti ti-refresh" style="font-size:13px"></i> Actualizar conteo</button>'
+    + '</div></div>'
+
+    /* Barra de ocupación global */
+    + '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;background:var(--surface-2)">'
+    + '<div style="display:flex;justify-content:space-between;margin-bottom:8px">'
+    + '<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">Ocupación total de vitrinas</span>'
+    + '<span style="font-size:14px;font-weight:700;color:'+(ocupacion>70?'#15803D':ocupacion>40?'#D97706':'#DC2626')+'">' + Math.round(ocupacion) + '%</span>'
+    + '</div>'
+    + '<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">'
+    + '<div style="height:8px;background:'+(ocupacion>70?'#15803D':ocupacion>40?'#D97706':'#DC2626')+';width:'+Math.round(ocupacion)+'%;border-radius:4px;transition:width .5s"></div>'
+    + '</div></div>'
+
+    /* Grid de productos */
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">'
+    + visibles.map(function(p) {
+        var pct  = p.capacidad > 0 ? Math.round(p.cantidad/p.capacidad*100) : 0;
+        var clr  = pct >= 60 ? '#15803D' : pct >= 30 ? '#D97706' : '#DC2626';
+        return '<div style="border:.5px solid var(--border);border-radius:10px;padding:14px;background:var(--surface-2)">'
+          + '<div style="font-size:12px;color:var(--text-muted);margin-bottom:2px">' + p.categoria + '</div>'
+          + '<div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:8px">' + p.nombre + '</div>'
+          + '<div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:8px;overflow:hidden">'
+          + '<div style="height:6px;background:'+clr+';width:'+pct+'%;border-radius:3px;transition:width .4s"></div></div>'
+          + '<div style="display:flex;align-items:center;justify-content:space-between">'
+          + '<div style="display:flex;align-items:center;gap:6px">'
+          + '<button onclick="cambiarCantVitrina(\''+p.id+'\',−1)" style="background:var(--border);border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">−</button>'
+          + '<span style="font-size:16px;font-weight:700;color:'+clr+';min-width:30px;text-align:center">' + p.cantidad + '</span>'
+          + '<button onclick="cambiarCantVitrina(\''+p.id+'\',1)" style="background:var(--kale,#146B4F);color:#fff;border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">+</button>'
+          + '</div>'
+          + '<span style="font-size:10px;color:var(--text-muted)">/ '+p.capacidad+' '+p.unidad+'</span>'
+          + '</div></div>';
+      }).join('')
+    + '</div></div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+function cambiarCantVitrina(id, delta) {
+  var items = getProductosVitrina();
+  var item  = items.find(function(i){return i.id===id;});
+  if(!item) return;
+  item.cantidad = Math.max(0, Math.min(item.capacidad, (item.cantidad||0) + delta));
+  saveProductosVitrina(items);
+  var mc = document.getElementById('main-content');
+  if(mc) renderDisplayVitrinas(mc, null, null);
+  if(typeof actualizarScoreGlobal === 'function') actualizarScoreGlobal();
+}
+
+function actualizarConteoVitrina() {
+  var items = getProductosVitrina();
+  var html  = '<div class="usr-modal-bg" id="vitConteoModal" onclick="if(event.target.id===\'vitConteoModal\')document.getElementById(\'vitConteoModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:420px"><div class="usr-modal-head"><span class="usr-modal-title">Actualizar conteo</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'vitConteoModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + items.filter(function(i){return i.visible;}).map(function(p) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid var(--border2)">'
+          + '<span style="flex:1;font-size:13px">'+p.nombre+'</span>'
+          + '<input type="number" id="vc_'+p.id+'" value="'+p.cantidad+'" min="0" max="'+p.capacidad+'" '
+          + 'style="width:60px;border:.5px solid var(--border);border-radius:6px;padding:4px 8px;text-align:center;font-family:inherit;font-size:13px">'
+          + '<span style="font-size:11px;color:var(--text-muted)">/ '+p.capacidad+'</span>'
+          + '</div>';
+      }).join('')
+    + '</div><div class="usr-modal-footer">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'vitConteoModal\').remove()">Cancelar</button>'
+    + '<button class="btn btn-kale" onclick="guardarConteoVitrina()">Guardar conteo</button>'
+    + '</div></div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function guardarConteoVitrina() {
+  var items = getProductosVitrina();
+  items.forEach(function(p) {
+    var inp = document.getElementById('vc_'+p.id);
+    if(inp) p.cantidad = Math.max(0, Math.min(p.capacidad, parseInt(inp.value)||0));
+  });
+  saveProductosVitrina(items);
+  document.getElementById('vitConteoModal')?.remove();
+  var mc = document.getElementById('main-content');
+  if(mc) renderDisplayVitrinas(mc, null, null);
+}
+
+function abrirConfigVitrina() {
+  var items = getProductosVitrina();
+  var html  = '<div class="usr-modal-bg" id="vitCfgModal" onclick="if(event.target.id===\'vitCfgModal\')document.getElementById(\'vitCfgModal\').remove()">'
+    + '<div class="usr-modal" style="max-width:500px"><div class="usr-modal-head"><span class="usr-modal-title">Productos de vitrina</span>'
+    + '<button class="usr-modal-close" onclick="document.getElementById(\'vitCfgModal\').remove()">×</button></div>'
+    + '<div class="usr-modal-body">'
+    + '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:220px;overflow-y:auto">'
+    + items.map(function(p) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:.5px solid var(--border);border-radius:8px">'
+          + '<span style="flex:1;font-size:13px;font-weight:500">'+p.nombre+'</span>'
+          + '<span style="font-size:11px;color:var(--text-muted)">Cap: '+p.capacidad+'</span>'
+          + '<button onclick="toggleProductoVitrina(\''+p.id+'\')" style="background:none;border:.5px solid var(--border);border-radius:6px;padding:3px 8px;cursor:pointer;font-size:11px;color:'+(p.visible?'#15803D':'#DC2626')+'">'+(p.visible?'Visible':'Oculto')+'</button>'
+          + '<button onclick="eliminarProductoVitrina(\''+p.id+'\')" style="background:none;border:none;cursor:pointer;color:#DC2626;padding:4px"><i class="ti ti-x"></i></button>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '<div style="border-top:.5px solid var(--border);padding-top:14px">'
+    + '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:10px">Agregar producto</div>'
+    + '<div class="usr-field-grid" style="margin-bottom:10px">'
+    + '<div class="usr-field"><label>Nombre</label><input type="text" id="vitNombre" placeholder="Ej: Tarta de mango"></div>'
+    + '<div class="usr-field"><label>Categoría</label><input type="text" id="vitCat" placeholder="Pastelería"></div>'
+    + '</div>'
+    + '<div class="usr-field-grid cols3" style="margin-bottom:10px">'
+    + '<div class="usr-field"><label>Capacidad</label><input type="number" id="vitCap" value="10" min="1"></div>'
+    + '<div class="usr-field"><label>Unidad</label><select id="vitUnidad"><option>pza</option><option>rebanadas</option><option>kg</option><option>lt</option></select></div>'
+    + '<div class="usr-field"><label>Precio $</label><input type="number" id="vitPrecio" value="0"></div>'
+    + '</div>'
+    + '<button onclick="agregarProductoVitrina()" class="btn btn-kale" style="width:100%">+ Agregar</button>'
+    + '</div></div>'
+    + '<div class="usr-modal-footer"><button class="btn btn-ghost" onclick="document.getElementById(\'vitCfgModal\').remove()">Cerrar</button></div>'
+    + '</div></div>';
+  var bg=document.createElement('div');bg.innerHTML=html;document.body.appendChild(bg.firstElementChild);
+}
+
+function agregarProductoVitrina() {
+  var nombre=document.getElementById('vitNombre')?.value.trim();
+  if(!nombre){alert('El nombre es obligatorio.');return;}
+  var items=getProductosVitrina();
+  items.push({id:'v'+Date.now(),nombre,categoria:document.getElementById('vitCat')?.value||'General',cantidad:0,capacidad:parseInt(document.getElementById('vitCap')?.value)||10,unidad:document.getElementById('vitUnidad')?.value||'pza',precio:parseFloat(document.getElementById('vitPrecio')?.value)||0,visible:true,orden:items.length+1});
+  saveProductosVitrina(items);
+  document.getElementById('vitCfgModal')?.remove();
+  abrirConfigVitrina();
+}
+
+function toggleProductoVitrina(id) {
+  var items=getProductosVitrina();
+  var item=items.find(function(i){return i.id===id;});
+  if(item) item.visible=!item.visible;
+  saveProductosVitrina(items);
+  document.getElementById('vitCfgModal')?.remove();
+  abrirConfigVitrina();
+}
+
+function eliminarProductoVitrina(id) {
+  if(!confirm('¿Eliminar este producto?'))return;
+  saveProductosVitrina(getProductosVitrina().filter(function(i){return i.id!==id;}));
+  document.getElementById('vitCfgModal')?.remove();
+  abrirConfigVitrina();
+}
+
+function renderChecklistVitrinas(el, cat, sub) {
+  var items = getMiseItems ? getMiseItems('vitrinas') : [];
+  renderMiseEnPlace(el, {id:'vitrinas'}, sub);
+}
+
+function renderRotacionVitrinas(el, cat, sub) {
+  var html = '<div class="fp fade-in"><div style="padding:16px 20px">'
+    + '<div class="usr-header"><div><span class="usr-title">Rotación PEPS — Vitrinas</span></div></div>'
+    + '<div style="background:#FEF3C7;border:.5px solid #F59E0B;border-radius:8px;padding:14px;margin-bottom:16px">'
+    + '<div style="font-size:13px;font-weight:600;color:#92400E;margin-bottom:6px">Reglas de rotación</div>'
+    + '<div style="font-size:12px;color:#92400E;line-height:1.8">'
+    + '· Primero en entrar → primero en salir (PEPS)<br>'
+    + '· Productos con menor tiempo de vida al frente<br>'
+    + '· Revisar fechas de elaboración cada 2 horas<br>'
+    + '· Retirar productos que lleguen a su vida útil<br>'
+    + '· Registrar en merma los productos retirados'
+    + '</div></div>'
+    + '<div style="font-size:13px;color:var(--text-secondary)">Registra la rotación en el módulo de Merma cuando retires productos de vitrina.</div>'
+    + '</div></div>';
+  el.innerHTML = html;
+  triggerFades();
+}
+
+/* ══════════════════════════════════════════════════════
+   REPORTE PDF — Exportación de turno
+══════════════════════════════════════════════════════ */
+
+function generarReportePDFTurno() {
+  var score  = typeof calcTurnoScore === 'function' ? calcTurnoScore() : {};
+  var turno  = typeof getTurnoActivo === 'function' ? getTurnoActivo() : {};
+  var temps  = typeof getTodayTemps  === 'function' ? getTodayTemps()  : [];
+  var merma  = typeof getMermaHoy    === 'function' ? getMermaHoy()    : [];
+  var fecha  = new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  var totalMerma = merma.reduce(function(s,m){return s+(parseFloat(m.costo)||0);},0);
+  var sc = typeof scoreColor === 'function' ? scoreColor : function(l){return '#333';};
+
+  // Construir HTML del reporte
+  var reportHTML = '<!DOCTYPE html><html lang="es"><head>'
+    + '<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>Reporte de Turno · ' + fecha + '</title>'
+    + '<style>'
+    + 'body{font-family:Georgia,serif;max-width:800px;margin:0 auto;padding:40px 32px;color:#1A1A18;font-size:13px}'
+    + 'h1{font-size:24px;margin:0;font-weight:700} h2{font-size:15px;font-weight:600;margin:24px 0 10px;border-bottom:1px solid #ddd;padding-bottom:6px}'
+    + '.header{background:#1A1A18;color:#fff;padding:24px 28px;border-radius:8px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}'
+    + '.score-big{font-size:52px;font-weight:700;line-height:1}'
+    + '.sub{color:rgba(255,255,255,.6);font-size:12px;margin-top:4px}'
+    + '.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}'
+    + '.kpi{border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center}'
+    + '.kpi-n{font-size:22px;font-weight:700} .kpi-l{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}'
+    + 'table{width:100%;border-collapse:collapse;font-size:12px}'
+    + 'th{background:#f9fafb;text-align:left;padding:8px 10px;border:1px solid #e5e7eb;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280}'
+    + 'td{padding:8px 10px;border:1px solid #e5e7eb}'
+    + '.ok{color:#15803D;font-weight:600} .err{color:#DC2626;font-weight:600}'
+    + '.footer{margin-top:32px;font-size:10px;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;padding-top:16px}'
+    + '@media print{body{padding:20px} .no-print{display:none}}'
+    + '</style></head><body>'
+
+    // Header
+    + '<div class="header">'
+    + '<div><h1>Reporte de Turno</h1><div class="sub">' + fecha + '</div>'
+    + (turno ? '<div class="sub">Turno: ' + (turno.tipo||'—') + ' · Abrió: ' + (turno.abierto_por||'—') + ' · ' + (turno.hora_inicio||'—') + '</div>' : '')
+    + '</div>'
+    + '<div style="text-align:right"><div class="score-big" style="color:' + sc(score.globalLetter||'—') + '">' + (score.globalLetter||'—') + '</div>'
+    + '<div class="sub">' + (score.globalPct||0) + '% del turno</div></div>'
+    + '</div>'
+
+    // KPIs
+    + '<div class="kpi-row">'
+    + kpiPDF('Módulos correctos', (score.correctas||[]).length, sc('A'))
+    + kpiPDF('Áreas a mejorar',   (score.mejoras||[]).length,   sc('D'))
+    + kpiPDF('Temp. fuera de rango', temps.filter(function(t){return !t.en_rango;}).length, sc('D'))
+    + kpiPDF('Merma MXN', '$'+Math.round(totalMerma).toLocaleString('es-MX'), totalMerma>500?sc('D'):sc('A'))
+    + '</div>'
+
+    // Score por área
+    + '<h2>Desempeño por área</h2>'
+    + '<table><thead><tr><th>Área</th><th>Score</th><th>Calificación</th></tr></thead><tbody>'
+    + Object.entries(score.areaScores||{}).map(function(e) {
+        var aId=e[0],a=e[1];
+        return '<tr><td>'+a.name+'</td>'
+          + '<td><div style="display:flex;align-items:center;gap:8px">'
+          + '<div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px"><div style="height:6px;background:'+sc(a.letter)+';width:'+a.pct+'%;border-radius:3px"></div></div>'
+          + '<span style="font-size:11px;color:#6b7280">'+a.pct+'%</span></div></td>'
+          + '<td style="font-weight:700;color:'+sc(a.letter)+'">'+a.letter+'</td></tr>';
+      }).join('')
+    + '</tbody></table>'
+
+    // Conductas correctas
+    + '<h2 style="color:#15803D">✓ Conductas correctas del turno</h2>'
+    + ((score.correctas||[]).length
+        ? '<table><thead><tr><th>Área</th><th>Módulo</th><th>%</th></tr></thead><tbody>'
+          + (score.correctas||[]).slice(0,10).map(function(c){return '<tr><td>'+c.area+'</td><td>'+c.modulo+'</td><td class="ok">'+c.pct+'%</td></tr>';}).join('')
+          + '</tbody></table>'
+        : '<p style="color:#6b7280;font-size:12px">Sin módulos al 85% o más en este turno.</p>')
+
+    // Conductas a mejorar
+    + '<h2 style="color:#EA580C">↑ Áreas de mejora identificadas</h2>'
+    + ((score.mejoras||[]).length
+        ? '<table><thead><tr><th>Área</th><th>Módulo</th><th>%</th></tr></thead><tbody>'
+          + (score.mejoras||[]).slice(0,10).map(function(m){return '<tr><td>'+m.area+'</td><td>'+m.modulo+'</td><td class="err">'+m.pct+'%</td></tr>';}).join('')
+          + '</tbody></table>'
+        : '<p style="color:#6b7280;font-size:12px">Sin áreas de mejora en este turno. Excelente desempeño.</p>')
+
+    // Temperaturas
+    + (temps.length ? '<h2>Registro de temperaturas</h2>'
+        + '<table><thead><tr><th>Equipo</th><th>Turno</th><th>Temperatura</th><th>Estado</th><th>Hora</th><th>Registró</th></tr></thead><tbody>'
+        + temps.map(function(t){return '<tr><td>'+t.equipo+'</td><td>'+( t.turno||'—')+'</td>'
+          + '<td style="font-weight:600;color:'+(t.en_rango?'#15803D':'#DC2626')+'">'+t.valor+t.unidad+'</td>'
+          + '<td class="'+(t.en_rango?'ok':'err')+'">'+( t.en_rango?'OK':'FUERA')+'</td>'
+          + '<td>'+t.hora+'</td><td>'+( t.usuario||'—')+'</td></tr>';}).join('')
+        + '</tbody></table>' : '')
+
+    // Merma
+    + (merma.length ? '<h2>Registro de merma</h2>'
+        + '<table><thead><tr><th>Producto</th><th>Área</th><th>Cantidad</th><th>Causa</th><th>Costo MXN</th></tr></thead><tbody>'
+        + merma.map(function(m){return '<tr><td>'+m.producto+'</td><td>'+m.area+'</td><td>'+m.cantidad+' '+m.unidad+'</td><td>'+m.causa+'</td><td class="'+(parseFloat(m.costo)>100?'err':'')+'">$'+parseFloat(m.costo||0).toFixed(2)+'</td></tr>';}).join('')
+        + '</tbody></table>' : '')
+
+    + '<div class="footer">Generado automáticamente · De la Mora Zumarán Kitchen Support · ' + new Date().toLocaleString('es-MX') + '</div>'
+    + '<div class="no-print" style="margin-top:24px;text-align:center">'
+    + '<button onclick="window.print()" style="background:#1A1A18;color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:14px;cursor:pointer;margin-right:10px">🖨 Imprimir / Guardar PDF</button>'
+    + '<button onclick="window.close()" style="background:#f3f4f6;color:#374151;border:none;border-radius:8px;padding:12px 24px;font-size:14px;cursor:pointer">Cerrar</button>'
+    + '</div>'
+    + '</body></html>';
+
+  var ventana = window.open('', '_blank');
+  if(ventana) {
+    ventana.document.write(reportHTML);
+    ventana.document.close();
+    ventana.focus();
+  } else {
+    // Fallback: descargar como HTML
+    var blob = new Blob([reportHTML], {type:'text/html'});
+    var a    = document.createElement('a');
+    a.href   = URL.createObjectURL(blob);
+    a.download = 'reporte-turno-' + new Date().toISOString().slice(0,10) + '.html';
+    a.click();
+  }
+}
+
+function kpiPDF(label, value, color) {
+  return '<div class="kpi"><div class="kpi-n" style="color:'+color+'">'+value+'</div><div class="kpi-l">'+label+'</div></div>';
+}
+/* ══ FIN VITRINAS + PDF ══ */
+
+
 /* ══ PENALIZACIONES POR TEMPERATURA Y MERMA ══ */
 function calcPenalizaciones() {
   var penalties = { total: 0, items: [] };
